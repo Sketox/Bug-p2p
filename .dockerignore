@@ -5,6 +5,9 @@ node_modules
 .git
 *.md
 *.pdf
+# El arte fuente (~1 MB de SVG de Inkscape) solo lo usa `npm run art`, que se corre a mano: lo que
+# la imagen necesita es el sprite ya generado en `web/public/cards.svg`.
+art
 tools
 **/test
 **/*.test.ts

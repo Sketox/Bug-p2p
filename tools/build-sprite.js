@@ -1,8 +1,9 @@
 // Genera `web/public/cards.svg` — el sprite con una carta (y el logo) por <symbol> — a partir de
-// los .svg de Inkscape de la raíz del repo.  Uso: `npm run art`
+// los .svg de Inkscape de `art/`.  Uso: `npm run art`
 //
-// Los tres archivos de arte (NUMEROS/ESPECIALES/COMODINES) son ventanas distintas de un MISMO
-// lienzo con las 50 cartas: aquí se recorta carta a carta (ver `collect-art.js`).
+// `NUMEROS.svg` es el lienzo entero con las 50 cartas (números, especiales y comodines): su viewBox
+// enfoca los números, pero el dibujo está completo y aquí se recorta carta a carta por coordenadas
+// absolutas (ver `collect-art.js`), así que el viewBox da igual.
 //
 // Clave del asunto: el arte trae UNA muestra de cada especial (el "se fue el WiFi" solo existe en
 // vino), pero el juego los necesita en los cuatro palos. Así que la tinta principal de esas cartas
@@ -14,7 +15,7 @@ const path = require('path');
 const { collect } = require('./collect-art.js');
 
 const ROOT = path.join(__dirname, '..');
-const art = (name) => path.join(ROOT, name);
+const art = (name) => path.join(ROOT, 'art', name);
 const OUT_DIR = path.join(ROOT, 'web', 'public');
 
 // --- Qué carta hay en cada sitio del lienzo (coordenadas del extractor) --------

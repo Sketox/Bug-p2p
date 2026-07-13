@@ -3,6 +3,9 @@
 # UNO de los jugadores hace de anfitrión y levanta esto. Los demás NO necesitan Docker ni instalar
 # nada: solo abren el enlace que salga por pantalla.
 #
+# El anfitrión tampoco necesita el código: basta ESTE archivo, que se baja suelto.
+#
+#   curl -O https://raw.githubusercontent.com/Sketox/Bug-p2p/main/docker-compose.yml
 #   docker compose up
 #
 # El servicio `tunnel` imprime en sus logs una URL pública (https://algo-random.trycloudflare.com).
@@ -22,9 +25,11 @@
 
 services:
   bug:
-    # Cámbialo por tu imagen si la reconstruyes: `docker compose build`.
+    # Se descarga de Docker Hub: este archivo funciona SUELTO, sin el código al lado. Aquí no hay
+    # `build:` a propósito — con él, quien bajara solo este archivo intentaría compilar un Dockerfile
+    # que no tiene, y ni siquiera llegaría a mirar en Docker Hub.
+    # Para publicar una versión nueva de la imagen:  docker build -t sketox/bug . && docker push
     image: ${BUG_IMAGE:-sketox/bug:latest}
-    build: .
     ports:
       # Para jugar en la MISMA casa (misma WiFi) basta con esto: http://<tu-ip-local>:8080
       - '8080:8080'

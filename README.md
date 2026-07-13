@@ -29,7 +29,10 @@ Abre `http://localhost:8080`, pon tu nombre y **Crear sala**. Los demás abren
 
 ### Casas distintas (con túnel)
 
+No hace falta clonar el repo: basta el `docker-compose.yml` suelto.
+
 ```bash
+curl -O https://raw.githubusercontent.com/Sketox/Bug-p2p/main/docker-compose.yml
 docker compose up
 ```
 
