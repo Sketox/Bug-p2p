@@ -8,7 +8,8 @@
 # WebRTC; esto solo presenta a los jugadores y se aparta. Si se cae a media partida, la partida
 # sigue.
 #
-#   docker run -p 8080:8080 <imagen>      →  http://localhost:8080
+#   docker run -e TUNNEL=1 <imagen>       →  saca una URL pública por consola (jugar entre casas)
+#   docker run -p 7787:7787 <imagen>      →  http://localhost:7787 (jugar en la misma WiFi)
 
 # --- 1. Dependencias --------------------------------------------------------
 FROM node:20-alpine AS deps
@@ -52,10 +53,13 @@ COPY --from=cloudflare/cloudflared:latest /usr/local/bin/cloudflared /usr/local/
 # La puerta de entrada, que junta las dos en un solo puerto.
 COPY docker/gateway.mjs ./gateway.mjs
 
-EXPOSE 8080
-ENV PORT=8080
+# 7787, y no 8080: el 8080 se lo pelean Tomcat, los proxies y cualquier dev server, así que quien
+# levantara la imagen se chocaba con lo que ya tuviera puesto. Aquí dentro da igual el número; lo
+# que importa es que el `-p` de fuera no colisione.
+EXPOSE 7787
+ENV PORT=7787
 # Sin healthcheck no hay forma de distinguir "arrancando" de "roto" al desplegar.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s \
-  CMD wget -q -O- http://127.0.0.1:8080/health || exit 1
+  CMD wget -q -O- http://127.0.0.1:7787/health || exit 1
 
 CMD ["node", "gateway.mjs"]

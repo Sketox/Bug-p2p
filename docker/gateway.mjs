@@ -23,7 +23,7 @@ import { createServer, request as httpRequest } from 'node:http';
 import { spawn } from 'node:child_process';
 import { connect } from 'node:net';
 
-const PORT = Number(process.env.PORT ?? 8080);
+const PORT = Number(process.env.PORT ?? 7787);
 const WEB_PORT = 3000; // Next, dentro del contenedor
 const SIGNAL_PORT = 8787; // señalización, dentro del contenedor
 const TUNNEL = /^(1|true|yes|on)$/i.test(process.env.TUNNEL ?? '');
@@ -145,6 +145,6 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('[bug] abriendo el túnel… (la URL sale en unos segundos)');
     startTunnel();
   } else {
-    console.log('[bug] sin túnel. Misma WiFi: http://<tu-ip-local>:%d  ·  Otras redes: -e TUNNEL=1', PORT);
+    console.log(`[bug] sin túnel. Misma WiFi: http://<tu-ip-local>:${PORT}  ·  Otras redes: -e TUNNEL=1`);
   }
 });

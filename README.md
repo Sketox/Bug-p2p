@@ -18,23 +18,30 @@ todo incluido (web + señalización).
 
 ## Jugar
 
-### Misma WiFi
-
-```bash
-docker run -p 8080:8080 sketox/bug
-```
-
-Abre `http://localhost:8080`, pon tu nombre y **Crear sala**. Los demás abren
-`http://<IP-del-anfitrión>:8080` y escanean el QR o teclean el código de la sala.
-
-### Casas distintas (con túnel)
+### Casas distintas (lo normal)
 
 Tu casa no tiene dirección pública, así que hace falta un túnel. Viene dentro de la
 imagen: se enciende con `TUNNEL=1` y no hay que bajarse nada.
 
 ```bash
-docker run -p 8080:8080 -e TUNNEL=1 sketox/bug
+docker run -e TUNNEL=1 sketox/bug
 ```
+
+Sin `-p`: el túnel habla con la web por dentro del contenedor, así que no publica ningún
+puerto en tu máquina y **no puede chocar con nada de lo que tengas corriendo**.
+
+### Misma WiFi
+
+Aquí sí hay que publicar el puerto, porque los demás entran por tu IP local:
+
+```bash
+docker run -p 7787:7787 sketox/bug
+```
+
+Abre `http://localhost:7787`, pon tu nombre y **Crear sala**. Los demás abren
+`http://<IP-del-anfitrión>:7787` y escanean el QR o teclean el código de la sala.
+
+> Si el 7787 te lo pisa algo, cambia solo el número de la izquierda: `-p 9000:7787`.
 
 En los logs aparecerá una URL pública:
 
@@ -97,7 +104,7 @@ npm run build          # build de producción de todos los paquetes
 
 ```bash
 docker build -t bug .
-docker run -p 8080:8080 bug
+docker run -p 7787:7787 bug
 ```
 
 Útil para probar exactamente lo que se despliega, sin tocar Node ni npm.
