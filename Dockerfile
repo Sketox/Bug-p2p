@@ -45,6 +45,10 @@ COPY --from=build /repo/web/public ./web/public
 COPY --from=build /repo/signaling/dist ./signaling
 COPY --from=build /repo/node_modules/ws ./node_modules/ws
 
+# El túnel, para poder jugar entre casas distintas con un solo `docker run` (ver TUNNEL más abajo).
+# Se saca de la imagen oficial en vez de descargarlo: sin curl, sin checksum que verificar a mano.
+COPY --from=cloudflare/cloudflared:latest /usr/local/bin/cloudflared /usr/local/bin/cloudflared
+
 # La puerta de entrada, que junta las dos en un solo puerto.
 COPY docker/gateway.mjs ./gateway.mjs
 

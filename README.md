@@ -29,16 +29,23 @@ Abre `http://localhost:8080`, pon tu nombre y **Crear sala**. Los demás abren
 
 ### Casas distintas (con túnel)
 
-No hace falta clonar el repo: basta el `docker-compose.yml` suelto.
+Tu casa no tiene dirección pública, así que hace falta un túnel. Viene dentro de la
+imagen: se enciende con `TUNNEL=1` y no hay que bajarse nada.
 
 ```bash
-curl -O https://raw.githubusercontent.com/Sketox/Bug-p2p/main/docker-compose.yml
-docker compose up
+docker run -p 8080:8080 -e TUNNEL=1 sketox/bug
 ```
 
-En los logs aparecerá una URL pública (`https://algo.trycloudflare.com`). Esa es la
-invitación: compártela (o el QR) y tus amigos solo la abren en el navegador — no
-necesitan Docker ni instalar nada.
+En los logs aparecerá una URL pública:
+
+```
+┌─────────────────────────────────────────────────┐
+│  https://algo-que-rima-random.trycloudflare.com  │
+└─────────────────────────────────────────────────┘
+```
+
+Esa es la invitación: compártela (o el QR de la sala) y tus amigos solo la abren en el
+navegador — no necesitan Docker, ni el código, ni instalar nada.
 
 > Una casa no tiene dirección pública: el router hace NAT. El túnel le presta una
 > dirección pública mientras dura la partida — el mismo problema de *bootstrap* que
