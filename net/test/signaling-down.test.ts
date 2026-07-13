@@ -125,6 +125,12 @@ class FakeSignaling {
     this.sala.clear();
     for (const ws of abiertos) ws.close();
   }
+
+  /** `docker run` otra vez: un servidor NUEVO, y por tanto vacío. No recuerda la sala anterior. */
+  revivir(): void {
+    this.vivo = true;
+    this.sala.clear();
+  }
 }
 
 let SERVER: FakeSignaling;
@@ -274,6 +280,61 @@ describe('la señalización se cae a media partida', () => {
     expect(alice.replica.rejectedCount).toBe(0);
     expect(bob.replica.rejectedCount).toBe(0);
     expect(SERVER.vivo).toBe(false); // …y el servidor lleva muerto todo el rato.
+
+    alice.room.destroy();
+    bob.room.destroy();
+  });
+
+  it('cuando vuelve, la sala se recompone sola… pero corta y rehace los canales que estaban vivos', async () => {
+    const alice = new Jugador('alice');
+    const bob = new Jugador('bob');
+    alice.room.connect();
+    await asentar();
+    bob.room.connect();
+    await asentar();
+    expect(alice.canalCon('bob')).toBe(true);
+
+    // Contamos los cortes de canal, para ver si el canal bueno sobrevive a la vuelta.
+    let cortes = 0;
+    alice.room.on('peerclose', () => cortes++);
+
+    SERVER.matar();
+    await asentar();
+    expect(alice.canalCon('bob')).toBe(true); // el apagón no lo tocó
+    expect(cortes).toBe(0);
+
+    // --- `docker run` otra vez: servidor NUEVO, y vacío ---------------------------------------
+    SERVER.revivir();
+    // Los dos reintentan con backoff (1s, 2s…): dejamos correr el reloj.
+    await vi.advanceTimersByTimeAsync(3000);
+    await asentar();
+
+    // Se recomponen: vuelven a estar online y con canal.
+    expect(alice.estado).toBe('online');
+    expect(bob.estado).toBe('online');
+    expect(alice.canalCon('bob')).toBe(true);
+    expect(bob.canalCon('alice')).toBe(true);
+
+    // …pero el canal NO es el de antes. Al re-anunciarse, `renewConn` tiró el que funcionaba y
+    // rehízo el handshake desde cero. Funciona, pero es un corte gratuito a media partida: el
+    // canal estaba vivo y no había nada que arreglar.
+    //
+    // Queda documentado aquí porque es un HALLAZGO, no un requisito: si algún día se arregla
+    // (no renovar el canal de un peer cuyo DataChannel sigue abierto), este número bajará a 0 y
+    // el test dirá exactamente qué cambió y por qué.
+    expect(cortes).toBeGreaterThan(0);
+
+    // Lo que importa: la partida no se rompió. Sigue avanzando tras el corte.
+    const enTurno = alice.turno;
+    const jugador = enTurno === 'alice' ? alice : bob;
+    const otro = enTurno === 'alice' ? bob : alice;
+    const antes = alice.hash;
+    jugador.jugar({ type: 'DRAW', playerId: enTurno });
+    await asentar();
+
+    expect(otro.hash).toBe(jugador.hash);
+    expect(alice.hash).not.toBe(antes);
+    expect(alice.replica.rejectedCount).toBe(0);
 
     alice.room.destroy();
     bob.room.destroy();
