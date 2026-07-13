@@ -1,0 +1,40 @@
+# Cómo se juega una partida entre casas distintas.
+#
+# UNO de los jugadores hace de anfitrión y levanta esto. Los demás NO necesitan Docker ni instalar
+# nada: solo abren el enlace que salga por pantalla.
+#
+#   docker compose up
+#
+# El servicio `tunnel` imprime en sus logs una URL pública (https://algo-random.trycloudflare.com).
+# Esa es la invitación: se comparte tal cual, o se escanea el QR que la propia sala genera.
+#
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+# ¿Por qué hace falta un túnel? Porque una casa no tiene dirección pública: tu router hace NAT y
+# nadie de fuera puede iniciar una conexión hacia tu máquina. El túnel le presta una dirección
+# pública mientras dura la partida. Es el precio del internet doméstico, no una grieta del diseño.
+#
+# ¿Y esto no convierte al anfitrión en un servidor? No. Lo que se expone es el PUNTO DE ENCUENTRO:
+# un tablón de anuncios donde los navegadores se presentan. En cuanto se conocen, las cartas viajan
+# directas navegador↔navegador (WebRTC) y el anfitrión deja de pintar nada. Si su contenedor se cae
+# a media partida, la partida sigue. Ese es el problema de *bootstrap*, y lo tienen todos los
+# sistemas P2P: BitTorrent usa trackers, Bitcoin semillas DNS, IPFS nodos bootstrap.
+# ────────────────────────────────────────────────────────────────────────────────────────────────
+
+services:
+  bug:
+    # Cámbialo por tu imagen si la reconstruyes: `docker compose build`.
+    image: ${BUG_IMAGE:-sketox/bug:latest}
+    build: .
+    ports:
+      # Para jugar en la MISMA casa (misma WiFi) basta con esto: http://<tu-ip-local>:8080
+      - '8080:8080'
+    restart: unless-stopped
+
+  # El túnel solo hace falta para jugar entre REDES DISTINTAS. Si jugáis en la misma WiFi, se puede
+  # apagar:  docker compose up bug
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://bug:8080
+    depends_on:
+      - bug
+    restart: unless-stopped

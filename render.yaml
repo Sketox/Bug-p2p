@@ -1,0 +1,15 @@
+# Blueprint de Render para desplegar SOLO el servidor de señalización (el "portero").
+# No guarda estado de juego. Da una URL pública wss:// que ambos peers usan para el handshake.
+#
+# Uso: subir el repo a GitHub → Render → New → Blueprint → apuntar a este archivo.
+# Luego, en la web, poner NEXT_PUBLIC_SIGNAL_URL=wss://bug-signaling.onrender.com
+services:
+  - type: web
+    name: bug-signaling
+    runtime: node
+    rootDir: signaling
+    plan: free
+    buildCommand: npm install
+    startCommand: npx tsx src/server.ts
+    healthCheckPath: /health
+    autoDeploy: true

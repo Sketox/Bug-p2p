@@ -1,0 +1,35 @@
+/* Fuente pixel (se degrada a monospace si no hay conexión). */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 50% 15%, #17402f 0%, #0c2119 60%, #081712 100%);
+  color: #f2f3f4;
+  font-family: '"Press Start 2P"', ui-monospace, monospace;
+}
+
+/* Estética pixel: bordes nítidos al escalar imágenes/íconos. */
+.pixelated {
+  image-rendering: pixelated;
+}
+
+/* Scrollbar discreto para la mano. */
+.hand-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.hand-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}

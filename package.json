@@ -1,0 +1,19 @@
+{
+  "name": "bug",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bug — juego de cartas P2P descentralizado (UNO re-tematizado)",
+  "workspaces": [
+    "engine",
+    "net",
+    "signaling",
+    "web"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "signaling": "npm run start --workspace @bug/signaling",
+    "web": "npm run dev --workspace @bug/web",
+    "art": "node tools/build-sprite.js"
+  }
+}
