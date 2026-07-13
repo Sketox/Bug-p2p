@@ -8,5 +8,8 @@ coverage/
 .env
 .env.local
 *.pdf
+# La documentación de trabajo (PLAN.md, JUGAR.md…) se queda en local. Lo que va al repo es el
+# README y lo que se ponga a mano en `docs/`.
 *.md
 !README.md
+!docs/*.md

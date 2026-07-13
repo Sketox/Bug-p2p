@@ -2,10 +2,12 @@
 export interface PeerInfo {
   peerId: string;
   name: string;
+  /** Encarnación: qué CONEXIÓN es, no quién es. Nueva en cada carga de la página. Ver el mirror. */
+  epoch?: string;
 }
 
 export type ClientMsg =
-  | { t: 'join'; room: string; peerId: string; name: string }
+  | { t: 'join'; room: string; peerId: string; name: string; epoch?: string }
   | { t: 'signal'; room: string; from: string; to: string; data: unknown }
   | { t: 'leave'; room: string; peerId: string };
 

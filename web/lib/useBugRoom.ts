@@ -168,6 +168,21 @@ function identityFor(code: string): string {
   }
 }
 
+/**
+ * La otra mitad de la identidad: QUÉ CONEXIÓN eres, no quién eres.
+ *
+ * El `peerId` de arriba sobrevive al F5 —tiene que hacerlo, o perderías tu mano—, y por eso no
+ * sirve para saber si tu WebRTC es nuevo. Esto sí: se genera una vez por CARGA de la página y NO
+ * se guarda en ningún sitio, así que un F5 te da una encarnación nueva.
+ *
+ * Con las dos, la malla distingue "recargó, tira el canal" de "solo volvió la señalización, el
+ * canal está sano" — que llegan indistinguibles si solo miras el peerId. Ver `PeerInfo.epoch`.
+ */
+let epoch: string | null = null;
+function thisPageLoad(): string {
+  return (epoch ??= crypto.randomUUID());
+}
+
 /** Jugador que origina un evento (para verificar que un peer solo actúa como sí mismo). */
 function eventActor(event: GameEvent): string {
   return event.type === 'CALL_BUG' ? event.accuserId : event.playerId;
@@ -958,7 +973,12 @@ export function useBugRoom() {
         if (sessionRef.current !== session) return; // esta entrada ya fue abandonada
         // La señalización puede venir del QR que escaneó este jugador (Fase 6): no hay una URL
         // "oficial" — la levanta quien crea la sala y la reparte con la invitación.
-        const room = new Room(signalUrl(), code, { peerId: myId, name }, { iceServers });
+        const room = new Room(
+          signalUrl(),
+          code,
+          { peerId: myId, name, epoch: thisPageLoad() },
+          { iceServers },
+        );
         roomRef.current = room;
         wireRoom(room);
         room.connect();

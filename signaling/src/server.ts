@@ -13,6 +13,8 @@ interface Client {
   peerId: string;
   name: string;
   room: string;
+  /** Qué carga de la página es esta (ver `PeerInfo.epoch`). Se reenvía tal cual: aquí no se mira. */
+  epoch?: string;
 }
 
 /** room -> peerId -> Client */
@@ -85,16 +87,20 @@ wss.on('connection', (ws) => {
             /* ya estaba muerta */
           }
         }
-        self = { ws, peerId: msg.peerId, name: msg.name, room: msg.room };
+        self = { ws, peerId: msg.peerId, name: msg.name, room: msg.room, epoch: msg.epoch };
         // Avisar al recién llegado quiénes ya están.
         const existing: PeerInfo[] = [...peers.values()].map((c) => ({
           peerId: c.peerId,
           name: c.name,
+          epoch: c.epoch,
         }));
         send(ws, { t: 'peers', peers: existing });
         // Avisar a los demás que llegó alguien.
         for (const other of peers.values()) {
-          send(other.ws, { t: 'peer-joined', peer: { peerId: self.peerId, name: self.name } });
+          send(other.ws, {
+            t: 'peer-joined',
+            peer: { peerId: self.peerId, name: self.name, epoch: self.epoch },
+          });
         }
         peers.set(self.peerId, self);
         break;

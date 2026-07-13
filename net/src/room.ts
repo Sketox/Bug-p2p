@@ -83,7 +83,13 @@ export class Room {
     this.ws = ws;
     ws.onopen = () => {
       this.retries = 0;
-      this.sendSignaling({ t: 'join', room: this.roomId, peerId: this.self.peerId, name: this.self.name });
+      this.sendSignaling({
+        t: 'join',
+        room: this.roomId,
+        peerId: this.self.peerId,
+        name: this.self.name,
+        epoch: this.self.epoch,
+      });
       this.emit('status', 'online' as RoomStatus);
     };
     ws.onmessage = (ev) => this.onSignaling(JSON.parse(String(ev.data)) as ServerMsg);
@@ -116,8 +122,8 @@ export class Room {
         for (const info of msg.peers) this.renewConn(info, true);
         break;
       case 'peer-joined':
-        // Alguien entró o RE-entró: él iniciará hacia mí. Si tenía un canal viejo con él, está
-        // obsoleto (su navegador tiene un RTCPeerConnection nuevo), así que se descarta.
+        // Alguien entró o RE-entró: él iniciará hacia mí. Si tenía un canal con él, `renewConn`
+        // decide si sigue valiendo (misma encarnación) o hay que rehacerlo (recargó la página).
         this.left.delete(msg.peer.peerId);
         this.renewConn(msg.peer, false);
         break;
@@ -131,9 +137,32 @@ export class Room {
     }
   }
 
-  /** Rehace desde cero la conexión con un peer (el handshake anterior ya no sirve). */
+  /**
+   * Rehace desde cero la conexión con un peer… salvo que no haga falta.
+   *
+   * Un peer se re-anuncia por dos motivos que llegan aquí IGUAL (mismo peerId, porque la identidad
+   * es estable a propósito):
+   *
+   *   a) recargó la página  → su RTCPeerConnection es nuevo; mi canal con él es basura.
+   *   b) volvió la señalización → su RTCPeerConnection es el de siempre; mi canal está perfecto.
+   *
+   * Tratar (b) como (a) —que es lo que se hacía— corta un canal sano y rehace el handshake a media
+   * partida, sin que nada estuviera roto. La `epoch` los distingue: cambia en cada carga de página,
+   * así que si coincide con la que ya tengo, es literalmente el mismo navegador al otro lado.
+   *
+   * Se exige además que el canal esté ABIERTO: una `epoch` igual con el canal muerto (se cayó la
+   * red, no la pestaña) sí hay que rehacerla.
+   */
   private renewConn(info: PeerInfo, initiator: boolean): void {
-    if (this.conns.has(info.peerId)) this.dropConn(info.peerId);
+    const actual = this.conns.get(info.peerId);
+    if (actual) {
+      const mismoNavegador = !!info.epoch && actual.info.epoch === info.epoch;
+      if (mismoNavegador && actual.open) {
+        actual.info = info; // pudo cambiarse el nombre; el canal se queda como está
+        return;
+      }
+      this.dropConn(info.peerId);
+    }
     this.peerRetries.delete(info.peerId);
     this.createConn(info, initiator);
   }
@@ -232,13 +261,17 @@ export class Room {
   private dropConn(peerId: string, retry = false): void {
     const conn = this.conns.get(peerId);
     if (!conn) return;
+    // Se saca del mapa ANTES de cerrar, y no después: cerrar el canal dispara su propio `onclose`,
+    // que vuelve a entrar aquí. Si la entrada siguiera puesta, la reentrada la daría por buena y
+    // anunciaría el cierre dos veces (dos `peerclose`, dos reintentos). Fuera del mapa, la
+    // reentrada no encuentra nada y se va por donde vino.
+    this.conns.delete(peerId);
     try {
       conn.channel?.close();
       conn.pc.close();
     } catch {
       /* noop */
     }
-    this.conns.delete(peerId);
     this.emit('peerclose', peerId);
     this.emit('roster', this.peers());
     if (retry) this.retryPeer(conn.info);

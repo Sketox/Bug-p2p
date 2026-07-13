@@ -104,11 +104,19 @@ class FakeSignaling {
     if (!this.vivo) return;
     if (msg.t === 'join') {
       ws.peerId = msg.peerId;
-      const presentes = [...this.sala.entries()].map(([peerId, s]) => ({ peerId, name: s.nombre }));
+      const presentes = [...this.sala.entries()].map(([peerId, s]) => ({
+        peerId,
+        name: s.nombre,
+        epoch: s.epoch,
+      }));
       ws.nombre = msg.name;
+      ws.epoch = msg.epoch;
       ws.entregar({ t: 'peers', peers: presentes } as ServerMsg);
       for (const [, otro] of this.sala) {
-        otro.entregar({ t: 'peer-joined', peer: { peerId: msg.peerId, name: msg.name } } as ServerMsg);
+        otro.entregar({
+          t: 'peer-joined',
+          peer: { peerId: msg.peerId, name: msg.name, epoch: msg.epoch },
+        } as ServerMsg);
       }
       this.sala.set(msg.peerId, ws);
     } else if (msg.t === 'signal') {
@@ -140,6 +148,7 @@ class FakeWS {
   readyState = 0;
   peerId = '';
   nombre = '';
+  epoch?: string;
   onopen?: () => void;
   onmessage?: (e: { data: string }) => void;
   onclose?: () => void;
@@ -177,15 +186,23 @@ const PLAYERS = [
 ];
 const SEED = 4242;
 
-/** Un jugador: su `Room` (la red de verdad) y su réplica del motor. */
+/**
+ * Un jugador: su `Room` (la red de verdad) y su réplica del motor.
+ *
+ * `epoch` es su encarnación. Un jugador que RECARGA la página vuelve con el mismo `id` (su
+ * identidad es estable, por eso recupera su mano) pero con una `epoch` nueva: es otro navegador.
+ */
 class Jugador {
   readonly room: Room;
   readonly replica: Replica<GameState, GameEvent>;
   lamport = 0;
   estado: RoomStatus = 'connecting';
 
-  constructor(readonly id: string) {
-    this.room = new Room(URL_SIGNAL, 'AB12', { peerId: id, name: id });
+  constructor(
+    readonly id: string,
+    readonly epoch = `epoch-${id}-1`,
+  ) {
+    this.room = new Room(URL_SIGNAL, 'AB12', { peerId: id, name: id, epoch });
     this.replica = new Replica<GameState, GameEvent>({ initial: createGame(SEED, PLAYERS), apply });
     this.room.on('status', (s: RoomStatus) => (this.estado = s));
     // Lo que llega por el DataChannel se aplica al motor: esto es "la partida sigue".
@@ -285,7 +302,7 @@ describe('la señalización se cae a media partida', () => {
     bob.room.destroy();
   });
 
-  it('cuando vuelve, la sala se recompone sola… pero corta y rehace los canales que estaban vivos', async () => {
+  it('cuando vuelve, la sala se recompone SIN tocar los canales que seguían sanos', async () => {
     const alice = new Jugador('alice');
     const bob = new Jugador('bob');
     alice.room.connect();
@@ -315,16 +332,12 @@ describe('la señalización se cae a media partida', () => {
     expect(alice.canalCon('bob')).toBe(true);
     expect(bob.canalCon('alice')).toBe(true);
 
-    // …pero el canal NO es el de antes. Al re-anunciarse, `renewConn` tiró el que funcionaba y
-    // rehízo el handshake desde cero. Funciona, pero es un corte gratuito a media partida: el
-    // canal estaba vivo y no había nada que arreglar.
-    //
-    // Queda documentado aquí porque es un HALLAZGO, no un requisito: si algún día se arregla
-    // (no renovar el canal de un peer cuyo DataChannel sigue abierto), este número bajará a 0 y
-    // el test dirá exactamente qué cambió y por qué.
-    expect(cortes).toBeGreaterThan(0);
+    // Y AQUÍ está el arreglo: ni un solo corte. Antes, al re-anunciarse los dos en el servidor
+    // nuevo, cada uno tiraba el canal del otro y rehacía el handshake — con el canal sano y a
+    // media partida. Ahora la `epoch` delata que es el mismo navegador de siempre y no se toca.
+    expect(cortes).toBe(0);
 
-    // Lo que importa: la partida no se rompió. Sigue avanzando tras el corte.
+    // Lo que importa: la partida no se rompió.
     const enTurno = alice.turno;
     const jugador = enTurno === 'alice' ? alice : bob;
     const otro = enTurno === 'alice' ? bob : alice;
@@ -338,6 +351,45 @@ describe('la señalización se cae a media partida', () => {
 
     alice.room.destroy();
     bob.room.destroy();
+  });
+
+  it('pero si el peer RECARGÓ de verdad, su canal viejo sí se tira y se rehace', async () => {
+    // La otra cara del arreglo, y la que lo hace peligroso si se hace mal: no renovar nunca sería
+    // igual de roto que renovar siempre. Un peer que recarga vuelve con el MISMO peerId —su
+    // identidad es estable a propósito— pero su RTCPeerConnection es nuevo, así que el canal que
+    // yo tenía con él es basura y hay que rehacerlo. Aquí se comprueba que se distingue.
+    const alice = new Jugador('alice');
+    const bob = new Jugador('bob');
+    alice.room.connect();
+    await asentar();
+    bob.room.connect();
+    await asentar();
+    expect(alice.canalCon('bob')).toBe(true);
+
+    let cortes = 0;
+    alice.room.on('peerclose', (id: string) => id === 'bob' && cortes++);
+
+    // Bob recarga: mismo peerId, encarnación NUEVA, navegador nuevo.
+    bob.room.destroy();
+    const bob2 = new Jugador('bob', 'epoch-bob-2');
+    bob2.room.connect();
+    await asentar();
+
+    // Alice tiró el canal muerto y rehízo el handshake con el Bob nuevo.
+    expect(cortes).toBe(1);
+    expect(alice.canalCon('bob')).toBe(true);
+    expect(bob2.canalCon('alice')).toBe(true);
+
+    // Y se puede seguir jugando con él.
+    const enTurno = alice.turno;
+    const jugador = enTurno === 'alice' ? alice : bob2;
+    const otro = enTurno === 'alice' ? bob2 : alice;
+    jugador.jugar({ type: 'DRAW', playerId: enTurno });
+    await asentar();
+    expect(otro.hash).toBe(jugador.hash);
+
+    alice.room.destroy();
+    bob2.room.destroy();
   });
 
   it('nadie nuevo puede entrar mientras esté caída: es lo único que se pierde', async () => {
