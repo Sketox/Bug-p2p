@@ -16,6 +16,7 @@ export type ServerMsg =
   | { t: 'peer-joined'; peer: PeerInfo }
   | { t: 'peer-left'; peerId: string }
   | { t: 'signal'; from: string; data: unknown }
+  | { t: 'room-full'; max: number }
   | { t: 'error'; message: string };
 
 /** Señales WebRTC que viajan por el canal de señalización (dentro de `data`). */

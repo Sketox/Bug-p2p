@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { MAX_PLAYERS } from '@bug/engine';
 import type { RoomStatus } from '@bug/net';
 import type { LobbyPlayer } from '@/lib/netProtocol';
 import { inviteUrl, isLocalOnly, signalUrl } from '@/lib/signal';
@@ -28,6 +29,10 @@ export function Lobby({ roomId, isHost, players, myId, status, onStart, onLeave 
   const [invite, setInvite] = useState<string | null>(null);
   const [localOnly, setLocalOnly] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Con la mesa completa, la señalización ya rebota a quien intente entrar. Enseñar aquí un QR que
+  // solo lleva a una pantalla de "no cabes" sería invitar a alguien a una puerta que ya cerramos.
+  const full = players.length >= MAX_PLAYERS;
 
   // El enlace se arma en el navegador (necesita `window.location`), así que no puede calcularse
   // durante el render del servidor.
@@ -68,8 +73,25 @@ export function Lobby({ roomId, isHost, players, myId, status, onStart, onLeave 
           </div>
         </div>
 
+        {/* La mesa se llenó: donde estaba la invitación va el aviso. */}
+        {full && (
+          <motion.div
+            data-testid="lobby-full"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-4 rounded-xl border-2 border-[#f27eb4]/40 bg-[#f27eb4]/10 px-3 py-4 text-center"
+          >
+            <p className="font-pixel text-[11px] text-[#f27eb4] mb-2">🐛 SALA LLENA</p>
+            <p className="font-pixel text-[9px] leading-relaxed text-white/60">
+              la mesa está completa ({MAX_PLAYERS} de {MAX_PLAYERS}). ya no entra nadie más:
+              <br />
+              a quien abra el enlace le saldrá que la sala está llena.
+            </p>
+          </motion.div>
+        )}
+
         {/* Invitación: el QR lleva sala + señalización, así que quien escanea no configura nada. */}
-        {invite && (
+        {invite && !full && (
           <div className="mb-4 space-y-2">
             <RoomQR url={invite} />
             <div className="flex justify-center gap-3">
@@ -98,7 +120,12 @@ export function Lobby({ roomId, isHost, players, myId, status, onStart, onLeave 
           </div>
         )}
 
-        <p className="font-pixel text-[10px] text-white/60 mb-2">Jugadores ({players.length})</p>
+        <p className="font-pixel text-[10px] text-white/60 mb-2">
+          Jugadores{' '}
+          <span className={full ? 'text-[#f27eb4]' : undefined}>
+            ({players.length}/{MAX_PLAYERS})
+          </span>
+        </p>
         <ul className="space-y-2 mb-6">
           {players.map((p) => (
             <motion.li

@@ -6,6 +6,7 @@ import type { Card } from '@bug/engine';
 import { useBugRoom } from '@/lib/useBugRoom';
 import { saveRoom } from '@/lib/session';
 import { Lobby } from './Lobby';
+import { RoomFull } from './RoomFull';
 import { GameBoard } from './GameBoard';
 import { PlayPrompt, type PlayChoice } from './PlayPrompt';
 import { MasterScreen } from './MasterScreen';
@@ -106,6 +107,12 @@ export function NetworkGame({ mode, name, code, onExit }: Props) {
       )}
     </AnimatePresence>
   );
+
+  // Antes que nada: si la sala estaba llena, nunca llegamos a entrar. No hay lobby que enseñar
+  // —no somos de la partida—, así que esta rama va delante de todas.
+  if (room.phase === 'full') {
+    return <RoomFull max={room.aforo} roomId={room.roomId ?? undefined} onExit={onExit} />;
+  }
 
   if (room.phase === 'lobby' || !view) {
     return (

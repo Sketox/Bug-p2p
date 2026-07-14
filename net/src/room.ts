@@ -16,7 +16,7 @@ export interface RoomOptions {
   iceServers?: RTCIceServer[];
 }
 
-type RoomEvent = 'roster' | 'message' | 'peeropen' | 'peerclose' | 'status';
+type RoomEvent = 'roster' | 'message' | 'peeropen' | 'peerclose' | 'status' | 'full';
 type Handler = (payload: any) => void;
 
 interface Conn {
@@ -133,6 +133,14 @@ export class Room {
         break;
       case 'signal':
         this.onPeerSignal(msg.from, msg.data as Signal);
+        break;
+      case 'room-full':
+        // No cabemos, y esto es un "no" definitivo, no un corte de red. Si dejáramos que el
+        // `onclose` de siempre programara la reconexión, estaríamos aporreando con backoff una
+        // puerta que ya nos dijo que está llena, para siempre. Se cierra la sala y se avisa arriba,
+        // que es quien tiene una pantalla para explicarlo.
+        this.emit('full', msg.max);
+        this.destroy();
         break;
     }
   }

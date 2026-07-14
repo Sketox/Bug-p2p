@@ -31,4 +31,5 @@ export type ServerMsg =
   | { t: 'peer-joined'; peer: PeerInfo } // avisa a los demás
   | { t: 'peer-left'; peerId: string }
   | { t: 'signal'; from: string; data: unknown } // señal WebRTC reenviada
+  | { t: 'room-full'; max: number } // no cabes: la sala llegó a su aforo
   | { t: 'error'; message: string };

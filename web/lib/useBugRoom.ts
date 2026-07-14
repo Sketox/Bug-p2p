@@ -5,6 +5,7 @@ import {
   apply,
   createGame,
   EngineError,
+  MAX_PLAYERS,
   redactFor,
   type Color,
   type GameEvent,
@@ -83,7 +84,7 @@ const DIVERGED_MS = 6000;
  */
 const FAREWELL_GRACE = 250;
 
-export type Phase = 'idle' | 'lobby' | 'playing';
+export type Phase = 'idle' | 'lobby' | 'playing' | 'full';
 
 export interface PlayOptions {
   chosenColor?: Color;
@@ -234,6 +235,8 @@ function holderOf(state: GameState): string {
 export function useBugRoom() {
   const [phase, setPhase] = useState<Phase>('idle');
   const [status, setStatus] = useState<RoomStatus>('connecting');
+  /** Cuánta gente cabía, según nos dijo la señalización al rebotarnos. Solo se usa en `phase: full`. */
+  const [aforo, setAforo] = useState(MAX_PLAYERS);
   const [isHost, setIsHost] = useState(false);
   const [roomId, setRoomId] = useState<string | null>(null);
   const [lobby, setLobby] = useState<LobbyPlayer[]>([]);
@@ -882,6 +885,13 @@ export function useBugRoom() {
   const wireRoom = useCallback(
     (room: Room) => {
       room.on('status', (s: RoomStatus) => setStatus(s));
+
+      // La sala está llena: no hemos entrado, y no vamos a entrar. La `Room` ya se cerró sola (no
+      // tiene sentido reintentar contra un aforo), así que aquí solo queda contarlo.
+      room.on('full', (max: number) => {
+        setAforo(max);
+        setPhase('full');
+      });
       room.on('message', ({ from, data }: { from: string; data: NetMessage }) =>
         handleMessage(from, data),
       );
@@ -1093,6 +1103,7 @@ export function useBugRoom() {
     lobby,
     view,
     error,
+    aforo,
     canAct,
     mesh,
     journal,

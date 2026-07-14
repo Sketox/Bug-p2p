@@ -13,10 +13,22 @@ function isWild(card: Card): boolean {
   return WILD_KINDS.includes(card.kind);
 }
 
+/**
+ * Cuánta gente cabe en una partida. El motor es el único que puede decidirlo —es donde viven las
+ * reglas—, pero el aforo hay que hacerlo cumplir mucho antes: cuando alguien intenta ENTRAR a la
+ * sala, no cuando el anfitrión pulsa "¡Empezar!" y descubre que sobra gente. De ahí que se exporte.
+ * La señalización tiene su propia copia del número (no depende del motor, a propósito) y un test la
+ * ata a esta.
+ */
+export const MIN_PLAYERS = 2;
+export const MAX_PLAYERS = 10;
+
 /** Crea una partida determinista a partir de una semilla y la lista de jugadores. */
 export function createGame(seed: number, players: { id: string; name: string }[]): GameState {
-  if (players.length < 2) throw new EngineError('TOO_FEW_PLAYERS', 'Se necesitan al menos 2 jugadores');
-  if (players.length > 10) throw new EngineError('TOO_MANY_PLAYERS', 'Máximo 10 jugadores');
+  if (players.length < MIN_PLAYERS)
+    throw new EngineError('TOO_FEW_PLAYERS', `Se necesitan al menos ${MIN_PLAYERS} jugadores`);
+  if (players.length > MAX_PLAYERS)
+    throw new EngineError('TOO_MANY_PLAYERS', `Máximo ${MAX_PLAYERS} jugadores`);
   const ids = new Set(players.map((p) => p.id));
   if (ids.size !== players.length) throw new EngineError('DUP_PLAYER', 'IDs de jugador duplicados');
 
