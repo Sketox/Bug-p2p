@@ -58,6 +58,19 @@ navegador — no necesitan Docker, ni el código, ni instalar nada.
 > dirección pública mientras dura la partida — el mismo problema de *bootstrap* que
 > resuelven los trackers de BitTorrent o las semillas DNS de Bitcoin.
 
+#### Si el túnel no conecta
+
+El túnel sale por TCP a propósito. Su ajuste de fábrica era QUIC, que va sobre UDP y es
+mejor protocolo — pero hay muchas redes que bloquean el UDP de salida, y entonces pasa lo
+peor que puede pasar: la URL se genera igual (esa se pide por HTTPS normal) pero no lleva
+a ninguna parte, y quien la abre ve un **Error 1033**. Por este túnel solo viajan la web y
+las presentaciones entre jugadores —las cartas van por WebRTC directo—, así que lo que
+QUIC daba de más no se notaba. Se cambió por el que entra en todas partes.
+
+Si aun así no conecta, el contenedor te lo dice a los 30 segundos en vez de callarse, y en
+la misma WiFi siempre podéis jugar sin túnel. Para volver al protocolo antiguo:
+`-e TUNNEL_PROTOCOL=quic`.
+
 ## Arquitectura
 
 - **`engine/`** — motor de reglas puro (sin red ni UI), testeado de forma aislada.

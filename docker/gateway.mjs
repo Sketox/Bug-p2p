@@ -28,6 +28,14 @@ const WEB_PORT = 3000; // Next, dentro del contenedor
 const SIGNAL_PORT = 8787; // señalización, dentro del contenedor
 const TUNNEL = /^(1|true|yes|on)$/i.test(process.env.TUNNEL ?? '');
 
+// Cómo sale el túnel hacia Cloudflare. Su valor de fábrica es QUIC, que viaja sobre UDP; es mejor
+// protocolo (menos latencia, aguanta mejor la pérdida de paquetes) y en una red doméstica es la
+// opción superior. Pero hay muchas redes que bloquean el UDP de salida, y ahí QUIC no es "peor": es
+// que no hay túnel. Por aquí solo viajan la web y las presentaciones entre jugadores —las cartas van
+// por WebRTC directo, sin tocar esto—, así que lo que QUIC nos daba de más no se notaba. Preferimos
+// el que entra en todas partes.
+const PROTOCOL = process.env.TUNNEL_PROTOCOL ?? 'http2';
+
 // --- Los dos procesos de dentro ---------------------------------------------
 const child = (name, cmd, args, env) => {
   const p = spawn(cmd, args, {
@@ -108,31 +116,63 @@ const announce = (url) => {
   );
 };
 
+// Tener URL y tener túnel son dos cosas distintas, y esa distinción nos costó una tarde. cloudflared
+// PIDE la URL por HTTPS (eso pasa cualquier firewall) y la suelta a los pocos segundos; CONECTAR el
+// otro extremo va por otro camino, y puede fallar solo. Anunciar la URL en cuanto asoma era repartir
+// invitaciones a una puerta cerrada: el invitado recibía un Error 1033 y el anfitrión no se enteraba,
+// porque de toda la cháchara de cloudflared aquí solo se pescaba la URL y el resto iba a la basura.
+// Así que ahora se espera a que él mismo diga que el túnel está en pie, y si no lo dice, se habla.
 const startTunnel = (intento = 0) => {
   const p = spawn(
     'cloudflared',
-    ['tunnel', '--no-autoupdate', '--url', `http://127.0.0.1:${PORT}`],
+    ['tunnel', '--no-autoupdate', '--protocol', PROTOCOL, '--url', `http://127.0.0.1:${PORT}`],
     { stdio: ['ignore', 'pipe', 'pipe'] },
   );
 
-  // cloudflared anuncia la URL por stderr, enterrada entre sus propios logs: se pesca al vuelo.
-  let anunciada = false;
-  const buscarUrl = (chunk) => {
-    if (anunciada) return;
-    const url = String(chunk).match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/)?.[0];
-    if (url) {
-      anunciada = true;
+  let url = null;
+  let conectado = false;
+  let aviso;
+  const bitacora = []; // lo último que dijo cloudflared, por si hay que enseñarlo
+
+  const leer = (chunk) => {
+    const texto = String(chunk);
+    bitacora.push(texto);
+    if (bitacora.length > 40) bitacora.shift();
+
+    url ??= texto.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/)?.[0] ?? null;
+
+    // "Registered tunnel connection" es cloudflared diciendo que el otro extremo ya existe. Hasta
+    // que lo dice, la URL no lleva a ninguna parte y no hay nada que anunciar.
+    if (!conectado && url && texto.includes('Registered tunnel connection')) {
+      conectado = true;
+      clearTimeout(aviso);
       announce(url);
     }
   };
-  p.stdout.on('data', buscarUrl);
-  p.stderr.on('data', buscarUrl);
+  p.stdout.on('data', leer);
+  p.stderr.on('data', leer);
+
+  // Si en medio minuto no hay túnel, dejamos de callarnos. Un contenedor que calla mientras algo no
+  // funciona es peor que uno que falla: el que lo levantó se cree que ya está.
+  aviso = setTimeout(() => {
+    if (conectado) return;
+    console.error(
+      `\n[bug] el túnel consiguió su URL, pero no logra conectar con Cloudflare.\n` +
+        `      Casi siempre es un firewall de la red bloqueando la salida.\n` +
+        `      Si estáis en la misma WiFi podéis jugar igual, sin túnel:\n` +
+        `          docker run -p ${PORT}:${PORT} <imagen>   →  http://<tu-ip-local>:${PORT}\n` +
+        `      Y esto es lo que cuenta cloudflared, por si dice algo más:\n`,
+    );
+    console.error(bitacora.join('').trimEnd());
+  }, 30_000);
+  aviso.unref();
 
   p.on('error', (err) => {
     console.error(`[gateway] no se pudo lanzar cloudflared: ${err.message}`);
   });
 
   p.on('exit', (code) => {
+    clearTimeout(aviso);
     const espera = Math.min(2 ** intento, 30);
     console.error(`[gateway] el túnel terminó (código ${code}); reintentando en ${espera}s`);
     setTimeout(() => startTunnel(intento + 1), espera * 1000).unref();
