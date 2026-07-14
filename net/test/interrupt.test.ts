@@ -73,7 +73,11 @@ function armed() {
   // Se le pone la carta en la mano a mano (el reparto es aleatorio pero determinista; no vamos a
   // barajar semillas hasta que salga). Todos los nodos aplican el mismo apaño, así que siguen
   // partiendo del mismo estado.
-  const paste: Card = { id: 'paste-test', kind: 'copy_paste' };
+  //
+  // Y se le pone DEL COLOR DE LA MESA: el Copiar y Pegar tiene color, así que para cortar hay que
+  // igualar el pozo como con cualquier otra carta. Lo que la interrupción se salta es el turno, no
+  // las reglas — y sin el color, estos tests medirían un corte que el motor ya no permite.
+  const paste: Card = { id: 'paste-test', kind: 'copy_paste', color: initial.currentColor };
   for (const n of nodes) {
     n.replica.state.players.find((p) => p.id === interruptor)!.hand.push(paste);
     n.replica.state.lastPlayer = first; // la carta del pozo la puso el que abre
@@ -155,8 +159,13 @@ describe('interrupción en la malla', () => {
     const others = PLAYERS.filter((p) => p.id !== first).map((p) => p.id);
     const [cutterA, cutterB] = others as [string, string];
 
-    // Los dos rivales tienen un Copiar y Pegar y los dos cortan a la vez.
-    const paste2: Card = { id: 'paste-test-2', kind: 'copy_paste' };
+    // Los dos rivales tienen un Copiar y Pegar (del color de la mesa, o no podrían cortar) y los
+    // dos cortan a la vez.
+    const paste2: Card = {
+      id: 'paste-test-2',
+      kind: 'copy_paste',
+      color: nodes[0]!.replica.state.currentColor,
+    };
     for (const n of nodes) n.replica.state.players.find((p) => p.id === cutterB)!.hand.push(paste2);
 
     const first_cut = node(cutterA).stamp({ type: 'PLAY', playerId: cutterA, cardId: paste.id }, 5);

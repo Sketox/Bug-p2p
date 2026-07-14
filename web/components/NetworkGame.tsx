@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import type { Card } from '@bug/engine';
 import { useBugRoom } from '@/lib/useBugRoom';
+import { needsPrompt } from '@/lib/cards';
 import { saveRoom } from '@/lib/session';
 import { Lobby } from './Lobby';
 import { RoomFull } from './RoomFull';
@@ -69,9 +70,9 @@ export function NetworkGame({ mode, name, code, onExit }: Props) {
       return;
     }
 
-    // Las cartas sin color piden algo antes de salir: el color, y —si son troyano o reinicio— a
-    // quién infectas o qué carta pones de base. Lo decide el jugador, no nosotros.
-    if (card.color == null) {
+    // Algunas cartas piden algo antes de salir: el color (los comodines) o a quién infectas y qué
+    // carta pones de base (troyano y reinicio). Lo decide el jugador, no nosotros.
+    if (needsPrompt(card)) {
       setPending(card);
       return;
     }

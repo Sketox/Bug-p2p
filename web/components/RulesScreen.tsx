@@ -40,8 +40,15 @@ const ESPECIALES: Rule[] = [
   },
   {
     card: demo('draw2', 'survival'),
-    title: 'Actualización de Windows',
+    title: 'Update de Windows (+2)',
     text: 'El siguiente roba 2 cartas y pierde el turno. No se puede cancelar, como debe ser.',
+  },
+  {
+    card: demo('draw4', 'hardware'),
+    title: 'Update de Windows (+4)',
+    text:
+      'La actualización grande: el siguiente roba 4 y pierde el turno. Ojo, no es un comodín — ' +
+      'tiene color, así que hay que jugarla igualando, y la partida sigue con SU color.',
   },
 ];
 
@@ -60,33 +67,32 @@ const COMODINES: Rule[] = [
 
 const CAOS: Rule[] = [
   {
-    card: demo('copy_paste'),
+    card: demo('copy_paste', 'hardware'),
     title: 'Copiar y Pegar',
     star: true,
     text:
       '¡Se juega CUANDO NO ES TU TURNO! Cortas la ronda, copias el efecto de la carta que acaba de ' +
-      'caer al pozo y la partida sigue desde ti. No puedes cortar tu propia carta, y el portapapeles ' +
-      'no copia cartas de caos. En tu turno se comporta como un comodín normal.',
+      'caer al pozo y la partida sigue desde ti. Eso sí: para cortar tiene que igualar el pozo, como ' +
+      'cualquier carta. No puedes cortar tu propia carta, y el portapapeles no copia cartas de Caos.',
   },
   {
-    card: demo('coffee_spill'),
+    card: demo('coffee_spill', 'survival'),
     title: 'Derrame de Café',
     text: 'Todos los jugadores pasan su mano entera al siguiente. Tu partida ya no es tu partida.',
   },
   {
-    card: demo('trojan'),
+    card: demo('trojan', 'internet'),
     title: 'Virus Troyano',
     text:
       'Eliges a quién infectas y qué 2 cartas de tu mano le regalas. Un regalo que no se puede ' +
       'rechazar: él se come tus peores cartas y tú te quedas más cerca de ganar.',
   },
   {
-    card: demo('reboot'),
+    card: demo('reboot', 'code'),
     title: 'Apagar y volver a prender',
     text:
-      'O cambias el color, sin más, o REINICIAS EL POZO: sueltas encima otra carta tuya, que pasa ' +
-      'a ser la nueva base y fija el color. Suelta dos cartas de golpe, pero el color ya no lo ' +
-      'eliges tú: manda la carta.',
+      'Puedes REINICIAR EL POZO: sueltas encima otra carta tuya, que pasa a ser la nueva base y fija ' +
+      'el color. Sueltas dos cartas de golpe. Si no, se juega tal cual y la partida sigue con su color.',
   },
 ];
 
@@ -184,6 +190,10 @@ export function RulesScreen({ onClose }: { onClose: () => void }) {
             Las que no existen en ningún otro juego de cartas. Aquí es donde la partida se rompe.
           </p>
           <Cards rules={CAOS} />
+          <p className="text-white/50 text-xs mt-3">
+            También <b>tienen color</b> (hay una de cada, en los cuatro palos): rompen la partida,
+            pero hay que jugarlas igualando el pozo, como todas.
+          </p>
         </Section>
 
         <Section title="Si te caes, vuelves. Si te vas, te vas.">

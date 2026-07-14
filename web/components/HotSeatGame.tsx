@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { redactFor, type Card } from '@bug/engine';
 import { useBugGame } from '@/lib/useBugGame';
+import { needsPrompt } from '@/lib/cards';
 import { SetupScreen } from './SetupScreen';
 import { GameBoard } from './GameBoard';
 import { PlayPrompt, type PlayChoice } from './PlayPrompt';
@@ -21,8 +22,8 @@ export function HotSeatGame({ onExit }: { onExit: () => void }) {
   const handlePlay = (cardId: string) => {
     const card = me.hand.find((c) => c.id === cardId);
     if (!card) return;
-    if (card.color == null) {
-      setPending(card); // sin color: hay algo que preguntar antes de jugarla
+    if (needsPrompt(card)) {
+      setPending(card); // hay algo que decidir antes de jugarla
       return;
     }
     game.play(me.id, cardId);

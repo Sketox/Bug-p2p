@@ -1,10 +1,22 @@
-// Recorta un lienzo de Inkscape en las piezas que lo componen (cartas, logo).
+// Lee un lienzo de Inkscape y devuelve sus dibujos ya listos para recortar.
 //
-// Recorre el árbol acumulando las transformaciones anidadas, calcula la caja de cada figura y las
-// agrupa por solapamiento: el fondo de cada carta toca todo lo que lleva encima, y las cartas no
-// se tocan entre sí, así que cada grupo resultante es exactamente una carta.
+// Dos formas de recortar, según lo que traiga el archivo:
+//
+//   `cards(file)`   — por ETIQUETA. `art/CARTAS.svg` tiene cada carta en su propio grupo con
+//                     nombre ("TROYANO", "DERRAME DE CAFE", "7"…), así que preguntamos por el
+//                     nombre y no por dónde cae en el lienzo. Antes esto se hacía con coordenadas
+//                     a mano —una tabla de números mágicos— y bastaba que alguien moviera una
+//                     carta en Inkscape para que el sprite saliera mal sin que nadie se enterara.
+//
+//   `collect(file)` — por SOLAPAMIENTO, para los archivos sin etiquetas (el logo): el fondo de una
+//                     pieza toca todo lo que lleva encima, y las piezas no se tocan entre sí.
+//
+// En ambas, los paths salen en ORDEN DE DOCUMENTO y con su matriz acumulada. El orden importa: en
+// el Ctrl+Z hay un dibujo viejo escondido debajo del actual, y si se reordenan los paths, lo
+// enterrado sale a flote.
 
 const fs = require('fs');
+const path = require('path');
 
 const I = [1, 0, 0, 1, 0, 0];
 const mul = (m, n) => [
@@ -159,36 +171,79 @@ function pathBox(d, m) {
   return { minX, minY, maxX, maxY };
 }
 
-/** Devuelve las piezas (cartas) del lienzo, cada una con sus paths ya transformados. */
-function collect(file) {
+const union = (a, b) => ({
+  minX: Math.min(a.minX, b.minX),
+  minY: Math.min(a.minY, b.minY),
+  maxX: Math.max(a.maxX, b.maxX),
+  maxY: Math.max(a.maxY, b.maxY),
+});
+const EMPTY_BOX = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+const sized = (box) => ({ box, w: box.maxX - box.minX, h: box.maxY - box.minY });
+
+/**
+ * Recorre el documento y devuelve cada path (en orden) con su matriz acumulada, su caja y los
+ * grupos que lo contienen.
+ *
+ * Cada grupo lleva un número propio además de su etiqueta: las cuatro cartas de un mismo especial
+ * se llaman IGUAL ("DESCONECTAR" las cuatro), así que identificarlas por el nombre las funde en una
+ * sola pieza de cuatro cartas de ancho.
+ */
+function walk(file) {
   const svg = fs.readFileSync(file, 'utf8');
-  const body = svg.slice(svg.indexOf('<g\n     id="layer1"'));
+  // Se empieza donde acaba el <defs>: de ahí no se dibuja nada (viven los clips) y sus paths
+  // ensuciarían las cajas. Buscar en su lugar la capa por `id="layer1"` es frágil — Inkscape ordena
+  // los atributos como le apetece y basta con que cambie para quedarnos sin cartas.
+  const defs = svg.match(/<defs\b[^>]*\/>|<defs\b[\s\S]*?<\/defs>/);
+  const body = svg.slice(defs ? defs.index + defs[0].length : svg.indexOf('<g'));
   // El translate del layer1 solo encuadra la ventana del archivo; se ignora para trabajar siempre
-  // en coordenadas del lienzo completo, iguales en los tres .svg.
+  // en coordenadas del lienzo completo.
   const frame = body.match(/transform="(translate\([-\d.,]+\))"/)?.[1] ?? '';
 
   const items = [];
-  const stack = [I];
+  const stack = [{ m: I, groups: [], fill: '#000000' }];
   const tokens = body.match(/<g\b[^>]*?\/>|<g\b[^>]*>|<\/g>|<path\b[^>]*\/>|<rect\b[^>]*\/>/g) || [];
-  const fillOf = (tk) => {
-    const attr = tk.match(/\sfill="([^"]+)"/);
-    const style = tk.match(/fill:\s*(#[0-9a-fA-F]{6}|none)/);
-    return (attr?.[1] ?? style?.[1] ?? '#000000').toLowerCase();
-  };
   const num = (tk, name) => Number(tk.match(new RegExp(`\\s${name}="([-\\d.]+)"`))?.[1] ?? 0);
+  let uid = 0;
+
+  /**
+   * De qué color está pintado un trazo. El orden NO es cosmético:
+   *
+   * el `style` MANDA sobre el atributo `fill` (así lo dice SVG), y este arte lo aprovecha a base de
+   * bien: los trazos conservan en el atributo el color con el que nacieron —un naranja, un
+   * amarillo— y llevan el color de verdad en el `style`. Leer el atributo primero pinta las cartas
+   * con los colores viejos: el "se fue el WiFi" salía naranja y el Ctrl+Z, amarillo.
+   *
+   * Y si no dice nada, el color lo pone el grupo: el relleno se hereda.
+   */
+  const fillOf = (tk, heredado) => {
+    const style = tk.match(/style="([^"]*)"/)?.[1];
+    const enStyle = style?.match(/(?:^|;)\s*fill:\s*(#[0-9a-fA-F]{6}|none)/)?.[1];
+    const attr = tk.match(/\sfill="([^"]+)"/)?.[1];
+    return (enStyle ?? attr ?? heredado).toLowerCase();
+  };
 
   for (const tk of tokens) {
-    if (tk === '</g>') { stack.pop(); continue; }
+    if (tk === '</g>') {
+      if (stack.length > 1) stack.pop();
+      continue;
+    }
     const tr = tk.match(/transform="([^"]+)"/);
     if (tk.startsWith('<g')) {
       if (tk.endsWith('/>')) continue; // un <g/> vacío no abre nivel
       const top = stack[stack.length - 1];
-      stack.push(tr && tr[1] !== frame ? mul(top, parseTransform(tr[1])) : top);
+      const label = tk.match(/inkscape:label="([^"]+)"/)?.[1];
+      stack.push({
+        m: tr && tr[1] !== frame ? mul(top.m, parseTransform(tr[1])) : top.m,
+        groups: label ? [...top.groups, { uid: uid++, label }] : top.groups,
+        fill: fillOf(tk, top.fill),
+      });
       continue;
     }
-    let m = stack[stack.length - 1];
+    const top = stack[stack.length - 1];
+    let m = top.m;
     if (tr) m = mul(m, parseTransform(tr[1]));
-    const fill = fillOf(tk);
+
+    const fill = fillOf(tk, top.fill);
     if (fill === 'none') continue;
 
     let d;
@@ -199,13 +254,48 @@ function collect(file) {
       if (w > 0 && h > 0) d = `M ${x},${y} H ${x + w} V ${y + h} H ${x} Z`;
     }
     if (!d) continue;
-    items.push({ d, fill, m, box: pathBox(d, m) });
+    items.push({ d, fill, m, box: pathBox(d, m), groups: top.groups });
+  }
+  return items;
+}
+
+/** Tamaño de una carta en el lienzo (todas iguales), con holgura para no depender del pixel exacto. */
+const CARD_W = [40, 65];
+const CARD_H = [65, 95];
+const isCardSized = (c) =>
+  c.w >= CARD_W[0] && c.w <= CARD_W[1] && c.h >= CARD_H[0] && c.h <= CARD_H[1];
+
+/**
+ * Las cartas del lienzo, cada una con su etiqueta y sus paths en orden.
+ *
+ * Una carta es el grupo etiquetado que tiene el TAMAÑO de una carta: así el grupo "+4" sale entero
+ * (fondo, franja y dibujo) y no su subgrupo "aliens4+", que es solo el dibujo de dentro.
+ */
+function cards(file) {
+  const items = walk(file);
+  const groups = new Map(); // un candidato por grupo etiquetado del documento
+
+  for (const it of items) {
+    for (const { uid, label } of it.groups) {
+      const g = groups.get(uid) ?? { label, paths: [], box: EMPTY_BOX };
+      g.paths.push(it);
+      g.box = union(g.box, it.box);
+      groups.set(uid, g);
+    }
   }
 
-  // Union-find por solapamiento
+  return [...groups.values()]
+    .map((g) => ({ ...g, ...sized(g.box) }))
+    .filter(isCardSized);
+}
+
+/** Piezas de un lienzo SIN etiquetas: se agrupan por solapamiento (el logo). */
+function collect(file) {
+  const items = walk(file);
+
   const parent = items.map((_, i) => i);
   const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
-  const union = (a, b) => {
+  const join = (a, b) => {
     const [ra, rb] = [find(a), find(b)];
     if (ra !== rb) parent[ra] = rb;
   };
@@ -213,7 +303,7 @@ function collect(file) {
     a.minX <= b.maxX + 1 && b.minX <= a.maxX + 1 && a.minY <= b.maxY + 1 && b.minY <= a.maxY + 1;
   for (let i = 0; i < items.length; i++)
     for (let j = i + 1; j < items.length; j++)
-      if (touches(items[i].box, items[j].box)) union(i, j);
+      if (touches(items[i].box, items[j].box)) join(i, j);
 
   const groups = new Map();
   items.forEach((it, i) => {
@@ -223,19 +313,8 @@ function collect(file) {
   });
 
   return [...groups.values()]
-    .map((paths) => {
-      const box = paths.reduce(
-        (b, p) => ({
-          minX: Math.min(b.minX, p.box.minX),
-          minY: Math.min(b.minY, p.box.minY),
-          maxX: Math.max(b.maxX, p.box.maxX),
-          maxY: Math.max(b.maxY, p.box.maxY),
-        }),
-        { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity },
-      );
-      return { paths, box, w: box.maxX - box.minX, h: box.maxY - box.minY };
-    })
+    .map((paths) => ({ paths, ...sized(paths.reduce((b, p) => union(b, p.box), EMPTY_BOX)) }))
     .filter((c) => c.w > 20 && c.h > 20);
 }
 
-module.exports = { collect };
+module.exports = { cards, collect };

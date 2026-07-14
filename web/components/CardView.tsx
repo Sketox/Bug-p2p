@@ -33,8 +33,9 @@ interface Props {
 // Las cartas son las del proyecto (pixel art de Inkscape), servidas como sprite SVG e inyectadas
 // una sola vez en el documento (ver `app/layout.tsx`). Aquí solo se referencian con <use>.
 //
-// Los especiales de color se recolorean con `currentColor`: el arte trae una única muestra de cada
-// uno (el "se fue el WiFi" solo existe en vino) y el juego los necesita en los cuatro palos.
+// Cada carta llega del sprite con SU color puesto: aquí no se tiñe nada. Antes sí —el arte solo
+// traía una muestra de cada especial y la UI la recoloreaba por CSS—, y las sombras que salían eran
+// inventadas. Ahora el color es el que dibujó el artista.
 
 /** Proporción real de las cartas del arte (la misma para todas: ver `lib/cardBox.ts`). */
 const ASPECT = `${CARD_BOX.w} / ${CARD_BOX.h}`;
@@ -95,7 +96,6 @@ export const CardView = forwardRef<HTMLElement, Props>(function CardView(
       transition={{ type: 'spring', stiffness: 420, damping: 30, ...deal }}
       style={{
         aspectRatio: ASPECT,
-        color: face.ink,
         // La perspectiva vive en el padre; el giro, en la capa de dentro. Así el volteo no se pisa
         // con la animación de layout que hace volar la carta de la mano al pozo.
         perspective: 700,

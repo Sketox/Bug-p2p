@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import { canPlayOn, type PublicView } from '@bug/engine';
+import { canPlayOn, type Card, type PublicView } from '@bug/engine';
 import { CardView } from './CardView';
 import { RulesScreen } from './RulesScreen';
 import { SUIT } from '@/lib/cards';
@@ -120,6 +120,15 @@ export function GameBoard(props: Props) {
   const opponents = view.players.filter((p) => p.id !== myId);
   const cue = useCardEffect(view);
   const [rules, setRules] = useState(false);
+
+  /**
+   * ¿Con esta carta puedo cortar la ronda ahora mismo?
+   *
+   * Cortar ya no es gratis: el Copiar y Pegar tiene color, así que además de ser un portapapeles
+   * tiene que IGUALAR el pozo, como cualquier otra carta. Lo único que se salta es el turno.
+   */
+  const puedeCortar = (card: Card) =>
+    card.kind === 'copy_paste' && canPlayOn(top, view.currentColor, card);
 
   /**
    * El arranque: mientras nadie ha jugado (`seq === 0`) se reparten las cartas y se anuncia a quién
@@ -272,7 +281,7 @@ export function GameBoard(props: Props) {
       <div className="flex flex-col items-center gap-2 min-h-[3.5rem]">
         {error ? (
           <span className="font-pixel text-[9px] sm:text-[10px] text-red-400">⚠ {error}</span>
-        ) : canInterrupt && myHand.some((c) => c.kind === 'copy_paste') ? (
+        ) : canInterrupt && myHand.some((c) => puedeCortar(c)) ? (
           <span className="font-pixel text-[9px] sm:text-[10px] text-[#f27eb4] animate-pulse">
             📋 puedes CORTAR la ronda con Copiar y Pegar
           </span>
@@ -331,8 +340,8 @@ export function GameBoard(props: Props) {
           >
             {myHand.map((card, i) => {
               // "Copiar y Pegar" se juega FUERA de turno: es la única carta que sigue viva cuando
-              // no te toca (ver `applyCopyPaste` en el motor).
-              const interrupt = canInterrupt && card.kind === 'copy_paste';
+              // no te toca (ver `applyCopyPaste` en el motor) — si además iguala el pozo.
+              const interrupt = canInterrupt && puedeCortar(card);
               const playable = interrupt || (canAct && canPlayOn(top, view.currentColor, card));
               return (
                 <CardView

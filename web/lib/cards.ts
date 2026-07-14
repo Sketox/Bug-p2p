@@ -1,8 +1,8 @@
 import type { Card, CardKind, Color } from '@bug/engine';
 
 // Metadatos de presentación de las cartas: nombres temáticos, colores y qué dibujo del sprite les
-// toca.  El arte real vive en `web/public/cards.svg`, generado desde los .svg de Inkscape de la
-// raíz del repo con `npm run art` (ver `tools/build-sprite.js`).
+// toca.  El arte real vive en `web/public/cards.svg`, generado desde `art/CARTAS.svg` (el lienzo de
+// Inkscape) con `npm run art` (ver `tools/build-sprite.js`).
 
 /**
  * La paleta sale del arte, no al revés: son los cuatro colores con los que están pintadas las
@@ -16,13 +16,11 @@ export const SUIT: Record<Color, { label: string; icon: string; hex: string; fg:
   survival: { label: 'Café', icon: '☕', hex: '#f27eb4', fg: '#2b0a1b' },
 };
 
-/** Color de las cartas sin palo (comodines y caos): el sprite ya trae el suyo. */
-const WILD_INK = '#e8e8e7';
-
 const NAME: Record<Exclude<CardKind, 'number'>, string> = {
   skip: 'Se fue el WiFi',
   reverse: 'Ctrl+Z',
-  draw2: 'Update de Windows',
+  draw2: 'Update de Windows (+2)',
+  draw4: 'Update de Windows (+4)',
   wild: 'Reinicio de Router',
   wild_draw4: 'BSOD',
   copy_paste: 'Copiar y Pegar',
@@ -32,32 +30,37 @@ const NAME: Record<Exclude<CardKind, 'number'>, string> = {
 };
 
 export interface CardFace {
-  /** Id del <symbol> del sprite (`#c-num-5`, `#c-skip`…). */
+  /** Id del <symbol> del sprite (`#c-num-5-code`, `#c-skip-hardware`, `#c-wild`…). */
   symbol: string;
   name: string;
-  /**
-   * Color con el que se pinta el dibujo. Los especiales de color son recoloreables (el arte trae
-   * una sola muestra de cada uno), así que se les pasa el tono del palo; los comodines y las cartas
-   * de caos ya vienen pintados y este valor no los toca.
-   */
-  ink: string;
+  /** Solo los dos comodines: son los únicos sin palo (los de las franjas de color). */
   isWild: boolean;
 }
 
+/**
+ * Qué dibujo del sprite le toca a cada carta.
+ *
+ * Una carta = un dibujo, con su color ya pintado. Antes no: el sprite guardaba UN dibujo por tipo y
+ * la UI lo teñía por CSS, porque el arte solo traía una muestra de cada especial. Ahora están las
+ * cuatro dibujadas de verdad, así que aquí solo hay que pedir la que toca.
+ */
 export function cardFace(card: Card): CardFace {
-  if (card.kind === 'number') {
-    return {
-      symbol: `c-num-${card.value}`,
-      name: SUIT[card.color!].label,
-      ink: SUIT[card.color!].hex,
-      isWild: false,
-    };
-  }
-  const name = NAME[card.kind];
-  if (card.color) {
-    return { symbol: `c-${card.kind}`, name, ink: SUIT[card.color].hex, isWild: false };
-  }
-  return { symbol: `c-${card.kind}`, name, ink: WILD_INK, isWild: true };
+  const name = card.kind === 'number' ? SUIT[card.color!].label : NAME[card.kind];
+  if (card.color == null) return { symbol: `c-${card.kind}`, name, isWild: true }; // comodines
+  const dibujo = card.kind === 'number' ? `num-${card.value}` : card.kind;
+  return { symbol: `c-${dibujo}-${card.color}`, name, isWild: false };
+}
+
+/**
+ * ¿Hay que preguntarle algo al jugador antes de mandar la jugada?
+ *
+ * Antes bastaba con mirar si la carta no tenía color. Ya no vale: las de Caos tienen el suyo y aun
+ * así hay cosas que decidir (a quién infectas, qué carta pones de base), mientras que el Derrame de
+ * Café o el Copiar y Pegar se juegan de un tirón como cualquier número.
+ */
+export function needsPrompt(card: Card): boolean {
+  if (card.color == null) return true; // comodín: elige color
+  return card.kind === 'trojan' || card.kind === 'reboot';
 }
 
 export const COLOR_OPTIONS: { color: Color; label: string; hex: string }[] = (

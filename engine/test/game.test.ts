@@ -261,9 +261,57 @@ describe('regla ¡Bug!', () => {
   });
 });
 
+describe('Update de Windows +4 (con color)', () => {
+  it('el siguiente roba 4 y pierde el turno', () => {
+    const update = c('draw4', 'code');
+    const s = makeState({
+      players: [
+        player('a', [update, c('number', 'code', 1)]),
+        player('b', [c('number', 'code', 3)]),
+        player('d', [c('number', 'code', 4)]),
+      ],
+      top: c('number', 'code', 5),
+      drawPile: [
+        c('number', 'internet', 1),
+        c('number', 'internet', 2),
+        c('number', 'internet', 3),
+        c('number', 'internet', 4),
+      ],
+      turn: 0,
+    });
+
+    const next = apply(s, { type: 'PLAY', playerId: 'a', cardId: update.id });
+
+    expect(next.players[1]!.hand.length).toBe(1 + 4); // 'b' paga la actualización
+    expect(next.players[next.turn]!.id).toBe('d'); // y se queda sin turno
+  });
+
+  it('no es un comodín: hay que igualar el pozo y el color lo trae la carta', () => {
+    const update = c('draw4', 'hardware');
+    const s = makeState({
+      players: [player('a', [update, c('number', 'code', 1)]), player('b', [c('number', 'code', 3)])],
+      top: c('number', 'code', 5), // la mesa va de verde
+      turn: 0,
+    });
+
+    // A diferencia del BSOD, este +4 no se puede soltar sobre cualquier cosa…
+    expect(() => apply(s, { type: 'PLAY', playerId: 'a', cardId: update.id })).toThrow(/no coincide/);
+
+    // …y donde sí cae, el color que sigue es el suyo: no se elige.
+    const sobreSuColor = makeState({
+      players: [player('a', [update, c('number', 'code', 1)]), player('b', [c('number', 'code', 3)])],
+      top: c('number', 'hardware', 5),
+      drawPile: [c('number', 'code', 1), c('number', 'code', 2), c('number', 'code', 3), c('number', 'code', 4)],
+      turn: 0,
+    });
+    const next = apply(sobreSuColor, { type: 'PLAY', playerId: 'a', cardId: update.id });
+    expect(next.currentColor).toBe('hardware');
+  });
+});
+
 describe('cartas de caos', () => {
   it('trojan entrega 2 cartas a otro jugador', () => {
-    const trojan = c('trojan');
+    const trojan = c('trojan', 'code');
     const g1 = c('number', 'code', 1);
     const g2 = c('number', 'code', 2);
     const s = makeState({
@@ -274,7 +322,6 @@ describe('cartas de caos', () => {
       type: 'PLAY',
       playerId: 'a',
       cardId: trojan.id,
-      chosenColor: 'code',
       target: 'd',
       giveCardIds: [g1.id, g2.id],
     });
@@ -284,7 +331,7 @@ describe('cartas de caos', () => {
   });
 
   it('coffee_spill hace que todos pasen su mano al siguiente', () => {
-    const spill = c('coffee_spill');
+    const spill = c('coffee_spill', 'code');
     const aCards = [spill, c('number', 'code', 1)];
     const bCards = [c('number', 'internet', 2), c('number', 'internet', 3)];
     const dCards = [c('number', 'hardware', 4)];
@@ -292,12 +339,7 @@ describe('cartas de caos', () => {
       players: [player('a', aCards), player('b', bCards), player('d', dCards)],
       top: c('number', 'code', 5),
     });
-    const next = apply(s, {
-      type: 'PLAY',
-      playerId: 'a',
-      cardId: spill.id,
-      chosenColor: 'code',
-    });
+    const next = apply(s, { type: 'PLAY', playerId: 'a', cardId: spill.id });
     // 'a' jugó el spill (le queda 1 carta), que pasa a 'b'; 'b'→'d'; 'd'→'a'
     expect(next.players[1]!.hand.length).toBe(1); // recibió la mano de 'a' (1 carta)
     expect(next.players[2]!.hand.length).toBe(2); // recibió la de 'b'
@@ -305,7 +347,7 @@ describe('cartas de caos', () => {
   });
 
   it('reboot con carta base coloca un nuevo tope y color', () => {
-    const reboot = c('reboot');
+    const reboot = c('reboot', 'code');
     const base = c('number', 'internet', 8);
     const s = makeState({
       players: [player('a', [reboot, base, c('number', 'code', 1)]), player('b', [])],

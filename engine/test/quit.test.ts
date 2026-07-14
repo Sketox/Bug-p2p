@@ -95,7 +95,7 @@ describe('QUIT — abandono', () => {
   });
 
   it('el Derrame de Café no le pasa la mano a quien ya abandonó', () => {
-    const spill = c('coffee_spill');
+    const spill = c('coffee_spill', 'code');
     const cardOfA = c('number', 'code', 1);
     const cardOfC = c('number', 'code', 4);
     const state = makeState({
@@ -109,7 +109,7 @@ describe('QUIT — abandono', () => {
     });
 
     const afterQuit = apply(state, { type: 'QUIT', playerId: 'b' });
-    const next = apply(afterQuit, { type: 'PLAY', playerId: 'a', cardId: spill.id, chosenColor: 'code' });
+    const next = apply(afterQuit, { type: 'PLAY', playerId: 'a', cardId: spill.id });
 
     const hand = (id: string) => next.players.find((p) => p.id === id)!.hand.map((x) => x.id);
     expect(hand('b')).toEqual([]); // el ausente sigue fuera: no recibe cartas
@@ -119,7 +119,7 @@ describe('QUIT — abandono', () => {
   });
 
   it('el Troyano no puede infectar a un ausente', () => {
-    const trojan = c('trojan');
+    const trojan = c('trojan', 'code');
     const state = makeState({
       players: [
         player('a', [trojan, c('number', 'code', 1), c('number', 'code', 5)]),
@@ -137,7 +137,6 @@ describe('QUIT — abandono', () => {
         type: 'PLAY',
         playerId: 'a',
         cardId: trojan.id,
-        chosenColor: 'code',
         target: 'b',
         giveCardIds: [afterQuit.players[0]!.hand[1]!.id],
       }),

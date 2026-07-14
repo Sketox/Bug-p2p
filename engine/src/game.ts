@@ -1,5 +1,5 @@
 import type { Card, CardKind, Color, GameState, Player } from './types.js';
-import { topCard, WILD_KINDS } from './types.js';
+import { topCard, CHAOS_KINDS, WILD_KINDS } from './types.js';
 import { buildDeck } from './deck.js';
 import { makeRng, shuffle } from './rng.js';
 import { EngineError, type GameEvent } from './events.js';
@@ -11,6 +11,10 @@ const TIMEOUT_PENALTY = 2;
 
 function isWild(card: Card): boolean {
   return WILD_KINDS.includes(card.kind);
+}
+
+function isChaos(card: Card): boolean {
+  return CHAOS_KINDS.includes(card.kind);
 }
 
 /**
@@ -207,6 +211,13 @@ function applyPlay(state: GameState, event: Extract<GameEvent, { type: 'PLAY' }>
   if (handIdx < 0) throw new EngineError('NOT_IN_HAND', 'No tienes esa carta');
   const card = player.hand[handIdx]!;
 
+  // Toda carta tiene que igualar el pozo — TAMBIÉN la que interrumpe.
+  //
+  // Antes el "Copiar y Pegar" no tenía color, así que cortaba la ronda cayera lo que cayera. Ahora
+  // tiene el suyo, y para cortar hay que tener el Copiar y Pegar DEL COLOR que está en la mesa (o
+  // caer sobre otro Copiar y Pegar). Lo único que la interrupción sigue saltándose es el turno.
+  if (!canPlay(state, card)) throw new EngineError('ILLEGAL_MOVE', 'Esa carta no coincide con el pozo');
+
   // "Copiar y Pegar" es la única carta que se juega FUERA de turno: es una interrupción.
   // Cualquier otra cosa exige que sea tu turno.
   if (isInterrupt(state, playerIdx, card)) {
@@ -214,7 +225,6 @@ function applyPlay(state: GameState, event: Extract<GameEvent, { type: 'PLAY' }>
     return;
   }
   if (playerIdx !== state.turn) throw new EngineError('NOT_YOUR_TURN', 'No es tu turno');
-  if (!canPlay(state, card)) throw new EngineError('ILLEGAL_MOVE', 'Esa carta no coincide con el pozo');
 
   // Descartar y comprobar victoria ANTES de resolver efectos (gana quien descarta su última).
   player.hand.splice(handIdx, 1);
@@ -230,7 +240,7 @@ function applyPlay(state: GameState, event: Extract<GameEvent, { type: 'PLAY' }>
 
   // Color que continúa la partida.
   if (isWild(card)) {
-    state.currentColor = resolveWildColor(state, event, player);
+    state.currentColor = resolveWildColor(event);
   } else {
     state.currentColor = card.color!;
   }
@@ -268,7 +278,15 @@ function isInterrupt(state: GameState, playerIdx: number, card: Card): boolean {
  * interrupción tiene que resolverse sola, sin abrir otra pregunta al que la sufre. El portapapeles
  * no soporta el caos: si el tope es una carta de caos, solo te cuelas en la ronda.
  */
-const COPYABLE: readonly CardKind[] = ['number', 'skip', 'reverse', 'draw2', 'wild', 'wild_draw4'];
+const COPYABLE: readonly CardKind[] = [
+  'number',
+  'skip',
+  'reverse',
+  'draw2',
+  'draw4',
+  'wild',
+  'wild_draw4',
+];
 
 /**
  * "Copiar y Pegar" — la interrupción (Fase 6).
@@ -322,17 +340,15 @@ function applyCopyPaste(
   checkWinAfterEffect(state, playerIdx); // por el mismo motivo que en `applyPlay`
 }
 
-function resolveWildColor(
-  state: GameState,
-  event: Extract<GameEvent, { type: 'PLAY' }>,
-  player: Player,
-): Color {
-  // reboot puede fijar el color mediante la carta base; en los demás, el jugador elige.
+/**
+ * El color con el que sigue la partida tras un comodín: lo elige quien lo juega.
+ *
+ * Ya solo se pregunta por los dos comodines. Antes también lo decidían el Troyano o el "Apagar y
+ * prender" —eran comodines encubiertos—; ahora esas cartas traen su color puesto y no hay nada que
+ * elegir: la partida sigue con el color de la carta que cayó.
+ */
+function resolveWildColor(event: Extract<GameEvent, { type: 'PLAY' }>): Color {
   if (event.chosenColor) return event.chosenColor;
-  if (event.rebootCardId) {
-    const base = player.hand.find((c) => c.id === event.rebootCardId);
-    if (base?.color) return base.color;
-  }
   throw new EngineError('NEED_COLOR', 'Debes elegir un color para el comodín');
 }
 
@@ -348,7 +364,7 @@ function resolveEffect(
   switch (card.kind) {
     case 'number':
     case 'wild':
-    case 'copy_paste': // (Fase 0: se juega en turno como comodín; interrupción → Fase 4)
+    case 'copy_paste': // jugada en turno no hace nada especial; fuera de turno es la interrupción
       state.turn = advance(state, playerIdx, 1);
       return;
 
@@ -369,6 +385,15 @@ function resolveEffect(
       return;
     }
 
+    // El "Update de Windows" grande: el mismo castigo del +2, al doble. Se diferencia del BSOD en
+    // que tiene color: no lo eliges tú, lo trae la carta — y por eso hay que jugarlo igualando.
+    case 'draw4': {
+      const victim = advance(state, playerIdx, 1);
+      drawCards(state, victim, 4);
+      state.turn = advance(state, playerIdx, 2);
+      return;
+    }
+
     case 'wild_draw4': {
       const victim = advance(state, playerIdx, 1);
       drawCards(state, victim, 4);
@@ -383,7 +408,12 @@ function resolveEffect(
         const baseIdx = player.hand.findIndex((c) => c.id === event.rebootCardId);
         const base = baseIdx >= 0 ? player.hand[baseIdx]! : undefined;
         if (!base) throw new EngineError('NO_BASE_CARD', 'No tienes esa carta base');
-        if (isWild(base)) throw new EngineError('BAD_BASE_CARD', 'La carta base no puede ser especial');
+        // La base fija el color del pozo, así que un comodín no vale (no dice a qué igualar). Y
+        // tampoco una carta de Caos: aunque ahora tenga color, colarla de base sería soltarla sin
+        // que su efecto llegue a dispararse — una puerta de atrás para deshacerse del Troyano.
+        if (isWild(base) || isChaos(base)) {
+          throw new EngineError('BAD_BASE_CARD', 'La carta base no puede ser un comodín ni una carta de Caos');
+        }
         player.hand.splice(baseIdx, 1);
         state.discardPile.push(base);
         state.currentColor = base.color!;

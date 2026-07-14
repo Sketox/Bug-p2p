@@ -10,8 +10,13 @@ todo incluido (web + señalización).
 
 ## Reglas (v1)
 
-- Mazo de 108 cartas: 4 colores (rojo, amarillo, verde, azul), números 0-9, y especiales
-  (Salta, Reversa, +2, Comodín, Comodín +4).
+- Mazo de **124 cartas**, en 4 palos (Código, Hardware, Internet, Café). Por cada palo:
+  números 0-9, dos "Se fue el WiFi", dos "Ctrl+Z", un "Update de Windows +2", un
+  "Update de Windows +4" y una de cada **Carta de Caos** (Copiar y Pegar, Apagar y
+  prender, Derrame de Café, Virus Troyano).
+- **Sin color solo los 2 comodines** (Reinicio de Router y BSOD): son los únicos que se
+  tiran sobre cualquier carta y dejan elegir color. Todo lo demás —el caos incluido— hay
+  que jugarlo igualando el pozo.
 - Cada jugador empieza con 7 cartas.
 - En tu turno: juega una carta que coincida en color, número o símbolo, o roba.
 - Gana quien se queda sin cartas.

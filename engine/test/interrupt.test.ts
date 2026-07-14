@@ -8,10 +8,13 @@ import { c, player, makeState } from './helpers.js';
 // desde ti. Es la carta que convierte el juego en un problema de concurrencia de verdad: dos
 // jugadores pueden intentar actuar a la vez, y quien pierda la carrera se queda con la jugada
 // rechazada — por el mismo motor determinista, igual en todos los nodos.
+//
+// Lo que la interrupción se salta es EL TURNO, no las reglas: el portapapeles tiene color, así que
+// para cortar hay que igualar el pozo como con cualquier otra carta.
 
 describe('Copiar y Pegar — interrupción fuera de turno', () => {
   it('se puede jugar aunque no sea tu turno, y la ronda sigue desde el que interrumpe', () => {
-    const paste = c('copy_paste');
+    const paste = c('copy_paste', 'code');
     const state = makeState({
       players: [
         player('a', [c('number', 'code', 1), c('number', 'code', 2)]),
@@ -30,8 +33,29 @@ describe('Copiar y Pegar — interrupción fuera de turno', () => {
     expect(next.players[next.turn]!.id).toBe('c');
   });
 
+  it('para cortar hay que igualar el pozo: con otro color, no cuelas', () => {
+    // El corte dejó de ser gratis el día que el portapapeles tuvo color. Antes cualquiera con un
+    // Copiar y Pegar en la mano podía romper la ronda en cualquier momento; ahora hay que tenerlo
+    // DEL COLOR que está en la mesa — o caer sobre otro Copiar y Pegar.
+    const paste = c('copy_paste', 'survival');
+    const state = makeState({
+      players: [
+        player('a', [c('number', 'code', 1)]),
+        player('b', [paste, c('number', 'code', 3)]),
+        player('c', [c('number', 'code', 4)]),
+      ],
+      top: c('number', 'code', 9), // la mesa va de verde; el portapapeles es rosa
+      turn: 0,
+    });
+    state.lastPlayer = 'a';
+
+    expect(() => apply(state, { type: 'PLAY', playerId: 'b', cardId: paste.id })).toThrow(
+      /no coincide/,
+    );
+  });
+
   it('copia el efecto de la carta interrumpida: un +2 lo paga el siguiente al que interrumpe', () => {
-    const paste = c('copy_paste');
+    const paste = c('copy_paste', 'code');
     const state = makeState({
       players: [
         player('a', [c('number', 'code', 1)]),
@@ -52,8 +76,34 @@ describe('Copiar y Pegar — interrupción fuera de turno', () => {
     expect(next.players[next.turn]!.id).toBe('a');
   });
 
+  it('también copia el Update grande: el +4 de color', () => {
+    const paste = c('copy_paste', 'code');
+    const state = makeState({
+      players: [
+        player('a', [c('number', 'code', 1)]),
+        player('b', [paste, c('number', 'code', 3)]),
+        player('c', [c('number', 'code', 4)]),
+      ],
+      top: c('draw4', 'code'),
+      turn: 0,
+      drawPile: [
+        c('number', 'internet', 7),
+        c('number', 'internet', 8),
+        c('number', 'code', 6),
+        c('number', 'code', 5),
+        c('number', 'code', 2),
+      ],
+    });
+    state.lastPlayer = 'a';
+
+    const next = apply(state, { type: 'PLAY', playerId: 'b', cardId: paste.id });
+
+    expect(next.players.find((p) => p.id === 'c')!.hand).toHaveLength(5); // 1 + 4 robadas
+    expect(next.players[next.turn]!.id).toBe('a');
+  });
+
   it('no puedes interrumpir tu propia jugada', () => {
-    const paste = c('copy_paste');
+    const paste = c('copy_paste', 'code');
     const state = makeState({
       players: [
         player('a', [c('number', 'code', 1)]),
@@ -74,8 +124,8 @@ describe('Copiar y Pegar — interrupción fuera de turno', () => {
   it('el portapapeles no copia el caos: si el tope es una carta de caos, solo te cuelas', () => {
     // Copiar un troyano exigiría elegir víctima; copiar un "apagar y prender", una carta base. Una
     // interrupción tiene que resolverse sola, sin abrirle otra pregunta al que la sufre.
-    const paste = c('copy_paste');
-    const spill = c('coffee_spill');
+    const paste = c('copy_paste', 'code');
+    const spill = c('coffee_spill', 'code');
     const state = makeState({
       players: [
         player('a', [c('number', 'code', 1)]),
@@ -97,7 +147,7 @@ describe('Copiar y Pegar — interrupción fuera de turno', () => {
   });
 
   it('interrumpir con tu última carta gana la partida', () => {
-    const paste = c('copy_paste');
+    const paste = c('copy_paste', 'code');
     const state = makeState({
       players: [
         player('a', [c('number', 'code', 1)]),
@@ -119,7 +169,7 @@ describe('Copiar y Pegar — interrupción fuera de turno', () => {
     // Este es el caso que justifica todo el andamiaje: 'a' iba a jugar, pero 'b' interrumpió antes
     // (el log ordenó así los eventos concurrentes). La jugada de 'a' llega tarde y el motor la
     // rechaza — y la rechaza igual en todos los nodos, porque es puro y determinista.
-    const paste = c('copy_paste');
+    const paste = c('copy_paste', 'code');
     const cardOfA = c('number', 'code', 1);
     const state = makeState({
       players: [
@@ -139,30 +189,26 @@ describe('Copiar y Pegar — interrupción fuera de turno', () => {
     ).toThrow(/No es tu turno/);
   });
 
-  it('en tu propio turno sigue siendo un comodín normal (con su color)', () => {
-    const paste = c('copy_paste');
+  it('en tu propio turno es una carta corriente: fija su color y pasa el turno', () => {
+    const paste = c('copy_paste', 'internet');
     const state = makeState({
       players: [
         player('a', [paste, c('number', 'code', 1)]),
         player('b', [c('number', 'code', 3)]),
       ],
-      top: c('number', 'hardware', 9),
+      top: c('copy_paste', 'hardware'), // cae por tipo, no por color
+      currentColor: 'hardware',
       turn: 0,
     });
 
-    const next = apply(state, {
-      type: 'PLAY',
-      playerId: 'a',
-      cardId: paste.id,
-      chosenColor: 'internet',
-    });
+    const next = apply(state, { type: 'PLAY', playerId: 'a', cardId: paste.id });
 
-    expect(next.currentColor).toBe('internet');
+    expect(next.currentColor).toBe('internet'); // el color lo trae la carta, ya no se elige
     expect(next.players[next.turn]!.id).toBe('b');
   });
 
   it('un ausente no puede interrumpir', () => {
-    const paste = c('copy_paste');
+    const paste = c('copy_paste', 'code');
     const state = makeState({
       players: [
         player('a', [c('number', 'code', 1)]),

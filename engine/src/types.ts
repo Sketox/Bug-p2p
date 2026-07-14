@@ -7,29 +7,29 @@ export type Color = 'code' | 'hardware' | 'internet' | 'survival';
 
 export const COLORS: readonly Color[] = ['code', 'hardware', 'internet', 'survival'];
 
-/** Tipo/símbolo de cada carta. Los `wild*` y las de caos no tienen color propio. */
+/** Tipo/símbolo de cada carta. Solo los dos comodines no tienen color propio. */
 export type CardKind =
   | 'number' // 0-9
   | 'skip' // "Se fue el WiFi"
   | 'reverse' // "Ctrl+Z"
-  | 'draw2' // "Actualización de Windows"
+  | 'draw2' // "Update de Windows" (+2)
+  | 'draw4' // "Update de Windows" (+4) — como el +2, pero roba 4. NO es comodín: tiene color.
   | 'wild' // "Reinicio de Router"
   | 'wild_draw4' // "Pantalla Azul de la Muerte (BSOD)"
-  // Cartas de Caos (comodines especiales, sin color):
+  // Cartas de Caos (mecánicas exclusivas de Bug). Tienen color, como cualquier otra:
   | 'copy_paste' // "Copiar y Pegar" — interrupción de turno
   | 'reboot' // "Apagar y volver a prender" — reinicia el pozo
   | 'coffee_spill' // "Derrame de Café" — todos pasan la mano
   | 'trojan'; // "Spam / Virus Troyano" — regalas 2 cartas a alguien
 
-/** Kinds que no llevan color propio y pueden jugarse sobre cualquier carta. */
-export const WILD_KINDS: readonly CardKind[] = [
-  'wild',
-  'wild_draw4',
-  'copy_paste',
-  'reboot',
-  'coffee_spill',
-  'trojan',
-];
+/**
+ * Kinds sin color propio: se juegan sobre cualquier carta y quien los tira elige el color.
+ *
+ * Son solo los dos comodines — los únicos que el arte pinta con las cuatro franjas de color, que es
+ * justo lo que significa "no soy de ningún palo". Las de Caos ESTABAN aquí: se jugaban siempre,
+ * cayeran donde cayeran. Ahora tienen su color y se ganan el sitio como las demás: igualando.
+ */
+export const WILD_KINDS: readonly CardKind[] = ['wild', 'wild_draw4'];
 
 /** Kinds considerados "Cartas de Caos" (mecánicas exclusivas de Bug). */
 export const CHAOS_KINDS: readonly CardKind[] = ['copy_paste', 'reboot', 'coffee_spill', 'trojan'];
@@ -38,7 +38,7 @@ export const CHAOS_KINDS: readonly CardKind[] = ['copy_paste', 'reboot', 'coffee
 export interface Card {
   readonly id: string;
   readonly kind: CardKind;
-  /** Solo presente en cartas con color (number/skip/reverse/draw2). */
+  /** Presente en todas menos en los comodines (`WILD_KINDS`). */
   readonly color?: Color;
   /** Solo presente en cartas `number` (0-9). */
   readonly value?: number;

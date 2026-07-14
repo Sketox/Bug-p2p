@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import type { Card, Color } from '@bug/engine';
+import { CHAOS_KINDS, type Card, type Color } from '@bug/engine';
 import { CardView } from './CardView';
 import { COLOR_OPTIONS, SUIT } from '@/lib/cards';
 
@@ -42,6 +42,7 @@ export function PlayPrompt({ card, hand, rivals, onConfirm, onCancel }: Props) {
   if (card.kind === 'reboot') {
     return <Reboot card={card} hand={hand} onConfirm={onConfirm} onCancel={onCancel} />;
   }
+  // Lo único que queda por preguntar: el color de un comodín (ver `needsPrompt` en `lib/cards.ts`).
   return (
     <Shell title="Elige color" onCancel={onCancel}>
       <Colors onPick={(chosenColor) => onConfirm({ chosenColor })} />
@@ -50,10 +51,11 @@ export function PlayPrompt({ card, hand, rivals, onConfirm, onCancel }: Props) {
 }
 
 /**
- * Virus Troyano: eliges a quién infectas, qué le regalas y con qué color sigue la partida.
+ * Virus Troyano: eliges a quién infectas y qué le regalas.
  *
- * El motor exige las tres cosas (víctima distinta de ti y presente, cartas que estén de verdad en
- * tu mano, y un color, porque es un comodín). Se piden en ese orden.
+ * El color ya no se pregunta — la carta trae el suyo desde que el Troyano dejó de ser un comodín
+ * encubierto. Lo demás lo revalida el motor: la víctima tiene que estar en la mesa y no ser tú, y
+ * las cartas, estar de verdad en tu mano.
  */
 function Trojan({ card, hand, rivals, onConfirm, onCancel }: Omit<Props, never>) {
   const [target, setTarget] = useState<string | null>(null);
@@ -86,8 +88,8 @@ function Trojan({ card, hand, rivals, onConfirm, onCancel }: Omit<Props, never>)
     );
   }
 
+  const name = victims.find((p) => p.id === target)?.name ?? '';
   if (gift.length < maxGift) {
-    const name = victims.find((p) => p.id === target)?.name ?? '';
     return (
       <Shell title={`🎁 Regálale ${maxGift} carta${maxGift === 1 ? '' : 's'} a ${name}`} onCancel={onCancel}>
         <p className="font-pixel text-[9px] text-white/50 mb-3 text-center">
@@ -115,31 +117,34 @@ function Trojan({ card, hand, rivals, onConfirm, onCancel }: Omit<Props, never>)
     );
   }
 
+  // Elegidas víctima y regalo, ya no queda nada que preguntar: el color lo pone la carta.
   return (
-    <Shell title="🎨 ¿Con qué color sigue?" onCancel={onCancel}>
-      <Colors onPick={(chosenColor) => onConfirm({ chosenColor, target, giveCardIds: gift })} />
+    <Shell title={`🦠 Infectar a ${name}`} onCancel={onCancel}>
+      <p className="font-pixel text-[9px] text-white/50 mb-4 text-center">
+        se lleva {maxGift} carta{maxGift === 1 ? '' : 's'} tuya{maxGift === 1 ? '' : 's'} · la partida
+        sigue en {card.color ? SUIT[card.color].label : ''}
+      </p>
+      <button
+        onClick={() => onConfirm({ target, giveCardIds: gift })}
+        className="w-full font-pixel text-[10px] sm:text-xs py-4 px-4 rounded-lg bg-black/40 border-2 border-[#4227f2]/60 text-white hover:bg-[#4227f2]/20 shadow-pixel"
+      >
+        soltar el troyano
+      </button>
     </Shell>
   );
 }
 
 /**
- * Apagar y volver a prender: o reinicias el pozo con una carta tuya (que pasa a ser la nueva base y
- * fija el color), o te limitas a cambiar el color.
+ * Apagar y volver a prender: puedes reiniciar el pozo con una carta tuya, que pasa a ser la nueva
+ * base y fija el color — y te quitas dos cartas de encima de una vez.
  *
- * La carta base tiene que tener color: el motor rechaza usar un comodín de base (`BAD_BASE_CARD`),
- * y con razón — un pozo que arranca con un comodín no dice a qué color hay que igualar.
+ * La base no puede ser un comodín (un pozo que arranca en comodín no dice a qué igualar) ni una
+ * carta de Caos (sería soltarla sin que su efecto se dispare). El motor lo rechaza; aquí solo se
+ * ofrecen las que valen.
  */
 function Reboot({ card, hand, onConfirm, onCancel }: Omit<Props, 'rivals'>) {
-  const [mode, setMode] = useState<'ask' | 'color' | 'base'>('ask');
-  const bases = hand.filter((c) => c.id !== card.id && c.color != null);
-
-  if (mode === 'color') {
-    return (
-      <Shell title="🎨 Elige color" onCancel={() => setMode('ask')}>
-        <Colors onPick={(chosenColor) => onConfirm({ chosenColor })} />
-      </Shell>
-    );
-  }
+  const [mode, setMode] = useState<'ask' | 'base'>('ask');
+  const bases = hand.filter((c) => c.id !== card.id && c.color != null && !CHAOS_KINDS.includes(c.kind));
 
   if (mode === 'base') {
     return (
@@ -166,10 +171,13 @@ function Reboot({ card, hand, onConfirm, onCancel }: Omit<Props, 'rivals'>) {
     <Shell title="🔌 Apagar y volver a prender" onCancel={onCancel}>
       <div className="grid gap-3">
         <button
-          onClick={() => setMode('color')}
+          onClick={() => onConfirm({})}
           className="font-pixel text-[10px] sm:text-xs py-4 px-4 rounded-lg bg-black/40 border-2 border-white/20 text-white hover:bg-white/10 shadow-pixel"
         >
-          Solo cambiar el color
+          Jugarla y ya
+          <span className="block text-[8px] text-white/50 mt-1 font-pixel">
+            la partida sigue en {card.color ? SUIT[card.color].label : ''}
+          </span>
         </button>
         <button
           onClick={() => setMode('base')}
