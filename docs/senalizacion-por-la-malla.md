@@ -1,18 +1,23 @@
-# Señalización por la malla (pendiente)
+# Señalización por la malla
 
-> **Estado:** idea, no implementada. Lo que hay hoy funciona; esto es a dónde debería ir.
+> **Estado:** implementada. El servidor de señalización ya solo interviene en el **primer
+> contacto**; las demás presentaciones las hacen los propios peers.
+>
+> Código: `net/src/room.ts` (sección *Señalización por la malla*), `net/src/protocol.ts` (`MeshMsg`),
+> `signaling/src/server.ts` (`pickIntroducer`).
+> Pruebas: `net/test/mesh-signaling.test.ts`, `signaling/test/introductor.test.ts`.
 
 ## El problema
 
-Hoy la señalización es un servidor: `signaling/src/server.ts`, que corre dentro del contenedor del
+La señalización es un servidor: `signaling/src/server.ts`, que corre dentro del contenedor del
 anfitrión. Presenta a los jugadores y se aparta — tanto que puedes matarlo a media partida y no
 pasa nada (probado en `net/test/signaling-down.test.ts`).
 
-Pero mientras la partida está viva, ese servidor sigue siendo **el único sitio** por el que se
-puede entrar. Y eso chirría: si ya hay una malla de peers hablando entre ellos, ¿por qué hace falta
-un servidor aparte para presentar a uno nuevo? Los que ya están **podrían presentarlo ellos**.
+Pero mientras la partida está viva, ese servidor seguía siendo **el único sitio** por el que se
+podía entrar. Y eso chirriaba: si ya hay una malla de peers hablando entre ellos, ¿por qué hace
+falta un servidor aparte para presentar a uno nuevo? Los que ya están **pueden presentarlo ellos**.
 
-## Lo que NO se puede arreglar (y conviene tener claro antes de intentarlo)
+## Lo que NO se puede arreglar (y conviene tener claro)
 
 **El bootstrap es irreducible.** Dos máquinas que no se conocen no pueden encontrarse solas: el
 navegador de quien llega no puede adivinar la IP y los puertos de nadie. Siempre hace falta un
@@ -37,57 +42,83 @@ De ahí la conclusión que hay que defender en la feria:
 > cumplir. Se puede cambiar *quién* la cumple, no *si* se cumple.
 
 Lo que distingue un P2P honesto de un cliente-servidor disfrazado no es no tener servidor: es que
-el servidor **no sea necesario para seguir funcionando**. Eso ya lo cumplimos.
+el servidor **no sea necesario para seguir funcionando**. Eso ya lo cumplíamos para la partida; lo
+que faltaba era cumplirlo también para *entrar*.
 
-## Lo que sí se puede hacer: que la malla presente a los nuevos
+## Lo que sí se puede hacer, y es lo que se hizo
 
-El objetivo realista no es eliminar el servidor, es **reducirlo al primer contacto**. Que un peer
-nuevo necesite la señalización solo para encontrar a **un** miembro de la malla, y que sea la malla
-la que lo presente a todos los demás.
+El servidor se reduce al primer contacto. Un peer nuevo lo necesita solo para encontrar a **un**
+miembro de la malla, y es la malla la que lo presenta a los demás.
 
-### Cómo sería
+### Antes
 
-Hoy, cuando entra un peer nuevo con N jugadores dentro, el servidor le reenvía **N handshakes**
-(offer/answer/ICE con cada uno). Todo el tráfico de presentación pasa por el servidor.
+Entra un peer con N jugadores dentro → el servidor le reenvía **N handshakes** (offer/answer/ICE con
+cada uno). Todo el tráfico de presentación pasa por el servidor.
 
-La propuesta: el nuevo hace **un solo** handshake por el servidor, con cualquier peer de la malla
-(el *introductor*). A partir de ahí, ya tiene un DataChannel. Y el resto de handshakes —con los
-otros N-1 jugadores— viajan **por ese DataChannel**, retransmitidos por el introductor.
+### Ahora
 
-En la práctica, esto significa añadir al protocolo de la malla (`net/src/protocol.ts`, el que va
-por los DataChannels, no el de señalización) un mensaje de reenvío:
+1. El servidor le presenta a **uno solo**: el **introductor** (`pickIntroducer` elige al más
+   antiguo de la sala, que es el que más canales abiertos tiene y por tanto el que puede darle el
+   censo más completo).
+2. Ese **único** handshake va por el servidor. En cuanto se abre el DataChannel, el introductor le
+   **cotillea su censo** (`roster`) por ese canal.
+3. Las presentaciones con los otros N-1 jugadores viajan como **`relay`**: señales WebRTC dando
+   saltos por los DataChannels que ya existen. Cada peer las encamina — directo si tiene canal con
+   el destinatario, y si no, inundando a sus vecinos (con `hop` máximo y descarte por `id`, porque
+   en una malla casi completa la misma señal llega por varios caminos).
 
-```
-RELAY_SIGNAL { from: peerId, to: peerId, data: Signal }
-```
+Los mensajes están en `net/src/protocol.ts` (`MeshMsg`), bajo la clave reservada `~sig`, que `Room`
+intercepta y **no** entrega a la capa de juego.
 
-…y que los peers lo encaminen entre ellos. Es señalización, pero **sobre la propia malla**.
+### Quién ofrece a quién (evitar el "glare")
 
-### Qué ganamos
+Hay dos caminos, así que hay dos convenciones:
 
-- El servidor deja de ver los N-1 handshakes: solo el primero.
-- Si el servidor se cae **después** de que el nuevo haya entrado, el nuevo puede seguir completando
-  su malla (hoy se quedaría a medias).
+- **por el servidor** → inicia el que acaba de entrar; al introductor se le avisa (`peer-joined`)
+  para que espere su oferta;
+- **por la malla** → inicia el del **`peerId` mayor**. Los dos lados calculan lo mismo sin hablarlo,
+  que es justo lo que hace falta cuando se descubren a la vez por el censo.
+
+### El que vuelve (lo que este cambio estuvo a punto de romper)
+
+Al dejar de avisar a toda la sala de las llegadas, el `peer-joined` de un jugador que **regresa**
+(recargó la página, se le fue el WiFi) ya solo lo oye su introductor. Los demás lo tenían apuntado
+como *ido* —eso sí se sigue difundiendo a todos— y no lo readmitían: volvía a una mesa donde una
+sola persona le hablaba.
+
+Se arregla con una fuente mejor que el servidor: **aparecer en el censo de alguien es la prueba de
+vida**, porque solo se anuncian canales abiertos. Un peer que aparece en un `roster` —o que me manda
+un `relay`— deja de estar en la lista de idos. Lo cubre el test *"el que se va y vuelve se reconecta
+con TODA la mesa"*.
+
+### El introductor fantasma
+
+Al presentar a uno solo, ese uno pasa a ser la única puerta de entrada — y "tener el socket abierto"
+no es "estar vivo": el portátil se cerró, el móvil se durmió, y el servidor no se entera. Si a los
+`INTRODUCER_TIMEOUT` (5 s) el que llega **no tiene canal abierto con nadie**, pide otro
+(`{ t: 'introduce', tried: [...] }`). Cuando se acaban los candidatos, el servidor contesta con la
+lista vacía y el cliente deja de pedir.
+
+## Qué ganamos (medido)
+
+- **El servidor deja de ver los N-1 handshakes: solo el primero.** Con tres jugadores dentro, el
+  cuarto genera **2 señales** en el servidor (oferta + respuesta) en vez de 6.
+  `net/test/mesh-signaling.test.ts` lo cuenta explícitamente — si alguien devolviera los handshakes
+  al servidor, el número deja de cuadrar y el test cae.
+- **Si el servidor se cae DESPUÉS de que el nuevo haya entrado, el nuevo completa su malla igual.**
+  Antes se quedaba a medias. El test mata el servidor en el instante exacto en que se abre el primer
+  canal, y el recién llegado acaba conectado con los tres.
 - Es el modelo de IPFS y BitTorrent: los nodos bootstrap dan el primer contacto, la red hace el
   resto.
 
-### Qué NO ganamos (y hay que decirlo)
+## Qué NO ganamos (y hay que decirlo)
 
-- **El primer contacto sigue necesitando el servidor.** El nuevo peer sigue teniendo que alcanzar
-  al introductor, que está detrás de un NAT. Necesitas la señalización, o un túnel, o algo.
-- **Y la web hay que servirla de algún sitio.** Aunque la señalización fuera 100% por la malla, el
+- **El primer contacto sigue necesitando el servidor.** El nuevo peer sigue teniendo que alcanzar al
+  introductor, que está detrás de un NAT. Necesitas la señalización, o un túnel, o algo.
+- **Y la web hay que servirla de algún sitio.** Aunque la señalización fuera 100 % por la malla, el
   navegador del nuevo tiene que descargar el juego. Eso sale del contenedor del anfitrión.
+- **El aforo se sigue contando en el servidor**, y ahí seguirá: es el único sitio donde contar es
+  fiable (ver `signaling/src/server.ts`).
 
-O sea: el servidor se encoge, pero no desaparece. Y eso está bien — es lo máximo que consigue
-cualquiera.
-
-## Por dónde empezar
-
-1. Añadir `RELAY_SIGNAL` al protocolo de la malla y encaminarlo en `useBugRoom.ts`.
-2. En `Room`, permitir que una `Signal` entre por el DataChannel además de por el WebSocket
-   (`onPeerSignal` ya hace el trabajo; solo cambia de dónde llega).
-3. Al entrar: pedir al servidor **un** peer, no el censo entero. El resto, por el introductor.
-4. Un test en la línea de `signaling-down.test.ts`: matar la señalización **justo después** de que
-   el nuevo peer haya conectado con el introductor, y comprobar que completa la malla igual.
-
-El paso 4 es el que demuestra que sirvió de algo.
+O sea: el servidor se encoge hasta el arranque, pero no desaparece. Y eso está bien — es lo máximo
+que consigue cualquiera.

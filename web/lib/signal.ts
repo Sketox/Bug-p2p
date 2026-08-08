@@ -49,10 +49,15 @@ export function validateSignalUrl(url: string | null | undefined): string | null
  * con un túnel, la señalización viaja con él sin rehacer el build. (Con `NEXT_PUBLIC_SIGNAL_URL`
  * horneada en el build eso sería imposible: la URL del túnel no existe hasta que se abre.)
  *
- * En local no aplica: ahí la señalización corre en su propio puerto, no detrás de la web.
+ * ⚠️ Aquí NO se descarta `localhost`, y antes sí — y ese descarte rompía la imagen para el propio
+ * anfitrión. El razonamiento era "en local la señalización va en otro puerto", que es cierto en
+ * `next dev` y falso en el contenedor: quien levanta la imagen y abre `http://localhost:7787` tiene
+ * el `/ws` ahí mismo. Al descartarlo se caía en `ws://localhost:8787`, donde no hay nada, y la sala
+ * se quedaba en *reconectando…* para siempre. Lo que distingue los dos casos no es la máquina, es
+ * **quién sirve la página** — y eso lo dice `devServer`, no el nombre del host.
  */
 function sameOrigin(origin: string | null | undefined): string | null {
-  if (!origin || isLocalOnly(origin)) return null;
+  if (!origin) return null;
   try {
     const url = new URL(origin);
     return `${url.protocol === 'https:' ? 'wss:' : 'ws:'}//${url.host}/ws`;
@@ -69,18 +74,24 @@ function sameOrigin(origin: string | null | undefined): string | null {
  *   3. la fijada en el build (`NEXT_PUBLIC_SIGNAL_URL`) — un deploy con configuración explícita;
  *   4. la del propio sitio (`/ws`) — la imagen todo-en-uno, que es el caso normal al desplegar;
  *   5. `localhost:8787` — desarrollo.
+ *
+ * `devServer` es lo único que distingue el paso 4 del 5, y hay que pasárselo porque **no se puede
+ * deducir de la URL**: `http://localhost:3000` (dos terminales, señalización aparte) y
+ * `http://localhost:7787` (contenedor, señalización en `/ws`) se parecen demasiado. Lo que las
+ * separa es quién sirve la página, no dónde está.
  */
 export function resolveSignalUrl(
   search: string,
   remembered: string | null,
   origin?: string | null,
+  devServer = false,
 ): string {
   const fromLink = validateSignalUrl(new URLSearchParams(search).get('s'));
   if (fromLink) return fromLink;
   return (
     validateSignalUrl(remembered) ??
     validateSignalUrl(CONFIGURED) ??
-    sameOrigin(origin) ??
+    (devServer ? null : sameOrigin(origin)) ??
     DEV_FALLBACK
   );
 }
@@ -123,7 +134,15 @@ export function signalUrl(): string {
     /* modo privado: sin memoria de sesión, se sigue igual */
   }
 
-  const resolved = resolveSignalUrl(window.location.search, remembered, window.location.origin);
+  // `next dev` es el único caso en que la web y la señalización viven en puertos distintos. Next
+   // sustituye esto por una constante al compilar, así que en la imagen es literalmente `false`.
+  const devServer = process.env.NODE_ENV === 'development';
+  const resolved = resolveSignalUrl(
+    window.location.search,
+    remembered,
+    window.location.origin,
+    devServer,
+  );
 
   // Se recuerda durante la sesión: si el jugador recarga a media partida, la pestaña vuelve al
   // mismo tablón aunque la URL ya no lleve el parámetro.

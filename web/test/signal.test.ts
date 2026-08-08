@@ -66,9 +66,18 @@ describe('señalización del propio sitio (imagen todo-en-uno)', () => {
     expect(resolveSignalUrl('', null, 'http://192.168.1.50:8080')).toBe('ws://192.168.1.50:8080/ws');
   });
 
-  it('en local no: ahí la señalización corre en su propio puerto', () => {
-    expect(resolveSignalUrl('', null, 'http://localhost:3000')).toBe(FALLBACK);
-    expect(resolveSignalUrl('', null, 'http://127.0.0.1:3000')).toBe(FALLBACK);
+  it('en `next dev` no: ahí la señalización corre en su propio puerto', () => {
+    expect(resolveSignalUrl('', null, 'http://localhost:3000', true)).toBe(FALLBACK);
+    expect(resolveSignalUrl('', null, 'http://127.0.0.1:3000', true)).toBe(FALLBACK);
+  });
+
+  it('pero el CONTENEDOR en localhost sí la deduce de su origen', () => {
+    // El fallo que dejaba al anfitrión sin poder hospedar: quien levanta la imagen y abre
+    // `http://localhost:7787` tiene la señalización ahí mismo, en `/ws`. Descartarla por "es local"
+    // lo mandaba a `ws://localhost:8787`, donde no hay nada, y su sala se quedaba en
+    // *reconectando…* para siempre — con la imagen funcionando perfectamente por debajo.
+    expect(resolveSignalUrl('', null, 'http://localhost:7787')).toBe('ws://localhost:7787/ws');
+    expect(resolveSignalUrl('', null, 'http://127.0.0.1:7787')).toBe('ws://127.0.0.1:7787/ws');
   });
 
   it('el enlace del QR sigue mandando sobre el origen', () => {

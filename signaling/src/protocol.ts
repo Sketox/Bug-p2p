@@ -23,13 +23,52 @@ export interface PeerInfo {
 export type ClientMsg =
   | { t: 'join'; room: string; peerId: string; name: string; epoch?: string }
   | { t: 'signal'; room: string; from: string; to: string; data: unknown }
+  /**
+   * "El introductor que me diste no contesta: dame otro."
+   *
+   * Desde que el servidor solo presenta a UNO (ver `ServerMsg.peers`), ese uno se volvió un punto
+   * único de fallo para entrar: si su WebSocket sigue abierto pero el navegador ya no está —cerró
+   * el portátil, se durmió el móvil—, el que llega se queda en la puerta para siempre. Con esto
+   * pide otro, diciendo a cuáles ya intentó. Cuando no queden candidatos, el servidor contesta con
+   * la lista vacía y se acabó.
+   */
+  | { t: 'introduce'; room: string; peerId: string; tried: string[] }
   | { t: 'leave'; room: string; peerId: string };
 
 /** Mensajes que el servidor envía al cliente. */
 export type ServerMsg =
-  | { t: 'peers'; peers: PeerInfo[] } // peers ya presentes (para el que entra)
-  | { t: 'peer-joined'; peer: PeerInfo } // avisa a los demás
-  | { t: 'peer-left'; peerId: string }
+  /**
+   * Con quién empezar. **Es UNO, no el censo**: el introductor.
+   *
+   * El que llega hace un solo handshake por aquí, y el resto de presentaciones —con los otros N-1
+   * jugadores— viajan ya por la malla, retransmitidas por ese introductor (ver `MeshMsg` en
+   * `net/src/protocol.ts`). Así el servidor deja de ver N handshakes y pasa a ver uno: se queda en
+   * nodo de arranque, como las semillas DNS de Bitcoin o los bootstrap de IPFS.
+   *
+   * Va como lista, y no como un solo peer, porque a veces son cero (la sala está vacía: eres el
+   * primero) y porque el formato admite ampliarlo sin tocar al cliente.
+   */
+  | { t: 'peers'; peers: PeerInfo[] }
+  /**
+   * "Llegó alguien y va a ofrecerte conexión: espérale."
+   *
+   * Ya NO va a toda la sala: solo al introductor elegido. Los demás se enteran del recién llegado
+   * por la malla (el introductor les pasa su censo), no por aquí.
+   */
+  | { t: 'peer-joined'; peer: PeerInfo }
+  /**
+   * Alguien ya no está en el tablón de anuncios. **`reason` importa mucho**, porque son dos cosas
+   * completamente distintas que antes llegaban idénticas:
+   *
+   *   `bye`     → lo dijo él (mensaje `leave`): cerró la sala a propósito. Se ha ido.
+   *   `offline` → se le cayó el WebSocket. Eso es perder la SEÑALIZACIÓN, no irse de la partida:
+   *               sus canales directos con los demás pueden estar perfectamente vivos, y las cartas
+   *               viajan por ahí, no por aquí.
+   *
+   * Sin la distinción, un parpadeo de red de un jugador hacía que TODOS los demás derribaran sus
+   * canales sanos con él y lo dejaran fuera de una partida que seguía funcionando para él.
+   */
+  | { t: 'peer-left'; peerId: string; reason?: 'bye' | 'offline' }
   | { t: 'signal'; from: string; data: unknown } // señal WebRTC reenviada
   | { t: 'room-full'; max: number } // no cabes: la sala llegó a su aforo
   | { t: 'error'; message: string };

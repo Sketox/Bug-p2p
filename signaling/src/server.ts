@@ -3,7 +3,16 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { ClientMsg, PeerInfo, ServerMsg } from './protocol.js';
 
 // Servidor de señalización de Bug.
-// Responsabilidad única: agrupar peers por sala y reenviar sus señales WebRTC.
+//
+// Responsabilidad única, y desde la señalización por la malla, MÁS PEQUEÑA que antes: presentar al
+// que llega con **un** peer de la sala (el introductor) y reenviar ese único handshake. Las demás
+// presentaciones —con los otros N-1 jugadores— ya no pasan por aquí: viajan por los DataChannels,
+// retransmitidas por los propios peers (ver `MeshMsg` en `net/src/protocol.ts`).
+//
+// Lo que queda aquí es el arranque, que es irreducible: dos máquinas que no se conocen no pueden
+// encontrarse solas. Es el mismo papel que las semillas DNS de Bitcoin o los nodos bootstrap de
+// IPFS — dar el primer contacto y apartarse.
+//
 // No conoce cartas, turnos ni estado de juego (eso vive 100% en los nodos).
 
 const PORT = Number(process.env.PORT ?? 8787);
@@ -46,7 +55,38 @@ function roomPeers(room: string): Map<string, Client> {
   return r;
 }
 
-function leave(client: Client): void {
+const info = (c: Client): PeerInfo => ({ peerId: c.peerId, name: c.name, epoch: c.epoch });
+
+/**
+ * A quién presentar al que llega.
+ *
+ * Se elige **el más antiguo** de la sala (el `Map` conserva el orden de entrada) que no esté en
+ * `descartados`. No es arbitrario: el introductor tiene que pasarle al nuevo el censo de la mesa, y
+ * solo puede contar los canales que ya tiene abiertos. El más antiguo es justamente el que más
+ * tiene; el último en entrar podría estar todavía a medio handshake y darle un censo vacío.
+ *
+ * Devuelve `undefined` cuando no queda nadie: sala vacía (eres el primero) o ya se intentó con
+ * todos. Ambos casos se contestan igual, con la lista vacía.
+ */
+function pickIntroducer(
+  peers: Map<string, Client>,
+  descartados: Set<string>,
+): Client | undefined {
+  for (const c of peers.values()) {
+    if (!descartados.has(c.peerId)) return c;
+  }
+  return undefined;
+}
+
+/**
+ * Sacar a alguien del tablón, diciendo por qué.
+ *
+ * `bye` solo cuando lo pide él con un `leave`. Un socket que se cierra es `offline`, y punto: desde
+ * aquí no hay forma de distinguir "cerró la pestaña" de "se le fue el WiFi un segundo", y **tratar
+ * lo segundo como una marcha rompía partidas**. Quien sí puede distinguirlo es cada jugador, que
+ * tiene un canal directo con él y sabe si sigue respondiendo.
+ */
+function leave(client: Client, reason: 'bye' | 'offline'): void {
   const r = rooms.get(client.room);
   if (!r) return;
   // Si el peerId ya lo ocupa OTRA conexión, este cliente es una sesión vieja que fue reemplazada
@@ -54,7 +94,7 @@ function leave(client: Client): void {
   if (r.get(client.peerId) !== client) return;
   r.delete(client.peerId);
   for (const other of r.values()) {
-    send(other.ws, { t: 'peer-left', peerId: client.peerId });
+    send(other.ws, { t: 'peer-left', peerId: client.peerId, reason });
   }
   if (r.size === 0) rooms.delete(client.room);
 }
@@ -112,21 +152,34 @@ wss.on('connection', (ws) => {
           }
         }
         self = { ws, peerId: msg.peerId, name: msg.name, room: msg.room, epoch: msg.epoch };
-        // Avisar al recién llegado quiénes ya están.
-        const existing: PeerInfo[] = [...peers.values()].map((c) => ({
-          peerId: c.peerId,
-          name: c.name,
-          epoch: c.epoch,
-        }));
-        send(ws, { t: 'peers', peers: existing });
-        // Avisar a los demás que llegó alguien.
-        for (const other of peers.values()) {
-          send(other.ws, {
-            t: 'peer-joined',
-            peer: { peerId: self.peerId, name: self.name, epoch: self.epoch },
-          });
-        }
+
+        // Presentarle a UNO, no a todos. Aquí es donde el servidor se encoge: antes reenviaba N
+        // handshakes (uno con cada jugador de la sala) y ahora reenvía uno. Los otros N-1 los hace
+        // el recién llegado por la malla, a través de este introductor.
+        const introductor = pickIntroducer(peers, new Set([msg.peerId]));
+        send(ws, { t: 'peers', peers: introductor ? [info(introductor)] : [] });
+        // Y avisar SOLO al introductor, que es quien tiene que esperar su oferta. Los demás se
+        // enterarán de que llegó alguien por el censo que les cotillee él.
+        if (introductor) send(introductor.ws, { t: 'peer-joined', peer: info(self) });
+
         peers.set(self.peerId, self);
+        break;
+      }
+
+      case 'introduce': {
+        // El introductor anterior no dio señales de vida. Se busca otro entre los que no ha
+        // probado. Cuando se acaban, la lista vacía cierra el asunto: el cliente deja de pedir.
+        const r = rooms.get(msg.room);
+        if (!r) {
+          send(ws, { t: 'peers', peers: [] });
+          break;
+        }
+        const otro = pickIntroducer(r, new Set([msg.peerId, ...msg.tried]));
+        send(ws, { t: 'peers', peers: otro ? [info(otro)] : [] });
+        if (otro) {
+          const yo = r.get(msg.peerId);
+          if (yo) send(otro.ws, { t: 'peer-joined', peer: info(yo) });
+        }
         break;
       }
 
@@ -138,18 +191,21 @@ wss.on('connection', (ws) => {
       }
 
       case 'leave': {
-        if (self) leave(self);
+        if (self) leave(self, 'bye'); // lo pidió él: esto sí es marcharse
         self = null;
         break;
       }
     }
   });
 
+  // El socket se cerró sin avisar. Puede ser cualquier cosa —cerró la pestaña, se durmió el móvil,
+  // parpadeó el WiFi— y desde aquí son indistinguibles. Así que se cuenta como lo que es: perdió la
+  // señalización. Si además dejó de jugar, lo notarán sus compañeros por falta de latidos.
   ws.on('close', () => {
-    if (self) leave(self);
+    if (self) leave(self, 'offline');
   });
   ws.on('error', () => {
-    if (self) leave(self);
+    if (self) leave(self, 'offline');
   });
 });
 

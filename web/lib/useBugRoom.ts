@@ -28,6 +28,7 @@ import {
 import type { GameSetup, Heartbeat, LobbyPlayer, NetMessage, RoomSnapshot } from './netProtocol';
 import { loadIceServers } from './ice';
 import { signalUrl } from './signal';
+import { uid } from './uid';
 
 // Nodo de la malla. Cada navegador es cliente Y servidor: tiene el motor completo, replica el
 // estado aplicando el log de eventos, y coordina con los demás mediante:
@@ -158,15 +159,17 @@ function newRoomCode(): string {
  */
 function identityFor(code: string): string {
   const key = `bug:peer:${code}`;
+  // Se genera FUERA del try: si fallara aquí dentro, el `catch` —que existe para el modo privado,
+  // donde revienta `sessionStorage`— haría exactamente lo mismo que acaba de fallar. Ver `uid`.
+  const fresh = uid();
   try {
     const saved = sessionStorage.getItem(key);
     if (saved) return saved;
-    const fresh = crypto.randomUUID();
     sessionStorage.setItem(key, fresh);
-    return fresh;
   } catch {
-    return crypto.randomUUID(); // modo privado / sin storage: identidad de un solo uso
+    /* modo privado / sin storage: identidad de un solo uso */
   }
+  return fresh;
 }
 
 /**
@@ -181,7 +184,7 @@ function identityFor(code: string): string {
  */
 let epoch: string | null = null;
 function thisPageLoad(): string {
-  return (epoch ??= crypto.randomUUID());
+  return (epoch ??= uid());
 }
 
 /** Jugador que origina un evento (para verificar que un peer solo actúa como sí mismo). */

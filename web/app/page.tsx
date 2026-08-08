@@ -5,7 +5,7 @@ import { MainMenu } from '@/components/MainMenu';
 import { HotSeatGame } from '@/components/HotSeatGame';
 import { NetworkGame } from '@/components/NetworkGame';
 import { invitedRoom } from '@/lib/signal';
-import { clearRoom, loadRoom } from '@/lib/session';
+import { chooseSavedRoom, clearRoom, loadRoom } from '@/lib/session';
 
 type Mode =
   | { kind: 'boot' } // aún no sabemos si venimos de una recarga
@@ -18,16 +18,19 @@ export default function Page() {
   const [invitedTo, setInvitedTo] = useState<string | null>(null);
 
   useEffect(() => {
+    const invited = invitedRoom(window.location.search);
     // ¿Veníamos de una partida y la página se recargó? Se vuelve a entrar solo, con la misma
     // identidad: para la mesa somos el mismo nodo de siempre, recuperamos la mano y el sitio.
     // Entramos como "join" aunque fuéramos el anfitrión — el anfitrión no es dueño de nada, y el
     // liderazgo ya se lo habrán repartido entre ellos mientras faltábamos.
-    const saved = loadRoom();
+    // Una invitación explícita manda sobre una sesión vieja: si no, la URL dice una sala mientras
+    // la pantalla entra en otra distinta y los jugadores nunca llegan a verse.
+    const saved = chooseSavedRoom(loadRoom(), invited);
     if (saved) {
       setMode({ kind: 'net', mode: 'join', name: saved.name, code: saved.code });
       return;
     }
-    setInvitedTo(invitedRoom(window.location.search));
+    setInvitedTo(invited);
     setMode({ kind: 'menu' });
   }, []);
 

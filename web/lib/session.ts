@@ -17,6 +17,17 @@ export interface SavedRoom {
   name: string;
 }
 
+/**
+ * Una invitación explícita manda sobre la sala que esta pestaña recuerde de antes.
+ *
+ * Sin esta prioridad, abrir `?r=YW1T` desde una pestaña que había estado en `IT71` dejaba la URL
+ * nueva a la vista pero volvía silenciosamente a `IT71`: parecía que la invitación había creado
+ * otra sala y ninguno de los dos jugadores podía verse.
+ */
+export function chooseSavedRoom(saved: SavedRoom | null, invitedRoom: string | null): SavedRoom | null {
+  return invitedRoom ? null : saved;
+}
+
 export function saveRoom(room: SavedRoom): void {
   try {
     sessionStorage.setItem(KEY, JSON.stringify(room));
