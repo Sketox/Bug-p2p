@@ -22,20 +22,33 @@ const url = () => {
   return `ws://127.0.0.1:${dir.port}`;
 };
 
-/** Abre un WebSocket y hace `join`; resuelve con el primer mensaje que conteste el servidor. */
-function entrar(peerId: string, room = 'sala'): Promise<{ ws: WebSocket; primero: ServerMsg }> {
+/**
+ * Abre un WebSocket y hace `join`; resuelve con el primer mensaje que conteste el servidor.
+ *
+ * El `secret` va siempre, como en el cliente real: desde que un peerId ocupado solo se recupera
+ * presentando el mismo secreto (ver `guard.ts` y el ataque S3), volver a una sala sin él es
+ * exactamente lo que el servidor tiene que rechazar. Aquí se usa el peerId como secreto para que
+ * cada jugador de la prueba tenga el suyo y se lea de un vistazo quién es quién.
+ */
+function entrar(
+  peerId: string,
+  room = 'sala',
+  secret = `secreto-de-${peerId}`,
+): Promise<{ ws: WebSocket; primero: ServerMsg }> {
   return new Promise((ok, mal) => {
     const ws = new WebSocket(url());
     ws.once('error', mal);
-    ws.once('open', () => ws.send(JSON.stringify({ t: 'join', room, peerId, name: peerId })));
+    ws.once('open', () =>
+      ws.send(JSON.stringify({ t: 'join', room, peerId, name: peerId, secret })),
+    );
     ws.once('message', (raw) => ok({ ws, primero: JSON.parse(String(raw)) as ServerMsg }));
     setTimeout(() => mal(new Error(`${peerId} no recibió respuesta`)), 5000);
   });
 }
 
 const abiertos: WebSocket[] = [];
-const entrarYRecordar = async (peerId: string, room?: string) => {
-  const r = await entrar(peerId, room);
+const entrarYRecordar = async (peerId: string, room?: string, secret?: string) => {
+  const r = await entrar(peerId, room, secret);
   abiertos.push(r.ws);
   return r;
 };
@@ -85,9 +98,20 @@ describe('aforo de la sala', () => {
     const sala = 'vuelve';
     for (let i = 0; i < AFORO; i++) await entrarYRecordar(`r${i}`, sala);
 
-    const { primero } = await entrarYRecordar('r3', sala); // r3 vuelve: mismo peerId
+    const { primero } = await entrarYRecordar('r3', sala); // r3 vuelve: mismo peerId y mismo secreto
     expect(primero.t).toBe('peers');
     expect(primero).not.toEqual(expect.objectContaining({ t: 'room-full' }));
+  });
+
+  it('… pero solo él: con la sala llena, un impostor con su peerId no entra en su lugar', async () => {
+    // La otra cara del test de arriba. El mecanismo que deja volver a r3 es el mismo que dejaría
+    // a un tercero echarlo y ocupar su sitio, y por eso el secreto es obligatorio para reclamar
+    // un peerId ya presente (hallazgo S3 del banco de seguridad).
+    const sala = 'suplanta';
+    for (let i = 0; i < AFORO; i++) await entrarYRecordar(`t${i}`, sala);
+
+    const { primero } = await entrarYRecordar('t3', sala, 'me-lo-invento');
+    expect(primero).toEqual({ t: 'error', message: 'esa identidad ya está en uso' });
   });
 
   it('el aforo es por sala, no del servidor entero', async () => {

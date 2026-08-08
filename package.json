@@ -11,9 +11,21 @@
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
+    "test:coverage": "npm run test:coverage --workspaces --if-present && node tools/merge-coverage.mjs",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "signaling": "npm run start --workspace @bug/signaling",
     "web": "npm run dev --workspace @bug/web",
-    "art": "node tools/build-sprite.js"
+    "art": "node tools/build-sprite.js",
+    "vv:security": "node vv/security/attack-suite.mjs",
+    "vv:distributed": "node vv/distributed/validate.mjs",
+    "e2e": "start-server-and-test \"npm run vv:stack\" \"http://localhost:3000|http://localhost:8787/health\" \"cypress run\"",
+    "e2e:open": "start-server-and-test \"npm run vv:stack\" \"http://localhost:3000|http://localhost:8787/health\" \"cypress open\"",
+    "vv:stack": "node vv/stack.mjs"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
+    "cypress": "^13.17.0",
+    "start-server-and-test": "^2.1.5"
   }
 }

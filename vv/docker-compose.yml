@@ -1,0 +1,58 @@
+# Laboratorio de V&V: Jenkins (CI) + SonarQube (calidad).
+#
+# Va aparte del `docker-compose.yml` de la raíz, que es el del JUEGO (la imagen que se publica y
+# el túnel). Estos dos contenedores no se despliegan nunca: viven en la máquina de desarrollo.
+#
+#   docker compose -f vv/docker-compose.yml up -d
+#   Jenkins    → http://localhost:8080
+#   SonarQube  → http://localhost:9000   (admin/admin la primera vez)
+#
+# El repo se monta en solo lectura dentro de Jenkins (/repo-src) y el job clona desde ahí. Clonar
+# en vez de construir sobre el propio directorio de trabajo es a propósito: si el pipeline
+# ensuciara el árbol del que estás desarrollando, el "pipeline por cada commit" dejaría de ser
+# reproducible.
+
+name: bug-vv
+
+services:
+  sonarqube:
+    image: sonarqube:community
+    container_name: bug-sonarqube
+    ports:
+      - '9000:9000'
+    environment:
+      # Base H2 embebida: suficiente para un proyecto de este tamaño y evita levantar Postgres.
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: 'true'
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  jenkins:
+    build:
+      context: ./jenkins
+    container_name: bug-jenkins
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    environment:
+      # Sin el asistente de primer arranque: la contraseña y los plugins ya vienen puestos por
+      # las Configuration-as-Code / init.groovy de la imagen.
+      JAVA_OPTS: '-Djenkins.install.runSetupWizard=false'
+      # Dentro de la red de compose, SonarQube responde por su nombre de servicio.
+      SONAR_HOST_URL: 'http://sonarqube:9000'
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ../:/repo-src:ro
+    depends_on:
+      - sonarqube
+
+volumes:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  jenkins_home:

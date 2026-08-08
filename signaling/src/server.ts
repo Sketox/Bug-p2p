@@ -1,6 +1,16 @@
 import { createServer } from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
-import type { ClientMsg, PeerInfo, ServerMsg } from './protocol.js';
+import type { PeerInfo, ServerMsg } from './protocol.js';
+import {
+  Cubo,
+  MAX_PAYLOAD,
+  MAX_ROOMS,
+  MAX_SOCKETS,
+  MAX_SOCKETS_POR_IP,
+  Repeticiones,
+  huellaSenal,
+  parseClientMsg,
+} from './guard.js';
 
 // Servidor de señalización de Bug.
 //
@@ -41,6 +51,15 @@ interface Client {
 
 /** room -> peerId -> Client */
 const rooms = new Map<string, Map<string, Client>>();
+
+/**
+ * room -> peerId -> secreto con el que se reclamó.
+ *
+ * Va aparte de `rooms` porque tiene que sobrevivir a que el socket se caiga: justo mientras estás
+ * desconectado es cuando alguien podría intentar quedarse con tu sitio. Se borra entera cuando la
+ * sala se queda vacía, que es cuando la partida ya no existe.
+ */
+const claims = new Map<string, Map<string, string>>();
 
 function send(ws: WebSocket, msg: ServerMsg): void {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
@@ -96,7 +115,14 @@ function leave(client: Client, reason: 'bye' | 'offline'): void {
   for (const other of r.values()) {
     send(other.ws, { t: 'peer-left', peerId: client.peerId, reason });
   }
-  if (r.size === 0) rooms.delete(client.room);
+  // Quien dice adiós suelta también su reserva del peerId: no va a volver.
+  if (reason === 'bye') claims.get(client.room)?.delete(client.peerId);
+  if (r.size === 0) {
+    rooms.delete(client.room);
+    // Sala vacía = partida terminada. Guardar las reservas de nadie sería una fuga de memoria
+    // lenta y, encima, dejaría peerIds bloqueados para siempre.
+    claims.delete(client.room);
+  }
 }
 
 // Servidor HTTP para health-checks de la plataforma de deploy; el WebSocket comparte el puerto.
@@ -110,22 +136,100 @@ const httpServer = createServer((req, res) => {
   res.end();
 });
 
-const wss = new WebSocketServer({ server: httpServer });
+// Techo de conexiones, aplicado en el SOCKET y no en el WebSocket. (Ataque S6)
+//
+// Tres mil conexiones desde una máquina dejaban el servidor tardando segundos hasta en contestar
+// `/health`. No es un ataque sofisticado: es un bucle de veinte líneas. Y aquí el anfitrión es el
+// portátil de un jugador, no un centro de datos.
+//
+// Lo importante es DÓNDE se corta. Rechazar al abrirse el WebSocket llega tarde: para entonces ya
+// se pagó el handshake HTTP de cada intento, que es justo el trabajo que el atacante quiere que
+// hagas. Cortando en `connection` del servidor TCP, el socket que se pasa de cuota se destruye
+// antes de leer un solo byte.
+//
+// El límite por IP es el que de verdad protege: el techo global, por sí solo, deja que un atacante
+// llene el cupo y expulse a todos los demás. Por IP, quien se pasa se queda sin sitio él.
+const porIp = new Map<string, number>();
+let abiertos = 0;
+
+httpServer.on('connection', (socket) => {
+  const ip = socket.remoteAddress ?? 'desconocida';
+  const desdeEstaIp = porIp.get(ip) ?? 0;
+  if (abiertos >= MAX_SOCKETS || desdeEstaIp >= MAX_SOCKETS_POR_IP) {
+    socket.destroy();
+    return;
+  }
+  abiertos++;
+  porIp.set(ip, desdeEstaIp + 1);
+  socket.once('close', () => {
+    abiertos--;
+    const n = (porIp.get(ip) ?? 1) - 1;
+    if (n <= 0) porIp.delete(ip);
+    else porIp.set(ip, n);
+  });
+});
+
+// `maxPayload` corta los mensajes desmesurados en la propia librería, antes de que se copien a
+// memoria: una señal WebRTC real ocupa unos kilobytes, y aceptar 32 MB era una forma barata de
+// llenar la RAM del anfitrión desde una pestaña (ataque S7).
+const wss = new WebSocketServer({ server: httpServer, maxPayload: MAX_PAYLOAD });
 
 wss.on('connection', (ws) => {
   let self: Client | null = null;
+  const cubo = new Cubo();
+  const repeticiones = new Repeticiones();
 
-  ws.on('message', (raw) => {
-    let msg: ClientMsg;
-    try {
-      msg = JSON.parse(String(raw)) as ClientMsg;
-    } catch {
-      send(ws, { t: 'error', message: 'JSON inválido' });
+  const rechazar = (motivo: string): void => {
+    send(ws, { t: 'error', message: motivo });
+    ws.close();
+  };
+
+  const manejar = (raw: unknown): void => {
+    // Pasarse de ritmo cuesta la conexión. Con la ráfaga que admite el cubo, un cliente normal no
+    // lo nota ni entrando a la sala (join + tanda de candidatos ICE de golpe). Ataque S5.
+    if (!cubo.admite()) {
+      rechazar('demasiados mensajes');
+      return;
+    }
+
+    // Nada entra sin pasar por aquí: tipo, longitud y forma. Ataque S8.
+    const msg = parseClientMsg(String(raw));
+    if (!msg) {
+      send(ws, { t: 'error', message: 'mensaje inválido' });
       return;
     }
 
     switch (msg.t) {
       case 'join': {
+        // Una conexión, una sala. Sin esto, un solo socket podía darse de alta en miles de salas
+        // (ataque S6) y, peor, `self` apuntaría a la última mientras las anteriores quedan
+        // huérfanas en el mapa.
+        if (self) {
+          rechazar('ya estás en una sala');
+          return;
+        }
+        // Techo de salas simultáneas. Se aplica solo a las salas NUEVAS: una partida en curso
+        // nunca se queda sin sitio porque un atacante haya llenado el mapa.
+        if (!rooms.has(msg.room) && rooms.size >= MAX_ROOMS) {
+          rechazar('el servidor está al límite de salas');
+          return;
+        }
+
+        // ¿Es tuyo este peerId? El secreto lo decide. Ataque S3.
+        //
+        // Reclamar una identidad que ya está en la sala exige presentar el mismo secreto con el
+        // que se reservó, y un secreto vacío no vale para reclamar nada: si valiera, bastaría con
+        // no mandarlo para volver a poder echar a cualquiera. Que un cliente antiguo (sin secreto)
+        // no pueda recuperar su sitio tras un F5 es el precio, y es el correcto: perder la mano es
+        // molesto, que te la robe otro es peor.
+        const reservas = claims.get(msg.room) ?? new Map<string, string>();
+        const reservado = reservas.get(msg.peerId);
+        const presentado = msg.secret ?? '';
+        if (reservado !== undefined && (presentado === '' || reservado !== presentado)) {
+          rechazar('esa identidad ya está en uso');
+          return;
+        }
+
         const peers = roomPeers(msg.room);
         // Reconexión (Fase 5): el mismo peerId vuelve tras una caída de red. La sesión anterior
         // puede seguir "abierta" en el servidor (el cierre TCP tarda en notarse), así que la
@@ -152,6 +256,9 @@ wss.on('connection', (ws) => {
           }
         }
         self = { ws, peerId: msg.peerId, name: msg.name, room: msg.room, epoch: msg.epoch };
+        // A partir de aquí, ese peerId de esa sala es de quien presentó este secreto.
+        reservas.set(msg.peerId, presentado);
+        claims.set(msg.room, reservas);
 
         // Presentarle a UNO, no a todos. Aquí es donde el servidor se encoge: antes reenviaba N
         // handshakes (uno con cada jugador de la sala) y ahora reenvía uno. Los otros N-1 los hace
@@ -169,6 +276,14 @@ wss.on('connection', (ws) => {
       case 'introduce': {
         // El introductor anterior no dio señales de vida. Se busca otro entre los que no ha
         // probado. Cuando se acaban, la lista vacía cierra el asunto: el cliente deja de pedir.
+        //
+        // Se pregunta por uno mismo y por la sala en la que se entró: los campos del mensaje no
+        // mandan sobre quién eres. Si mandaran, cualquiera podría provocar que el servidor le
+        // anunciara un `peer-joined` a un tercero en nombre de otro.
+        if (!self || msg.peerId !== self.peerId || msg.room !== self.room) {
+          send(ws, { t: 'error', message: 'no puedes pedir presentaciones para otro' });
+          break;
+        }
         const r = rooms.get(msg.room);
         if (!r) {
           send(ws, { t: 'peers', peers: [] });
@@ -184,17 +299,53 @@ wss.on('connection', (ws) => {
       }
 
       case 'signal': {
+        // El `from` lo pone el servidor, no el cliente.
+        //
+        // Antes se reenviaba tal cual venía, y eso es exactamente un canal para colocarse en medio
+        // (ataques S1 y S2): Mallory mandaba su propia oferta SDP firmada como Alice, Bob la
+        // aceptaba creyendo que hablaba con Alice, y el DataChannel "cifrado extremo a extremo" de
+        // Bob acababa cifrado contra Mallory. Ni siquiera hacía falta estar en la sala.
+        //
+        // Que el cifrado de WebRTC no ayude aquí es lo importante de entender: protege el
+        // contenido del canal, no la identidad de quien lo abrió. Esa la garantiza —o no— la
+        // señalización.
+        if (!self || msg.from !== self.peerId || msg.room !== self.room) {
+          send(ws, { t: 'error', message: 'solo puedes enviar señales en tu nombre' });
+          break;
+        }
+        // Señal idéntica repetida en cinco segundos = repetición, no reintento (ataque S4).
+        if (repeticiones.repetida(huellaSenal(msg.from, msg.to, msg.data))) break;
+
         const r = rooms.get(msg.room);
         const target = r?.get(msg.to);
-        if (target) send(target.ws, { t: 'signal', from: msg.from, data: msg.data });
+        if (target) send(target.ws, { t: 'signal', from: self.peerId, data: msg.data });
         break;
       }
 
       case 'leave': {
-        if (self) leave(self, 'bye'); // lo pidió él: esto sí es marcharse
+        // El peerId del mensaje no se mira a propósito: solo puedes irte tú. Enviar un `leave` con
+        // el nombre de otro sería expulsarlo, y un `bye` no es "se cayó" — es "se fue": los demás
+        // lo sacan de la rotación de turnos y devuelven sus cartas al mazo.
+        if (self) leave(self, 'bye');
         self = null;
         break;
       }
+    }
+  };
+
+  // Cinturón, además de los tirantes de `parseClientMsg`.
+  //
+  // Node no tiene red de seguridad aquí: una excepción dentro de un manejador de eventos sube
+  // hasta `uncaughtException` y **mata el proceso**. En un servidor de señalización eso significa
+  // que un mensaje raro de un jugador deja sin arranque a toda la feria. La validación de entrada
+  // debería impedirlo; esto es para el fallo que no se nos ocurrió.
+  ws.on('message', (raw) => {
+    try {
+      manejar(raw);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[signaling] mensaje que reventó el manejador:', err);
+      send(ws, { t: 'error', message: 'mensaje inválido' });
     }
   });
 

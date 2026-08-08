@@ -7,7 +7,8 @@ export interface PeerInfo {
 }
 
 export type ClientMsg =
-  | { t: 'join'; room: string; peerId: string; name: string; epoch?: string }
+  /** `secret` prueba que el `peerId` es tuyo al volver de un F5. Ver el mirror. */
+  | { t: 'join'; room: string; peerId: string; name: string; epoch?: string; secret?: string }
   | { t: 'signal'; room: string; from: string; to: string; data: unknown }
   /** "El introductor que me diste no contesta: dame otro." Ver el mirror. */
   | { t: 'introduce'; room: string; peerId: string; tried: string[] }

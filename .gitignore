@@ -12,4 +12,9 @@ coverage/
 # README y lo que se ponga a mano en `docs/`.
 *.md
 !README.md
-!docs/*.md
+!docs/**/*.md
+
+reports/
+vv/informes/*.json
+cypress/screenshots/
+cypress/videos/

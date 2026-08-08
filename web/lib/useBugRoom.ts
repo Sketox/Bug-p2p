@@ -158,7 +158,28 @@ function newRoomCode(): string {
  * mesa. Sin esto, un F5 te convertiría en un desconocido y perderías la partida.
  */
 function identityFor(code: string): string {
-  const key = `bug:peer:${code}`;
+  return recordarPorSala('peer', code);
+}
+
+/**
+ * La prueba de que ese `peerId` es mío, para la señalización.
+ *
+ * Hace falta precisamente por lo de arriba: como la identidad sobrevive al F5, el servidor tiene
+ * que dejar volver a quien la presenta y desalojar la sesión anterior. Y el `peerId` es público
+ * —viaja en el censo que se cotillea por la malla—, así que sin un secreto ese mecanismo de
+ * reconexión le sirve a cualquiera para echar a otro y quedarse con su sitio. Lo encontró el banco
+ * de ataques del bloque de V&V (S3).
+ *
+ * No cifra nada ni autentica al jugador: solo ata el peerId a la pestaña que lo creó. Vive junto a
+ * la identidad, en `sessionStorage`, y muere con ella.
+ */
+function secretFor(code: string): string {
+  return recordarPorSala('secret', code);
+}
+
+/** Un valor aleatorio por sala que sobrevive al F5 mientras la pestaña siga abierta. */
+function recordarPorSala(que: 'peer' | 'secret', code: string): string {
+  const key = `bug:${que}:${code}`;
   // Se genera FUERA del try: si fallara aquí dentro, el `catch` —que existe para el modo privado,
   // donde revienta `sessionStorage`— haría exactamente lo mismo que acaba de fallar. Ver `uid`.
   const fresh = uid();
@@ -990,7 +1011,7 @@ export function useBugRoom() {
           signalUrl(),
           code,
           { peerId: myId, name, epoch: thisPageLoad() },
-          { iceServers },
+          { iceServers, secret: secretFor(code) },
         );
         roomRef.current = room;
         wireRoom(room);

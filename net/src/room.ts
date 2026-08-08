@@ -35,6 +35,14 @@ const DEFAULT_ICE: RTCIceServer[] = [
 export interface RoomOptions {
   /** Servidores ICE (STUN/TURN). Si se omite, usa solo STUN público. */
   iceServers?: RTCIceServer[];
+  /**
+   * Prueba de que el `peerId` es nuestro, para la señalización.
+   *
+   * No es una credencial de jugador ni cifra nada: solo impide que otro reclame nuestro sitio en
+   * la sala mientras estamos desconectados (ver `ClientMsg.join`). Se guarda junto al `peerId`, en
+   * el mismo `sessionStorage`, y por eso lo elige la capa de arriba y no esta.
+   */
+  secret?: string;
 }
 
 type RoomEvent = 'roster' | 'message' | 'peeropen' | 'peerclose' | 'status' | 'full';
@@ -112,6 +120,8 @@ export class Room {
   private listeners = new Map<RoomEvent, Set<Handler>>();
   private closed = false;
   private readonly iceServers: RTCIceServer[];
+  /** Ver `RoomOptions.secret`. Solo viaja al servidor de señalización, nunca a otros peers. */
+  private readonly secret?: string;
   /** Backoff de reconexión a la señalización. */
   private retries = 0;
   private retryTimer?: ReturnType<typeof setTimeout>;
@@ -146,6 +156,7 @@ export class Room {
     options: RoomOptions = {},
   ) {
     this.iceServers = options.iceServers ?? DEFAULT_ICE;
+    this.secret = options.secret;
   }
 
   // --- API de eventos -------------------------------------------------------
@@ -182,6 +193,9 @@ export class Room {
         peerId: this.self.peerId,
         name: this.self.name,
         epoch: this.self.epoch,
+        // La prueba de que este peerId es mío. Sin ella, el mecanismo que me deja volver tras un
+        // F5 le sirve a cualquiera para echarme y ocupar mi sitio. Ver `ClientMsg.join`.
+        secret: this.secret,
       });
       this.emit('status', 'online' as RoomStatus);
     };

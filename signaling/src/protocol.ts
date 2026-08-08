@@ -21,7 +21,20 @@ export interface PeerInfo {
 
 /** Mensajes que el cliente envía al servidor. */
 export type ClientMsg =
-  | { t: 'join'; room: string; peerId: string; name: string; epoch?: string }
+  /**
+   * Entrar (o volver) a una sala.
+   *
+   * `secret` es lo que convierte al `peerId` en TUYO. El `peerId` es público —viaja en el censo de
+   * la malla, cualquiera de la mesa lo ve— y el servidor desaloja la sesión anterior cuando ese
+   * peerId vuelve, porque así es como funciona la reconexión tras un F5. Sin un secreto, esas dos
+   * cosas juntas son un botón para echar a alguien de su propia partida y ocupar su sitio: basta
+   * con decir que eres él (ataque S3 del banco de seguridad).
+   *
+   * Nunca sale del navegador que lo generó salvo hacia el servidor, y no se comparte con los demás
+   * jugadores. Es opcional para no romper a un cliente viejo, pero un peerId reclamado con secreto
+   * solo se recupera presentando el mismo.
+   */
+  | { t: 'join'; room: string; peerId: string; name: string; epoch?: string; secret?: string }
   | { t: 'signal'; room: string; from: string; to: string; data: unknown }
   /**
    * "El introductor que me diste no contesta: dame otro."

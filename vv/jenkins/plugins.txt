@@ -1,0 +1,10 @@
+configuration-as-code
+job-dsl
+workflow-aggregator
+git
+credentials
+plain-credentials
+junit
+htmlpublisher
+timestamper
+ws-cleanup

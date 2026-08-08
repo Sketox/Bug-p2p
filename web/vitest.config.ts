@@ -11,6 +11,20 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['test/**/*.test.ts'],
+    // Informe JUnit solo en CI: es lo que lee Jenkins para enseñar el detalle prueba a prueba.
+    // Los cuatro paquetes escriben en la misma carpeta `reports/` de la raíz.
+    reporters: process.env.CI ? ['default', 'junit'] : ['default'],
+    outputFile: { junit: '../reports/junit-web.xml' },
+
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'lcov'],
+      reportsDirectory: './coverage',
+      // Solo `lib/`: los componentes y las pantallas los prueba Cypress contra un navegador de
+      // verdad, que es donde aparecieron sus bugs (el lobby que no reabría, la tarjeta que
+      // desbordaba a 360 px). Medirlos con unitarias daría un número peor Y una prueba peor.
+      include: ['lib/**/*.ts'],
+    },
   },
   resolve: {
     alias: {

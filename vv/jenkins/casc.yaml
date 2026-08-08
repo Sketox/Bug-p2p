@@ -1,0 +1,71 @@
+# Jenkins definido como código: al levantar el contenedor ya existe el usuario y el job del
+# proyecto. Sin esto, la demo empieza siempre por un asistente de instalación, que no demuestra
+# nada y se pierden diez minutos.
+jenkins:
+  systemMessage: "Bug — CI del proyecto integrador (V&V). Pipeline por commit: pruebas, cobertura, análisis Sonar y e2e."
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          # Solo para el laboratorio local; el contenedor no se expone fuera de la máquina.
+          password: "bug-vv"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: true
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              scope: GLOBAL
+              id: sonar-token
+              # Lo inyecta `vv/setup.mjs` en vv/.env tras generar el token en SonarQube. Si está
+              # vacío, el pipeline salta la etapa de Sonar en vez de fallar: así el CI sigue
+              # sirviendo aunque el laboratorio de calidad esté apagado.
+              secret: "${SONAR_TOKEN:-}"
+              description: "Token de análisis de SonarQube"
+
+unclassified:
+  location:
+    url: http://localhost:8080/
+
+jobs:
+  - script: |
+      pipelineJob('bug-p2p') {
+        description('Monorepo de Bug. Dispara con cada commit de la rama principal (sondeo del repo montado en /repo-src).')
+        definition {
+          cpsScmFlowDefinition {
+            scm {
+              scmGit {
+                remotes {
+                  remote {
+                    url('/repo-src')
+                  }
+                }
+                branches('*/main')
+                extensions {
+                  // El repo se monta en solo lectura: se clona a la carpeta de trabajo del job.
+                  cloneOption {
+                    shallow(false)
+                    noTags(true)
+                    reference('')
+                    depth(0)
+                    honorRefspec(false)
+                    timeout(20)
+                  }
+                }
+              }
+            }
+            scriptPath('Jenkinsfile')
+            lightweight(false)
+          }
+        }
+        triggers {
+          // "Pipeline por cada commit": se sondea el repo cada minuto y arranca si hay commit nuevo.
+          // Un webhook sería mejor en un repo remoto; aquí el origen es un directorio montado.
+          scm('* * * * *')
+        }
+      }
