@@ -261,6 +261,7 @@ export function GameBoard(props: Props) {
                 key={top.id}
                 card={top}
                 size="lg"
+                testId="pile-top"
                 layoutId={`card-${top.id}`}
                 // Un comodín no tiene color propio: sin esto, mirando el pozo no sabrías a qué hay
                 // que igualar. La carta gira y aterriza teñida del color que eligió quien la jugó.
@@ -277,8 +278,16 @@ export function GameBoard(props: Props) {
         </div>
       </div>
 
-      {/* Barra de estado: quién juega, cuánto le queda, y qué se espera de ti */}
-      <div className="flex flex-col items-center gap-2 min-h-[3.5rem]">
+      {/* Barra de estado: quién juega, cuánto le queda, y qué se espera de ti.
+          Los `data-*` son el gancho de las pruebas de extremo a extremo: el texto de dentro cambia
+          según lo que toque hacer ("¡Es tu turno!", "ROBA una carta", un error…), así que afirmar
+          sobre él sería frágil. De quién es el turno, en cambio, siempre es la misma pregunta. */}
+      <div
+        data-testid="status-bar"
+        data-turn={turnPlayer?.id ?? ''}
+        data-turn-name={turnPlayer?.name ?? ''}
+        className="flex flex-col items-center gap-2 min-h-[3.5rem]"
+      >
         {error ? (
           <span className="font-pixel text-[9px] sm:text-[10px] text-red-400">⚠ {error}</span>
         ) : canInterrupt && myHand.some((c) => puedeCortar(c)) ? (
@@ -347,6 +356,7 @@ export function GameBoard(props: Props) {
                 <CardView
                   key={card.id}
                   card={card}
+                  testId="hand-card"
                   layoutId={`card-${card.id}`}
                   playable={playable}
                   dimmed={!playable}

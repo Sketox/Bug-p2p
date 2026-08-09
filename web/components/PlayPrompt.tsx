@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CHAOS_KINDS, type Card, type Color } from '@bug/engine';
 import { CardView } from './CardView';
@@ -204,8 +204,32 @@ function Shell({
   children: React.ReactNode;
   onCancel: () => void;
 }) {
+  // Escape cierra el diálogo. Lo pedía el análisis estático —un fondo que cierra al pulsarlo y no
+  // responde al teclado deja fuera a quien no usa ratón— y de paso arregla algo que se nota
+  // jugando: pulsar Escape para salir de un diálogo es lo que todo el mundo intenta primero.
+  //
+  // El listener va en `document` y no en el `<div>`: un div no recibe teclado si no se le da foco,
+  // así que colgarlo del elemento cumpliría la regla sin llegar a funcionar nunca.
+  useEffect(() => {
+    const alPulsar = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    document.addEventListener('keydown', alPulsar);
+    return () => document.removeEventListener('keydown', alPulsar);
+  }, [onCancel]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" onClick={onCancel}>
+    <div
+      data-testid="play-prompt"
+      // `presentation` es lo que este fondo es de verdad: un velo, no un control. Cerrar al
+      // pulsarlo es un atajo de ratón, y su función está entera en dos sitios que sí son
+      // accesibles — la tecla Escape de arriba y el botón «cancelar» de abajo. Declararlo así
+      // dice la verdad sobre el elemento; colgarle un `onKeyDown` que nunca se dispara —porque un
+      // div sin foco no recibe teclado— solo silenciaría al analizador.
+      role="presentation"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
+      onClick={onCancel}
+    >
       <motion.div
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -231,6 +255,8 @@ function Colors({ onPick }: { onPick: (color: Color) => void }) {
       {COLOR_OPTIONS.map((opt) => (
         <button
           key={opt.color}
+          data-testid="color-option"
+          data-color={opt.color}
           onClick={() => onPick(opt.color)}
           style={{ backgroundColor: opt.hex, color: SUIT[opt.color].fg }}
           className="h-16 rounded-lg border-[3px] border-black/70 shadow-pixel font-pixel text-[10px] hover:scale-105 transition-transform"

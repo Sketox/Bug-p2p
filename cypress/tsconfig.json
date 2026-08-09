@@ -1,0 +1,19 @@
+{
+  // TypeScript para las pruebas de extremo a extremo, aparte del de los workspaces.
+  //
+  // No hay `tsconfig.json` en la raíz del monorepo (cada paquete tiene el suyo), así que sin este
+  // archivo Cypress no encuentra ninguno y falla al compilar los specs antes de arrancar.
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "types": ["cypress", "node"]
+  },
+  "include": ["**/*.ts", "../cypress.config.ts"]
+}

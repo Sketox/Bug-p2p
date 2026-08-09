@@ -42,9 +42,19 @@ services:
     environment:
       # Sin el asistente de primer arranque: la contraseña y los plugins ya vienen puestos por
       # las Configuration-as-Code / init.groovy de la imagen.
-      JAVA_OPTS: '-Djenkins.install.runSetupWizard=false'
+      # `ALLOW_LOCAL_CHECKOUT` hace falta porque el origen del job es `/repo-src`, un directorio
+      # montado, y el plugin de Git se niega por defecto a clonar de una ruta local: en un Jenkins
+      # compartido, un job podría leer así el espacio de trabajo de otro. Aquí el "otro" no existe
+      # —un contenedor en la máquina de desarrollo, con el repo montado en solo lectura— y sin esto
+      # la primera construcción muere en el checkout, antes de ejecutar una sola prueba.
+      JAVA_OPTS: '-Djenkins.install.runSetupWizard=false -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true'
       # Dentro de la red de compose, SonarQube responde por su nombre de servicio.
       SONAR_HOST_URL: 'http://sonarqube:9000'
+      # El token que generó `vv/setup.mjs` en `vv/.env`. Tiene que estar aquí explícitamente:
+      # Compose lee ese archivo para interpolar el YAML, pero eso NO mete nada dentro del
+      # contenedor. Sin esta línea, `casc.yaml` resuelve `${SONAR_TOKEN:-}` a vacío y la etapa de
+      # calidad se salta en cada construcción sin que nadie sepa por qué.
+      SONAR_TOKEN: '${SONAR_TOKEN:-}'
     volumes:
       - jenkins_home:/var/jenkins_home
       - ../:/repo-src:ro

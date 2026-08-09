@@ -368,6 +368,11 @@ export function useBugRoom() {
         setup: setupRef.current,
         events: replica.events,
         me: myIdRef.current,
+        // La huella del estado replicado. Va aquí porque es lo que hace verificable la
+        // convergencia DESDE FUERA: las pruebas de extremo a extremo levantan varios nodos y
+        // comparan este número, que es exactamente lo que compara la Pantalla Maestra. Sin él,
+        // habría que recorrer manos y mazos ajenos para saber si la mesa está de acuerdo.
+        hash: stateHash(state),
       };
     }
   }, []);
