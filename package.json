@@ -22,7 +22,10 @@
     "vv:distributed": "tsx vv/distributed/validate.ts",
     "e2e": "start-server-and-test \"npm run vv:stack\" \"http://localhost:3000|http://localhost:8787/health\" \"cypress run\"",
     "e2e:open": "start-server-and-test \"npm run vv:stack\" \"http://localhost:3000|http://localhost:8787/health\" \"cypress open\"",
-    "vv:stack": "node vv/stack.mjs"
+    "vv:stack": "node vv/stack.mjs",
+    "vv:informe": "node vv/informe-pruebas.mjs --pdf",
+    "vv:presentacion": "node vv/presentacion/construir.mjs --pdf",
+    "vv:entregables": "npm run vv:informe && npm run vv:presentacion"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.9",

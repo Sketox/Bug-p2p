@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CHAOS_KINDS, type Card, type Color } from '@bug/engine';
 import { CardView } from './CardView';
@@ -204,36 +204,42 @@ function Shell({
   children: React.ReactNode;
   onCancel: () => void;
 }) {
-  // Escape cierra el diálogo. Lo pedía el análisis estático —un fondo que cierra al pulsarlo y no
-  // responde al teclado deja fuera a quien no usa ratón— y de paso arregla algo que se nota
-  // jugando: pulsar Escape para salir de un diálogo es lo que todo el mundo intenta primero.
+  // Un `<dialog>` de verdad, y no un `<div>` haciendo de diálogo.
   //
-  // El listener va en `document` y no en el `<div>`: un div no recibe teclado si no se le da foco,
-  // así que colgarlo del elemento cumpliría la regla sin llegar a funcionar nunca.
+  // Esto empezó siendo un velo con `onClick` para cerrar, y el análisis estático tenía razón al
+  // quejarse: lo que solo responde al ratón deja fuera a quien no lo usa. Lo interesante fue que
+  // los dos parches evidentes —un `onKeyDown` en el div, un `role="presentation"`— o no llegaban a
+  // funcionar nunca (un div sin foco no recibe teclado) o cambiaban una queja por otra. La señal
+  // de que el arreglo estaba en otro sitio: el elemento era el equivocado.
+  //
+  // `showModal()` trae hecho lo que había que imitar a mano: cierra con Escape, atrapa el foco,
+  // se anuncia como diálogo y pinta su propio fondo con `::backdrop`. Cerrar al pulsar fuera se
+  // sigue detectando, pero mirando si el clic cayó en el propio `<dialog>` —que es solo el
+  // backdrop, porque el contenido lo tapa entero— en vez de contar con que el de dentro lo pare.
+  const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    const alPulsar = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
-    };
-    document.addEventListener('keydown', alPulsar);
-    return () => document.removeEventListener('keydown', alPulsar);
-  }, [onCancel]);
+    const d = ref.current;
+    if (d && !d.open) d.showModal();
+  }, []);
 
   return (
-    <div
+    <dialog
+      ref={ref}
       data-testid="play-prompt"
-      // `presentation` es lo que este fondo es de verdad: un velo, no un control. Cerrar al
-      // pulsarlo es un atajo de ratón, y su función está entera en dos sitios que sí son
-      // accesibles — la tecla Escape de arriba y el botón «cancelar» de abajo. Declararlo así
-      // dice la verdad sobre el elemento; colgarle un `onKeyDown` que nunca se dispara —porque un
-      // div sin foco no recibe teclado— solo silenciaría al analizador.
-      role="presentation"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4"
-      onClick={onCancel}
+      onCancel={(e) => {
+        // Escape dispara `cancel`: se le quita el cierre nativo para que la partida se entere y
+        // el estado de React no quede creyendo que el diálogo sigue abierto.
+        e.preventDefault();
+        onCancel();
+      }}
+      onClick={(e) => {
+        if (e.target === ref.current) onCancel();
+      }}
+      className="fixed inset-0 z-50 m-0 h-full max-h-full w-full max-w-full items-center justify-center bg-black/75 p-4 open:flex"
     >
       <motion.div
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        onClick={(e) => e.stopPropagation()}
         className="w-full max-w-md bg-[#0f1f19] border-2 border-black/60 rounded-2xl p-5 shadow-pixel"
       >
         <h2 className="font-pixel text-[11px] sm:text-sm text-center mb-4 text-white">{title}</h2>
@@ -245,7 +251,7 @@ function Shell({
           cancelar
         </button>
       </motion.div>
-    </div>
+    </dialog>
   );
 }
 

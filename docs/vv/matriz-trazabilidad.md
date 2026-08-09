@@ -73,7 +73,7 @@ Nomenclatura de las pruebas:
 | V3 | Cypress: funcionales, tiempo real, **concurrentes/distribuidas**, informes | `cypress/e2e/`, informe JUnit | 18 pruebas, 3 nodos con WebRTC real | ✅ |
 | V4 | Burp Suite: tráfico WS, manipulación, spoofing, replay, flooding | [`seguridad-burp.md`](seguridad-burp.md) + `vv/security/attack-suite.mjs` | 11 ataques, 6 vulnerabilidades corregidas | ✅ |
 | V5 | Validación distribuida: sincronización, concurrencia, consistencia, latencia, tolerancia a fallos | `vv/distributed/validate.ts` | 7 propiedades con métricas | ✅ |
-| V6 | Documentación: plan, matriz, reporte, métricas, evidencias | `docs/vv/` | Este directorio | ✅ |
+| V6 | Documentación: plan, matriz, reporte, métricas, evidencias | `docs/vv/` | [plan](plan-vv.md), esta matriz, [reporte final](reporte-final.md), [guía de Burp](seguridad-burp.md), [informe de resultados](informe-pruebas.html) (PDF) y las capturas de `evidencias/` | ✅ |
 
 ---
 

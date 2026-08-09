@@ -9,7 +9,7 @@
 | Componente obligatorio | Herramienta | Resultado | Estado |
 |---|---|---|---|
 | 4.1 Calidad de código | SonarQube Community Build 26.8.0 | *(§2)* | ✅ |
-| 4.2 Integración continua | Jenkins LTS (JDK 21) | 7 etapas, por commit | ✅ |
+| 4.2 Integración continua | Jenkins 2.568 LTS (JDK 21) | 7 etapas en verde en 7,2 min, por commit | ✅ |
 | 4.3 Pruebas automatizadas | Cypress 13.17 + Vitest 2.1 | 18 E2E + 190 unitarias, 0 fallos | ✅ |
 | 4.4 Seguridad | Burp Suite Community + banco propio | 11 ataques, 11 bloqueados, 6 vulnerabilidades corregidas | ✅ |
 | 4.5 Validación distribuida | Banco propio con métricas | 7 de 7 propiedades verificadas | ✅ |
@@ -86,23 +86,44 @@ Node, no porque no se pruebe.
 
 | Métrica | Valor | Umbral del plan | |
 |---|---|---|---|
-| Líneas de código analizadas | 5 395 | — | |
-| **Cobertura** (según Sonar, con sus exclusiones) | **89,0 %** | — | ✅ |
-| Líneas por cubrir / sin cubrir | 1 250 / 146 | — | |
-| **Bugs** | **1** (menor, corregido) | 0 de severidad alta | ✅ |
+| **Quality gate** | **Passed** | — | ✅ |
+| Líneas de código analizadas | 5 406 | — | |
+| **Cobertura** (según Sonar, con sus exclusiones) | **89,0 %** · 100 % sobre el código nuevo | — | ✅ |
+| **Bugs** | **0** · fiabilidad **A** | 0 de severidad alta | ✅ |
 | **Vulnerabilidades** | **22** (todas la misma regla; analizadas abajo) | 0 | ⚠️ |
 | *Security hotspots* | 0 | — | ✅ |
-| *Code smells* | 162 · deuda técnica 751 min · calificación **A** | — | ✅ |
-| **Duplicación** | **1,3 %** | < 3 % | ✅ |
+| *Code smells* | 161 · deuda técnica ≈ 750 min · calificación **A** | — | ✅ |
+| **Duplicación** | **1,3 %** · 0,0 % sobre el código nuevo | < 3 % | ✅ |
 | Complejidad ciclomática | 1 410 | — | |
 | Complejidad cognitiva | 967 | — | |
 
-**El bug (`typescript:S1082`)** estaba en el fondo del diálogo de jugada: cerraba al pulsarlo con
-el ratón y no ofrecía nada equivalente por teclado. Corregido, y no de la forma que calla al
-analizador: el velo se declara `role="presentation"` —que es lo que de verdad es— y cerrar pasa a
-estar en dos sitios que sí son accesibles, la tecla `Escape` y el botón *cancelar*. Colgarle un
-`onKeyDown` al `div` habría satisfecho la regla sin funcionar nunca, porque un `div` sin foco no
-recibe teclado.
+El *quality gate* **no pasó a la primera**, y vale la pena contar por qué: falló con dos incidencias
+sobre código nuevo… que había introducido la corrección del párrafo siguiente. Un análisis estático
+también reacciona a lo que uno acaba de escribir para contentarlo.
+
+**El bug (`typescript:S1082`)** estaba en el fondo del diálogo de jugada: cerraba al pulsarlo con el
+ratón y no ofrecía nada equivalente por teclado. La regla tenía razón, y los dos parches evidentes
+resultaron ser callejones sin salida:
+
+1. Un `onKeyDown` en el `<div>` habría satisfecho la regla **sin funcionar nunca**: un `div` sin
+   foco no recibe teclado.
+2. Declararlo `role="presentation"` —que era honesto: el velo no es un control— cambió una queja
+   por otras dos (`S6819`, y la original seguía).
+
+La señal de que el arreglo estaba en otro sitio era esa: el elemento era el equivocado. Ahora es un
+**`<dialog>` nativo** abierto con `showModal()`, que trae hecho lo que se estaba imitando a mano —
+cierra con `Escape`, atrapa el foco, se anuncia como diálogo y pinta su propio `::backdrop`. Las 18
+pruebas de Cypress pasaron sin tocarlas, que era la condición para dar el cambio por bueno.
+
+Quedaron **dos incidencias que se marcaron como falso positivo, con la justificación escrita en
+SonarQube**: el analizador trata el `<dialog>` como un elemento no interactivo y se queja de su
+`onClick` — el que detecta el clic en el backdrop para cerrar, que es el patrón documentado por MDN.
+Un `<dialog>` es interactivo por definición. Gestionar hallazgos incluye decidir cuáles no son
+defectos; lo que no se puede es dejarlos sin mirar ni sin motivo.
+
+Y un tercero, que sale de escribir en español: la regla `S1135` marcó un `TODO` pendiente donde el
+comentario decía *"lo que **todo** el mundo intenta primero"*. Las reglas de análisis estático están
+escritas para código comentado en inglés.
 
 **Las 22 vulnerabilidades son la misma regla** (`typescript:S2245`, *"make sure that using this
 pseudorandom number generator is safe here"*) sobre `Math.random`. Revisadas una a una, porque un
@@ -199,6 +220,29 @@ contenedor. `casc.yaml` resolvía `${SONAR_TOKEN:-}` a cadena vacía, así que J
 la etapa de calidad en cada construcción marcándola *inestable*… exactamente igual que si el
 laboratorio estuviera apagado. Un fallo que se disfraza del comportamiento tolerado es peor que uno
 ruidoso: nadie lo investiga.
+
+### 3.4 La construcción, ejecutada
+
+Con los cuatro fallos corregidos y el trabajo ya versionado, el pipeline completo pasa:
+
+| | |
+|---|---|
+| Resultado | **SUCCESS** — las 7 etapas |
+| Duración | 7,2 min |
+| Pruebas publicadas | 190, sin fallos |
+| Análisis de Sonar | lanzado desde la etapa 5, `ANALYSIS SUCCESSFUL` |
+| Seguridad | 11/11 ataques bloqueados |
+| Validación distribuida | 7/7 propiedades verificadas |
+| Artefactos archivados | `lcov.info`, `seguridad-*.json`, `distribuida-*.json` |
+
+La evidencia está en `docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png`.
+
+Un detalle del montaje que conviene decir: las dos primeras ejecuciones fallaron en las etapas 5 y 7
+**porque el trabajo de V&V todavía no estaba en un commit**. El job clona del repositorio, no del
+árbol de trabajo — que es exactamente lo que debe hacer, y la razón por la que se clona en vez de
+construir sobre el directorio de desarrollo (§3.2). Sonar no encontraba `cypress/e2e` y el
+`package.json` clonado seguía apuntando a un `validate.mjs` que ya no existía. El pipeline estaba
+diciendo la verdad: lo que no está commiteado, no está.
 
 Los informes JUnit de las siete etapas se publican en Jenkins (`**/reports/junit-*.xml`), y los
 informes JSON de los bancos de seguridad y validación distribuida se archivan como artefactos de
@@ -432,6 +476,8 @@ Y tres mejoras de proceso que este semestre deja apuntadas:
 
 | Evidencia | Dónde |
 |---|---|
+| **Informe de resultados de pruebas** (las 226, una a una) | `docs/vv/informe-pruebas.html` y `.pdf` — lo genera `node vv/informe-pruebas.mjs --pdf` |
+| **Presentación de defensa** | `docs/vv/presentacion.html` y `.pdf` — la genera `node vv/presentacion/construir.mjs --pdf` |
 | Informes JUnit (Vitest y Cypress) | `reports/junit-*.xml` |
 | Cobertura combinada (`lcov`) | `coverage/lcov.info` |
 | Informes de seguridad (JSON, uno por ejecución) | `vv/informes/seguridad-*.json` y `seguridad-ultimo.json` |

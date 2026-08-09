@@ -45,10 +45,15 @@ describe('malla de tres nodos', () => {
       // mismo log — que es literalmente el argumento de por qué no hace falta un servidor.
       cy.esperarConvergencia([1, 2, 3]).then((huella) => {
         cy.log(`huella común: ${huella}`);
-        // Evidencia del entregable: los tres nodos en pantalla a la vez, con la huella que
-        // comparten anotada. Es la imagen que resume el proyecto entero — tres réplicas
-        // independientes de acuerdo sin que haya un servidor que arbitre.
-        cy.screenshot(`04-tres-nodos-convergen-${huella}`, { overwrite: true });
+        // Evidencia del entregable: los tres nodos en pantalla a la vez. Es la imagen que resume
+        // el proyecto entero — tres réplicas independientes de acuerdo sin que haya un servidor
+        // que arbitre.
+        //
+        // El nombre NO lleva la huella dentro, aunque sea tentador: la huella cambia con la
+        // semilla, o sea en cada ejecución, y cualquier documento que enlace la captura se queda
+        // apuntando a un archivo que ya no existe. La huella se anota en el log, que es donde
+        // sirve para depurar.
+        cy.screenshot('04-tres-nodos-convergen', { overwrite: true });
       });
 
       // Y no convergieron "a nada": hay partida, con sus tres manos repartidas.
