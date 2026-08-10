@@ -53,7 +53,7 @@ describe('malla de tres nodos', () => {
         // semilla, o sea en cada ejecución, y cualquier documento que enlace la captura se queda
         // apuntando a un archivo que ya no existe. La huella se anota en el log, que es donde
         // sirve para depurar.
-        cy.screenshot('04-tres-nodos-convergen', { overwrite: true });
+        cy.capturaEstable('04-tres-nodos-convergen');
       });
 
       // Y no convergieron "a nada": hay partida, con sus tres manos repartidas.
@@ -124,7 +124,7 @@ describe('malla de tres nodos', () => {
       // Y hay coordinador: el Bully ya se puso de acuerdo.
       cy.enNodo(1).contains('líder').should('exist');
 
-      cy.screenshot('06-pantalla-maestra', { overwrite: true });
+      cy.capturaEstable('06-pantalla-maestra');
     });
   });
 
@@ -148,7 +148,7 @@ describe('malla de tres nodos', () => {
       // el `pagehide` que envía el adiós limpio, así que para la mesa es una CAÍDA — y una caída
       // se sospecha, no se sentencia: se le guarda el sitio unos segundos por si vuelve.
       cy.esperarConvergencia([1, 2]);
-      cy.screenshot('05-cae-un-nodo-los-otros-siguen', { overwrite: true });
+      cy.capturaEstable('05-cae-un-nodo-los-otros-siguen');
     });
   });
 });

@@ -182,7 +182,7 @@ Tecla <kbd>M</kbd> · quién vive, quién es líder 👑, dónde está el testig
 
 *Qué herramienta para qué pregunta — y qué encontró cada una.*
 
-## 15 · No hay servidor al que preguntarle cuál era la verdad
+## 15 · ¿Cómo compruebas quién tiene razón si nadie manda?
 
 En una aplicación con backend, comprobar el estado es fácil: se le pregunta a la base de datos. Aquí
 **no hay a quién preguntar**. Hay tres réplicas y ninguna manda.
@@ -197,7 +197,7 @@ Y dos agravantes:
 - **Lo que no se repite.** Un evento que llega tarde, un nodo que cae a media elección, dos jugadas
   en el mismo milisegundo. No se reproducen a mano: hay que **provocarlos**.
 
-## 16 · 227 comprobaciones, cada una en la capa que le toca
+## 16 · Cinco formas de probar, cada una para algo distinto
 
 | Capa | Nº |
 |---|---|
@@ -211,11 +211,15 @@ La pirámide es ancha por abajo —190 unitarias sostienen el motor y los algori
 **ancha por arriba**, y eso no es doctrina: es lo que dijeron los defectos. De los 17 encontrados,
 **11 eran invisibles para una prueba unitaria**.
 
-## 17 · Por qué SonarQube — para lo que las pruebas no pueden ver
+## 17 · SonarQube — el corrector ortográfico del código
 
-Una prueba solo puede juzgar el código *que ejecuta*. El análisis estático lee **todo** —incluido lo
-que nadie llama nunca— y contesta a lo que las pruebas ni se plantean: ¿hay duplicación? ¿qué función
-se ha vuelto impenetrable? ¿cuánta deuda hemos acumulado? ¿la cobertura sube o baja?
+Es **el corrector ortográfico del código**: lo lee entero y señala lo que está mal escrito, sin
+necesidad de ejecutar nada.
+
+Hace falta porque una prueba solo puede juzgar *lo que llega a ejecutar*. Esto lee **también lo que
+todavía no usa nadie**, y responde a preguntas que las pruebas ni se plantean: ¿hemos copiado y
+pegado código? ¿hay alguna parte que ya nadie entiende? ¿estamos probando más que el mes pasado, o
+menos?
 
 Se analiza el monorepo **como un solo proyecto** y no como cuatro: los cuatro paquetes se despliegan
 juntos, así que la duplicación entre `engine` y `net` es duplicación de verdad y queremos verla.
@@ -232,7 +236,7 @@ juntos, así que la duplicación entre `engine` y `net` es duplicación de verda
 
 ![Panel de SonarQube](evidencias/laboratorio/07-sonarqube-dashboard.png)
 
-## 19 · Qué encontró Sonar, y qué se hizo
+## 19 · Encontró 23 avisos. Los miramos uno a uno.
 
 **1 bug · accesibilidad.** El fondo del diálogo de jugada cerraba con ratón y **no con teclado**. Los
 dos parches evidentes fallaron: un `onKeyDown` en un `div` sin foco no se dispara nunca, y
@@ -248,12 +252,15 @@ explotables.**
 > herramienta**: el analizador cree que un `<dialog>` no es interactivo. Gestionar hallazgos incluye
 > decidir cuáles no son defectos — lo que no se puede es dejarlos sin mirar.
 
-## 20 · Por qué Jenkins — para que la calidad no dependa de que alguien se acuerde
+## 20 · Jenkins — un ayudante que lo comprueba todo, solo
 
-Todo lo anterior existe solo si **se ejecuta**. Sin integración continua las pruebas se corren cuando
-uno se acuerda —o sea, cuando ya sospecha algo—. El pipeline por commit convierte 227 comprobaciones
-en un **hábito automático**. Y da algo que solo da la CI: **ejecutar en una máquina que no es la
-tuya**.
+Cada vez que alguien toca una línea, este ayudante **vuelve a pasar las 227 comprobaciones** por su
+cuenta. Nadie se lo pide.
+
+Hace falta porque las pruebas solo sirven si alguien las corre — y si depende de que uno se acuerde,
+se acaban corriendo cuando ya se sospecha algo. Así, romper el juego y enterarse tarde **deja de ser
+posible**: se sabe en minutos. Y hay algo que solo da esto: probar **en un ordenador que no es el
+nuestro**.
 
 | Etapa | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 |---|---|---|---|---|---|---|---|
@@ -269,7 +276,7 @@ commit, configuración como código.
 El historial cuenta la verdad: **#1 a #4 en rojo** son el laboratorio que no arrancaba; **#5 es el
 primer verde**, y lo disparó un commit — no una persona.
 
-## 22 · El pipeline llevaba semanas escrito. Nunca se había ejecutado.
+## 22 · Estaba escrito desde hacía semanas. No había arrancado ni una vez.
 
 1. **Jenkins no arrancaba.** El Job DSL dinámico (`scmGit { remotes }`) ya no existe en las versiones
    de hoy: se llevaba por delante a Configuration-as-Code y el contenedor moría en `Exited (5)`.
@@ -283,11 +290,15 @@ primer verde**, y lo disparó un commit — no una persona.
 > habría saltado el análisis en cada build **con el mismo amarillo que si el laboratorio estuviera
 > apagado**. Un fallo disfrazado de comportamiento tolerado no lo investiga nadie.
 
-## 23 · Por qué Cypress, y no Selenium — porque corre *dentro* del navegador
+## 23 · Cypress — un jugador de mentira que juega solo
 
-El enunciado deja elegir. Aquí la elección la decidió una necesidad concreta: para afirmar que **tres
-réplicas convergieron** hay que leer la huella de estado de cada nodo — un objeto vivo en la memoria
-de la página.
+Un robot que **juega como jugaría una persona**: escribe su nombre, pulsa «crear sala», mira sus
+cartas y tira una. Y hace algo que una persona no puede: abrir **tres jugadores a la vez** y
+comprobar, después de cada jugada, que los tres están viendo exactamente la misma partida.
+
+Se eligió Cypress y no Selenium por una necesidad concreta: para afirmar que **tres réplicas
+convergieron** hay que leer la huella de estado de cada nodo — un objeto vivo en la memoria de la
+página.
 
 - Cypress se ejecuta **en el mismo bucle de eventos que la aplicación**: entra en `window` y compara
   esas huellas directamente.
@@ -315,12 +326,14 @@ sus tres huellas de estado.
 
 Se quita el tercer nodo de golpe · los dos que quedan siguen convergiendo entre ellos.
 
-## 26 · Por qué Burp Suite — porque un atacante no usa la interfaz
+## 26 · Burp Suite — atacar el sistema a propósito
 
-Todas las pruebas anteriores usan el sistema *como está previsto*. Un atacante no: coge un mensaje
-del protocolo, lo edita a mano y lo reenvía. Para eso hay que sentarse **en medio del tráfico**, y
-eso es Burp — un proxy de interceptación que además **entiende WebSocket**, que es por donde pasa
-aquí lo único centralizado.
+Nos pusimos en el papel del que **quiere hacer trampas**: interceptar los mensajes que se mandan los
+jugadores, cambiarlos y reenviarlos.
+
+Hace falta porque todas las pruebas anteriores usan el juego *como está previsto*, y quien quiere
+colarse no hace eso. Con esta herramienta uno se sienta **en medio de la conversación** y prueba a
+mentir: decir que eres otro jugador, repetir un mensaje mil veces, mandar basura a ver qué pasa.
 
 Con *Repeater* se reenvía un mensaje cambiando un campo; con *Intruder* se repite veinte mil veces.
 Ninguna prueba unitaria «descubre» un ataque: hay que jugar con el protocolo a mano y ver qué se rompe.
@@ -341,7 +354,7 @@ Ninguna prueba unitaria «descubre» un ataque: hay que jugar con el protocolo a
 
 **11/11 bloqueados · 6 vulnerabilidades corregidas.**
 
-## 27 · Cuarenta caracteres bastaban para dejar la feria sin señalización
+## 27 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
 
 ```json
 {"t":"introduce","room":"AB12","peerId":"x","tried":7}
@@ -357,11 +370,13 @@ envuelto en un `try/catch` para el fallo que no se nos ocurrió.
 > El más instructivo, en cambio, es **S1**: el cifrado de WebRTC protege el contenido del canal, **no
 > la identidad de quien lo abrió**. Esa la garantiza la señalización, o no la garantiza nadie.
 
-## 28 · Por qué un banco propio — nadie vende un medidor de *tu* protocolo
+## 28 · Un simulador propio — para romper la red a propósito
 
-Sonar mide código, Cypress conduce navegadores, Burp manipula tráfico. Ninguno sabe qué es «el
-testigo de turno de Bug» ni qué significa que dos réplicas hayan convergido. Esas propiedades **son
-del diseño**, así que el instrumento hay que escribirlo.
+En una partida de verdad, los desastres pasan **una vez cada mil** — y nunca cuando estás mirando.
+Así que los provocamos nosotros, mil veces seguidas.
+
+Hubo que escribirlo porque ninguna herramienta que se pueda comprar sabe qué es «el turno de Bug» ni
+cuándo dos jugadores están de acuerdo. Eso es de nuestro diseño.
 
 El banco monta una **red simulada con reloj virtual**: elige latencias entre 5 y 120 ms, duplica
 entregas, reordena mensajes y provoca caídas encadenadas — cosas que en una red de verdad pasan una
@@ -382,7 +397,7 @@ respuesta, no aprobar.
 
 **7/7 propiedades verificadas.**
 
-## 29 · Un criterio de aceptación también puede estar mal
+## 29 · Cuando el que se equivoca es el examen
 
 D7 exigía que el caso realista convergiera en **menos de 2 segundos de reloj de pared**. Con la
 máquina cargada, falló — *y las tres réplicas habían convergido perfectamente*.
@@ -401,7 +416,7 @@ deciden.
 > Lo primero que hay que poder creer es la medida. Encontrar esto es tan parte de la V&V como
 > encontrar un bug en el producto — y llega antes.
 
-## 30 · De dónde salieron los 17 defectos
+## 30 · De dónde salieron los 17 errores que encontramos
 
 | Origen | Nº |
 |---|---|

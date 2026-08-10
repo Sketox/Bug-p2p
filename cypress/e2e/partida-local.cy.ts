@@ -19,7 +19,7 @@ describe('partida local (hot-seat)', () => {
     cy.get('[data-testid="hand-card"]', { timeout: 15_000 }).should('have.length', 7);
     cy.get('[data-testid="pile-top"]').should('exist');
     cy.get('[data-testid="status-bar"]').should('have.attr', 'data-turn-name').and('not.be.empty');
-    cy.screenshot('03-mesa-repartida', { overwrite: true });
+    cy.capturaEstable('03-mesa-repartida');
   });
 
   it('robar te deja la carta si sirve, y te quita el turno si no', () => {

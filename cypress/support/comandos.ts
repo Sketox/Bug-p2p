@@ -28,6 +28,8 @@ declare global {
       estadoDe(indice: number): Chainable<BugDebug | undefined>;
       /** Espera a que todos los nodos indicados tengan la MISMA huella de estado. */
       esperarConvergencia(indices: number[]): Chainable<string>;
+      /** Captura para el informe, dando tiempo a que el navegador termine de dibujar. */
+      capturaEstable(nombre: string): Chainable<void>;
     }
   }
 }
@@ -159,6 +161,25 @@ Cypress.Commands.add('estadoDe', (indice: number) => {
     // del que nadie va a poder sacar una huella.
     return cy.wrap(bug, { log: false });
   });
+});
+
+/**
+ * Una captura que no sale a medio dibujar.
+ *
+ * Las capturas de este proyecto son un entregable —van al informe y a la presentación— y salían
+ * vacías una y otra vez. La causa es siempre la misma y conviene dejarla escrita en un solo sitio:
+ * **el DOM no sabe cuándo el navegador ha pintado**. Las aserciones dicen que el elemento existe,
+ * que es visible y que su opacidad ya es 1 —todo cierto— y aun así el fotograma que captura Chrome
+ * puede ser anterior al dibujo, sobre todo con las cartas: cada una es un SVG que referencia un
+ * símbolo del sprite, que a su vez referencia más figuras.
+ *
+ * No hay nada que esperar en el DOM, así que se espera un poco de reloj. Es la única espera fija de
+ * la suite y solo afecta a las capturas: ninguna prueba decide nada por ella.
+ */
+Cypress.Commands.add('capturaEstable', (nombre: string) => {
+  // eslint-disable-next-line cypress/no-unnecessary-waiting
+  cy.wait(600);
+  cy.screenshot(nombre, { overwrite: true });
 });
 
 Cypress.Commands.add('esperarConvergencia', (indices: number[]) => {

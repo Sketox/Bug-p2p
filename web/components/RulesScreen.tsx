@@ -108,6 +108,7 @@ export function RulesScreen({ onClose }: { onClose: () => void }) {
 
   return (
     <motion.div
+      data-testid="rules-screen"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

@@ -72,7 +72,18 @@ for (const [clave, valor] of Object.entries(nums)) {
   if (valor == null) console.warn(`  ⚠ sin dato para {{${clave}}} — ¿se han ejecutado las pruebas?`);
 }
 
+/**
+ * El sprite del juego, incrustado tal cual.
+ *
+ * Es el mismo archivo que usa la aplicación (`web/public/cards.svg`): el logo y las 74 cartas
+ * dibujadas en Inkscape, cada una como un `<symbol>`. Metiéndolo en la presentación, las
+ * diapositivas pueden enseñar **las cartas de verdad** con un `<use href="#c-skip-code">` en vez de
+ * describirlas con palabras — y si mañana se redibuja una carta, la presentación la trae sola.
+ */
+const sprite = readFileSync(join(raiz, 'web/public/cards.svg'), 'utf8');
+
 const html = readFileSync(plantilla, 'utf8')
+  .replace('{{sprite}}', sprite)
   .replace(/\{\{(n_unit|n_e2e|n_malla|n_total)\}\}/g, (m, clave) => nums[clave] ?? m)
   .replace(/\{\{img:([^}]+)\}\}/g, (_, rel) => {
   const ruta = join(raiz, rel.trim());

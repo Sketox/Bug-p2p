@@ -12,7 +12,7 @@ describe('menú principal', () => {
 
   it('no deja crear una sala sin nombre, y lo permite en cuanto lo hay', () => {
     cy.contains('button', 'Crear sala').should('be.disabled');
-    cy.screenshot('00-pantalla-de-entrada', { overwrite: true });
+    cy.capturaEstable('00-pantalla-de-entrada');
     cy.get('input').first().type('Ana');
     cy.contains('button', 'Crear sala').should('not.be.disabled');
   });
@@ -36,7 +36,17 @@ describe('menú principal', () => {
     cy.contains('button', 'Cómo se juega').click();
     cy.contains('El objetivo').should('be.visible');
     cy.contains('sin cartas').should('exist');
-    cy.screenshot('07-como-se-juega', { overwrite: true });
+    // La pantalla entra con un fundido, y para Cypress «visible» es cualquier opacidad por encima
+    // de cero: la captura salía a medio camino, con el menú translúcido por debajo y las reglas
+    // casi invisibles. Se espera al final de la animación, que es lo que hay que enseñar.
+    cy.get('[data-testid="rules-screen"]').should('have.css', 'opacity', '1');
+    // Y las cartas de ejemplo, con su animación de entrada terminada. La pantalla enseña una carta
+    // por cada regla, así que son bastantes más que los cuatro palos de la primera sección: se
+    // comprueban todas, sin fijar un número que cambiaría al añadir una regla.
+    cy.get('[data-testid="rules-screen"] [data-card]')
+      .should('have.length.greaterThan', 3)
+      .each(($c) => cy.wrap($c).should('have.css', 'opacity', '1'));
+    cy.capturaEstable('07-como-se-juega');
     cy.contains('button', 'cerrar').click();
     cy.contains('button', 'Crear sala').should('be.visible'); // vuelve al menú
   });
@@ -51,7 +61,7 @@ describe('menú principal', () => {
       expect(doc.documentElement.scrollWidth, 'ancho del contenido').to.be.at.most(360);
     });
     cy.contains('button', 'Crear sala').should('be.visible');
-    cy.screenshot('01-menu-en-movil-360px', { overwrite: true });
+    cy.capturaEstable('01-menu-en-movil-360px');
   });
 });
 
@@ -77,7 +87,7 @@ describe('invitación por QR', () => {
     cy.contains('button', 'Entrar a la sala').should('be.disabled');
     cy.get('input').first().type('Invitado');
     cy.contains('button', 'Entrar a la sala').should('not.be.disabled');
-    cy.screenshot('02-llegada-por-qr', { overwrite: true });
+    cy.capturaEstable('02-llegada-por-qr');
   });
 
   it('un enlace no puede elegir a qué se conecta tu navegador', () => {
