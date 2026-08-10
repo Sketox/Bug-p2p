@@ -266,6 +266,9 @@ commit, configuración como código.
 
 ![Jenkins en verde](evidencias/laboratorio/06-jenkins-pipeline.png)
 
+El historial cuenta la verdad: **#1 a #4 en rojo** son el laboratorio que no arrancaba; **#5 es el
+primer verde**, y lo disparó un commit — no una persona.
+
 ## 22 · El pipeline llevaba semanas escrito. Nunca se había ejecutado.
 
 1. **Jenkins no arrancaba.** El Job DSL dinámico (`scmGit { remotes }`) ya no existe en las versiones

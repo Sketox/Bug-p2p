@@ -235,7 +235,14 @@ Con los cuatro fallos corregidos y el trabajo ya versionado, el pipeline complet
 | Validación distribuida | 7/7 propiedades verificadas |
 | Artefactos archivados | `lcov.info`, `seguridad-*.json`, `distribuida-*.json` |
 
-La evidencia está en `docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png`.
+La evidencia está en `docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png`, y el historial que se
+ve ahí es el relato entero del montaje: **#1 a #4 en rojo** —los cuatro fallos de §3.3, cada uno
+tapando al siguiente— y **#5 en verde**, ya con el bloque de V&V fusionado a la rama principal.
+
+Ese #5 importa por un detalle: la consola empieza con **`Started by an SCM change`**. No lo lanzó
+nadie. El job sondeaba el repositorio, vio el commit y arrancó solo — que es literalmente lo que
+pide el enunciado con «ejecución del pipeline por cada commit realizado», y algo que no se puede
+demostrar con una construcción disparada a mano.
 
 Un detalle del montaje que conviene decir: las dos primeras ejecuciones fallaron en las etapas 5 y 7
 **porque el trabajo de V&V todavía no estaba en un commit**. El job clona del repositorio, no del
