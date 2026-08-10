@@ -20,7 +20,7 @@ npm run typecheck            # TypeScript estricto en los 4 paquetes Y en cypres
 npm run test:coverage        # 190 unitarias + el lcov combinado
 npm run vv:security          # 11 ataques contra la señalización real
 npm run vv:distributed       # 7 propiedades distribuidas, con métricas
-npm run e2e                  # levanta el stack y corre las 19 de Cypress
+npm run e2e                  # levanta el stack y corre las 22 de Cypress
 ```
 
 Cada comando es independiente y se puede correr suelto. El orden de arriba es el del pipeline, y no
@@ -35,7 +35,7 @@ construyendo Next.js para descubrir después un error de tipos que se detecta en
 | `npm run test:coverage` | nada | ~40 s | `coverage/lcov.info`, `reports/junit-*.xml` |
 | `npm run vv:security` | la señalización real en un puerto efímero | ~40 s | `vv/informes/seguridad-*.json` |
 | `npm run vv:distributed` | nada (red simulada en memoria) | ~30 s | `vv/informes/distribuida-*.json` |
-| `npm run e2e` | señalización + web (`vv/stack.mjs`) | ~4 min | `reports/junit-cypress-*.xml`, capturas en `docs/vv/evidencias/cypress/` |
+| `npm run e2e` | señalización + web (`vv/stack.mjs`) | ~6 min | `reports/junit-cypress-*.xml`, capturas en `docs/vv/evidencias/cypress/` |
 
 > **Los informes JUnit solo se generan con `CI=true`.** En local, Vitest imprime en pantalla y ya;
 > para producir los XML que lee Jenkins (y que alimentan el informe de resultados):
@@ -73,7 +73,7 @@ que dejó `setup.mjs` en `vv/.env`.
 npm run vv:entregables       # = vv:informe + vv:presentacion
 ```
 
-- `vv:informe` → `docs/vv/informe-pruebas.html` y `.pdf` — las 227 comprobaciones, una a una.
+- `vv:informe` → `docs/vv/informe-pruebas.html` y `.pdf` — las 230 comprobaciones, una a una.
 - `vv:presentacion` → `docs/vv/presentacion.html` y `.pdf` — las diapositivas de defensa.
 
 Ninguno de los dos se escribe a mano: **salen de los artefactos** (los JUnit, los JSON de los bancos
@@ -132,7 +132,7 @@ de ellos obligó a repasar de dónde sale el secreto de reconexión.
 ### 4.2 · Jenkins — para que la calidad no dependa de la memoria de nadie
 
 Todo lo anterior existe solo si **se ejecuta**. Sin integración continua, las pruebas se corren
-cuando uno se acuerda — o sea, cuando ya sospecha algo. El pipeline por commit convierte 227
+cuando uno se acuerda — o sea, cuando ya sospecha algo. El pipeline por commit convierte 230
 comprobaciones en un hábito automático.
 
 Y da algo que ninguna otra herramienta da: **ejecutar en una máquina que no es la tuya**. Buena parte
@@ -210,6 +210,7 @@ La regla es sencilla: **cada cosa se prueba en el nivel más barato donde se pue
 | depende del servidor real (aforo, guardas, identidad) | `signaling/test/` | Se levanta el servidor de verdad en un puerto efímero |
 | depende de cómo se pinta o de un ciclo de vida de React | `cypress/e2e/` | Solo se ve en un navegador; ahí aparecieron sus fallos |
 | depende de que haya **varias** `RTCPeerConnection` de verdad | `cypress/e2e/distribuido/` | Es la única capa que puede: no existe en Node |
+| depende de cuánta gente cabe, y de qué ve el que no cabe | `cypress/e2e/distribuido/aforo.cy.ts` | Diez navegadores son 45 canales: el servidor solo no lo demuestra |
 | es una propiedad del sistema con métrica | `vv/distributed/` | Hace falta controlar la red y medir, no solo pasar |
 | es un abuso del protocolo | `vv/security/` | Hay que hablarle al servidor fuera de lo previsto |
 

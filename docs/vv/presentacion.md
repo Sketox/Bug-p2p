@@ -202,10 +202,10 @@ Y dos agravantes:
 | Capa | Nº |
 |---|---|
 | Vitest (unitarias) | 190 |
-| Cypress (navegador) | 19 |
+| Cypress (navegador) | 22 |
 | Seguridad (ataques) | 11 |
 | Validación distribuida | 7 |
-| **Total** | **227** |
+| **Total** | **230** |
 
 La pirámide es ancha por abajo —190 unitarias sostienen el motor y los algoritmos— pero también
 **ancha por arriba**, y eso no es doctrina: es lo que dijeron los defectos. De los 17 encontrados,
@@ -254,7 +254,7 @@ explotables.**
 
 ## 20 · Jenkins — un ayudante que lo comprueba todo, solo
 
-Cada vez que alguien toca una línea, este ayudante **vuelve a pasar las 227 comprobaciones** por su
+Cada vez que alguien toca una línea, este ayudante **vuelve a pasar las 230 comprobaciones** por su
 cuenta. Nadie se lo pide.
 
 Hace falta porque las pruebas solo sirven si alguien las corre — y si depende de que uno se acuerde,
@@ -312,6 +312,7 @@ página.
 | `menu.cy.ts` | 8 | entrada, QR, validación del enlace, móvil de 360 px |
 | `partida-local.cy.ts` | 6 | reparto, robar, no pasar sin robar, rotación del turno |
 | `distribuido/malla.cy.ts` | **5** | **tres nodos con WebRTC real**: lobby, convergencia, jugada compartida, Pantalla Maestra y caída |
+| `distribuido/aforo.cy.ts` | **3** | **diez nodos**: los diez se ven, la partida arranca con diez, y al once se le dice que no cabe |
 
 ## 24 · Evidencia: tres réplicas de acuerdo
 
@@ -326,7 +327,23 @@ sus tres huellas de estado.
 
 Se quita el tercer nodo de golpe · los dos que quedan siguen convergiendo entre ellos.
 
-## 26 · Burp Suite — atacar el sistema a propósito
+## 26 · La mesa llena: diez jugadores y cuarenta y cinco conexiones
+
+![Diez jugadores](evidencias/cypress/distribuido/aforo.cy.ts/09-diez-jugadores.png)
+
+Diez navegadores, cada uno viéndose a sí mismo como «(tú)» y a los otros nueve.
+
+- **Lo que se comprueba:** los diez se ven · la mesa se estabiliza en los diez · la partida arranca y
+  **las diez pantallas muestran lo mismo**.
+- **El número once:** le sale **«SALA LLENA»** con los diez sitios dibujados, en vez de quedarse
+  esperando. Y a los de dentro no les afecta.
+- **Lo que se aprendió:** con diez, la mesa **tarda unos segundos en asentarse** — hasta que el
+  primer latido de cada uno da la vuelta, algunos ven a otros como dudosos. Luego se calma sola.
+
+> Diez jugadores no son diez conexiones: cada uno abre un canal con cada otro, así que son **45**.
+> Es el escenario que se va a dar en la feria si el stand se llena.
+
+## 27 · Burp Suite — atacar el sistema a propósito
 
 Nos sentamos **en medio de la conversación** entre jugadores, cambiamos los mensajes y los
 reenviamos. Once trampas distintas.
@@ -349,7 +366,7 @@ eso.
 > Las once quedaron **escritas como prueba automática**. Un agujero que solo está en la cabeza de
 > quien lo encontró vuelve a abrirse en dos semanas.
 
-## 27 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
+## 28 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
 
 **1 · Qué mandamos.** Un mensaje normal del juego, pero con **un número donde tenía que ir una
 lista**. Desde la consola del navegador: lo puede hacer cualquiera que esté jugando.
@@ -363,7 +380,7 @@ la basura. Y una red de seguridad debajo, por si se nos escapa otro que no imagi
 > Las partidas en curso **habrían seguido jugándose igual** — las cartas no pasan por el servidor.
 > Pero nadie nuevo habría podido entrar.
 
-## 28 · Un simulador para romper la red a propósito
+## 29 · Un simulador para romper la red a propósito
 
 Jugamos **miles de partidas entre jugadores imaginarios** y, a propósito, hacemos que la red se
 porte mal. Después comprobamos que todos acaban viendo lo mismo.
@@ -382,7 +399,7 @@ vuelve a la mesa.
 Hubo que escribirlo nosotros: ninguna herramienta que se pueda comprar sabe qué es «el turno de Bug»
 ni cuándo dos jugadores están de acuerdo.
 
-## 29 · Los 17 errores que encontramos
+## 30 · Los 17 errores que encontramos
 
 **Casi ninguno salió de las pruebas automáticas del principio.** Tres ejemplos de los que
 aparecieron jugando:
@@ -403,7 +420,7 @@ aparecieron jugando:
 > Por eso no basta con probar el código por dentro: hay que **abrir el juego y jugarlo**, con tres
 > jugadores de verdad y en un móvil de verdad.
 
-## 30 · Lo que queda por hacer
+## 31 · Lo que queda por hacer
 
 - **Probarlo entre dos casas.** Funciona en la misma WiFi y con un túnel. Falta la prueba con dos
   redes distintas de verdad — el código ya está preparado.
@@ -414,12 +431,12 @@ aparecieron jugando:
 
 > Saber dónde **no** se ha mirado todavía es parte del trabajo. Lo que no está medido, se dice.
 
-## 31 · Cierre
+## 32 · Cierre
 
-# Un juego que se sostiene solo, y 227 comprobaciones que lo vigilan
+# Un juego que se sostiene solo, y 230 comprobaciones que lo vigilan
 
 | Calidad del código | Se comprueba solo | Se juega solo | Trampas · desastres |
 |---|---|---|---|
-| **Passed** · 0 errores · 89 % revisado | **7/7** en cada cambio | **19/19** con 3 jugadores a la vez | **11 · 7** bloqueadas · superados |
+| **Passed** · 0 errores · 89 % revisado | **7/7** en cada cambio | **22/22** hasta con 10 jugadores | **11 · 7** bloqueadas · superados |
 
 `github.com/Sketox/Bug-p2p`
