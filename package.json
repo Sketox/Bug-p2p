@@ -25,7 +25,8 @@
     "vv:stack": "node vv/stack.mjs",
     "vv:informe": "node vv/informe-pruebas.mjs --pdf",
     "vv:presentacion": "node vv/presentacion/construir.mjs --pdf",
-    "vv:entregables": "npm run vv:informe && npm run vv:presentacion"
+    "vv:entregables": "npm run vv:informe && npm run vv:presentacion",
+    "vv:ver": "node vv/ver.mjs"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.9",

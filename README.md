@@ -191,16 +191,106 @@ nodo, líder, testigo de turno y huella de estado — es donde se ve la parte di
 npm test
 ```
 
-**170 tests** repartidos así:
+**190 tests unitarios** repartidos así:
 
 | Paquete | Tests | Qué cubre |
 | --- | --- | --- |
 | `engine` | 74 | reglas, determinismo, casos límite de cada carta |
-| `net` | 58 | Lamport, replicación, testigo, Bully, reconexión, **señalización por la malla** |
-| `signaling` | 10 | aforo e introductores, contra el servidor de verdad |
-| `web` | 28 | resolución de señalización, identidades, sprite, efectos |
+| `net` | 60 | Lamport, replicación, testigo, Bully, reconexión, **señalización por la malla** |
+| `signaling` | 27 | aforo, introductores, guardas y sondeo de salud, contra el servidor de verdad |
+| `web` | 29 | resolución de señalización, identidades, sprite, efectos |
 
 Para un paquete suelto: `npm test --workspace @bug/net`.
+
+Pero eso es solo la base de la pirámide. El bloque completo son **227 comprobaciones** y está en la
+sección siguiente.
+
+---
+
+## Verificación y Validación
+
+El proyecto integra la cátedra de *Gestión para la V&V*, así que además de las pruebas unitarias hay
+análisis estático, integración continua, pruebas en navegador, pruebas de seguridad y un banco de
+validación distribuida. **227 comprobaciones automatizadas**, todas en el mismo pipeline.
+
+| Capa | Nº | Con qué | Qué responde |
+| --- | --- | --- | --- |
+| Unitarias | 190 | Vitest | ¿el motor y los algoritmos hacen lo que dicen? |
+| Funcionales | 19 | Cypress | ¿se puede jugar? ¿**tres nodos con WebRTC real** convergen? |
+| Seguridad | 11 | Burp Suite + banco propio | ¿aguanta que le mientan? |
+| Distribuida | 7 | Banco propio con métricas | ¿siguen todos de acuerdo cuando la red va mal? |
+| Estática | — | SonarQube | ¿qué hay mal en el código que nadie ejecuta? |
+
+### Ejecutarlo todo
+
+```bash
+npm ci
+
+npm run typecheck          # tipos en los 4 paquetes Y en cypress/
+npm run test:coverage      # 190 unitarias + el lcov combinado
+npm run vv:security        # 11 ataques contra la señalización real
+npm run vv:distributed     # 7 propiedades distribuidas, con métricas
+npm run e2e                # levanta el stack y corre las 19 de Cypress
+```
+
+Los informes JUnit solo se generan con `CI=true` (`CI=true npm run test:coverage`), que es como los
+produce el pipeline.
+
+### El laboratorio de calidad (SonarQube + Jenkins)
+
+```bash
+docker compose -f vv/docker-compose.yml up -d      # SonarQube :9000 · Jenkins :8080
+node vv/setup.mjs                                  # genera el token y lo deja en vv/.env
+docker compose -f vv/docker-compose.yml up -d --build jenkins
+```
+
+Jenkins entra con `admin` / `bug-vv`. El job **se dispara con cada commit** de `main` (sondea el
+repositorio cada minuto) y corre siete etapas: dependencias → tipos → pruebas y cobertura → build →
+SonarQube → seguridad → validación distribuida.
+
+### Verlo todo de una vez
+
+```bash
+npm run vv:ver
+```
+
+Abre la presentación, el informe de pruebas, la carpeta de capturas y los paneles de Jenkins y
+SonarQube. Lo que no esté generado o no responda, lo dice y explica cómo conseguirlo.
+
+### Los entregables
+
+```bash
+npm run vv:entregables     # = vv:informe + vv:presentacion
+```
+
+| Documento | Qué es |
+| --- | --- |
+| [`docs/vv/presentacion.html`](docs/vv/presentacion.html) · [`.pdf`](docs/vv/presentacion.pdf) · [`.md`](docs/vv/presentacion.md) | La presentación de defensa: el juego, cómo está hecho y cómo se prueba |
+| [`docs/vv/informe-pruebas.html`](docs/vv/informe-pruebas.html) · [`.pdf`](docs/vv/informe-pruebas.pdf) | Las 227 comprobaciones, **una a una**, con su nombre y su resultado |
+| [`docs/vv/guia-de-pruebas.md`](docs/vv/guia-de-pruebas.md) | Cómo se ejecuta todo **y por qué cada herramienta** |
+| [`docs/vv/reporte-final.md`](docs/vv/reporte-final.md) | El reporte técnico: métricas, hallazgos y mejoras |
+| [`docs/vv/plan-vv.md`](docs/vv/plan-vv.md) | Plan de V&V: alcance, estrategia y criterios de aceptación |
+| [`docs/vv/matriz-trazabilidad.md`](docs/vv/matriz-trazabilidad.md) | De cada requisito a la prueba que lo vigila |
+| [`docs/vv/seguridad-burp.md`](docs/vv/seguridad-burp.md) | Cómo reproducir los 11 ataques a mano |
+| `docs/vv/evidencias/` | Capturas del juego (las genera Cypress) y de los paneles |
+
+Ni el informe ni la presentación se escriben a mano: salen de los artefactos de la última ejecución
+—los JUnit, el `lcov` y los JSON de los bancos—, así que **no pueden decir que pasó algo que no
+pasó**.
+
+### Resultados de la última ejecución
+
+| | |
+| --- | --- |
+| Pruebas | 227 · **0 fallos** |
+| SonarQube | *quality gate* **Passed** · 0 bugs · 89 % de cobertura · 1,3 % de duplicación |
+| Jenkins | **7/7 etapas** en verde, 7,2 min, disparado por commit |
+| Seguridad | **11/11 ataques bloqueados** · 6 vulnerabilidades encontradas y corregidas |
+| Distribuida | **7/7 propiedades** verificadas |
+
+Y el dato que más dice del proceso: de los **17 defectos** encontrados, **11 eran invisibles para una
+prueba unitaria**. Salieron jugando en un navegador de verdad, atacando el servidor a mano o
+montando el propio control de calidad.
 
 ---
 
