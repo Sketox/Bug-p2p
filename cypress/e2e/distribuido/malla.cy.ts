@@ -107,12 +107,12 @@ describe('malla de tres nodos', () => {
       cy.montarNodo(2, 'Beto', sala);
       cy.montarNodo(3, 'Dina', sala);
       cy.enNodo(1).contains('Dina', { timeout: 25_000 }).should('exist');
-      cy.enNodo(1).contains('button', '¡Empezar!').click({ force: true });
+      cy.enNodo(1).contains('button', '¡Empezar!').click();
       cy.esperarConvergencia([1, 2, 3]);
 
       // Se abre con el botón y no con la tecla `M`: el foco vive en el iframe, y mandar la tecla
       // al documento de fuera no llegaría a la app.
-      cy.enNodo(1).contains('button', 'malla').click({ force: true });
+      cy.enNodo(1).contains('button', 'malla').click();
 
       cy.enNodo(1).contains('Pantalla Maestra').should('be.visible');
       cy.enNodo(1).contains('convergencia').should('exist');
