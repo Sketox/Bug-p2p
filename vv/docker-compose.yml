@@ -48,6 +48,17 @@ services:
       # —un contenedor en la máquina de desarrollo, con el repo montado en solo lectura— y sin esto
       # la primera construcción muere en el checkout, antes de ejecutar una sola prueba.
       JAVA_OPTS: '-Djenkins.install.runSetupWizard=false -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true'
+      # Cabeceras más grandes de lo normal, porque aquí todo vive en `localhost`.
+      #
+      # El navegador manda las cookies de un dominio a TODOS sus puertos: las de la web del juego
+      # (:3000), las de SonarQube (:9000) y las de cualquier otro proyecto que se haya abierto
+      # alguna vez en localhost llegan también a Jenkins. Sumadas pasan del límite de 8 KB que trae
+      # Jetty por defecto, y la respuesta es un `431 Request Header Fields Too Large` que parece que
+      # Jenkins está roto cuando lo que sobra son cookies ajenas.
+      #
+      # La alternativa era pedirle a cada uno que borre las cookies de localhost. Esto lo arregla de
+      # una vez y sin tocar el navegador de nadie.
+      JENKINS_OPTS: '--requestHeaderSize=65536 --responseHeaderSize=65536'
       # Dentro de la red de compose, SonarQube responde por su nombre de servicio.
       SONAR_HOST_URL: 'http://sonarqube:9000'
       # El token que generó `vv/setup.mjs` en `vv/.env`. Tiene que estar aquí explícitamente:

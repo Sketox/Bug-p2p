@@ -228,3 +228,4 @@ el motor y los algoritmos— sino contra leerlas como si fueran la V&V entera.
 | El pipeline falla en Sonar o en la validación distribuida | Casi siempre, trabajo sin commitear: el job clona del repo |
 | SonarQube pide login para ver el panel | `sonar.forceAuthentication` está en `true`. En el laboratorio local se puede poner en `false` para proyectarlo |
 | Jenkins arranca y el job no existe | Falló el Job DSL: `docker logs bug-jenkins \| grep SEVERE` |
+| Jenkins responde **431 Request Header Fields Too Large** | Cookies de otros proyectos abiertos en `localhost`. El navegador manda las de *todos* los puertos del mismo dominio, y suman más de lo que Jetty acepta por defecto. Ya está subido a 64 KB en `vv/docker-compose.yml` (`JENKINS_OPTS`); si aun así aparece, borra las cookies de `localhost` o ábrelo en una ventana privada |
