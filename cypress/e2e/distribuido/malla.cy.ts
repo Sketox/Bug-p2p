@@ -93,6 +93,41 @@ describe('malla de tres nodos', () => {
     });
   });
 
+  it('la Pantalla Maestra enseña la malla por dentro: líder, testigo y convergencia', () => {
+    // El requisito R5.4 (modo espectador para el proyector) figuraba como "se comprueba en la
+    // feria", que es otra forma de decir que no se comprobaba. Y es justo la pantalla que se va a
+    // proyectar delante de gente: si miente, miente en grande.
+    //
+    // Lo que se afirma aquí es lo que la pantalla promete: que hay un líder elegido, que el testigo
+    // está en algún sitio concreto, que los tres nodos salen como presentes, y que el veredicto de
+    // convergencia es el mismo que calcula la prueba por su cuenta comparando huellas.
+    cy.abrirBanco();
+
+    cy.montarNodo(1, 'Ana', null).then((sala) => {
+      cy.montarNodo(2, 'Beto', sala);
+      cy.montarNodo(3, 'Dina', sala);
+      cy.enNodo(1).contains('Dina', { timeout: 25_000 }).should('exist');
+      cy.enNodo(1).contains('button', '¡Empezar!').click({ force: true });
+      cy.esperarConvergencia([1, 2, 3]);
+
+      // Se abre con el botón y no con la tecla `M`: el foco vive en el iframe, y mandar la tecla
+      // al documento de fuera no llegaría a la app.
+      cy.enNodo(1).contains('button', 'malla').click({ force: true });
+
+      cy.enNodo(1).contains('Pantalla Maestra').should('be.visible');
+      cy.enNodo(1).contains('convergencia').should('exist');
+      cy.enNodo(1).contains('OK ✓').should('exist');
+      // Los tres, con nombre, en el censo de la malla.
+      for (const quien of ['Ana', 'Beto', 'Dina']) {
+        cy.enNodo(1).contains(quien).should('exist');
+      }
+      // Y hay coordinador: el Bully ya se puso de acuerdo.
+      cy.enNodo(1).contains('líder').should('exist');
+
+      cy.screenshot('06-pantalla-maestra', { overwrite: true });
+    });
+  });
+
   it('el que se va deja de estar en la mesa, y los que quedan siguen de acuerdo', () => {
     cy.abrirBanco();
 
@@ -125,15 +160,24 @@ function jugarElQueTengaElTurno(): void {
       const jugables = $cuerpo.find('[data-testid="hand-card"][data-playable="true"]');
       if (jugables.length === 0) return;
       cy.wrap(jugables.first()).click({ force: true });
-      // Comodines y cartas de caos preguntan antes de aplicarse.
+
+      // Comodines y cartas de Caos preguntan antes de aplicarse, y NO todas preguntan lo mismo:
+      // un comodín pide color, el Troyano pide víctima y «Apagar y volver a prender» ofrece
+      // jugarla tal cual o reiniciar el pozo con otra carta. La primera versión de esto buscaba
+      // siempre `color-option`, así que en cuanto salía un diálogo de otro tipo se quedaba
+      // esperando un botón que no existía — y el fallo aparecía una vez de cada tantas, según qué
+      // carta tocara. Un test que depende de la carta que salga es un test que miente a medias.
+      //
+      // Aquí no importa QUÉ se elija: lo que la prueba afirma es que la jugada se propaga y los
+      // tres siguen de acuerdo. Así que vale cualquier opción — la primera que no sea «cancelar».
       cy.enNodo(i).then(($despues) => {
-        if ($despues.find('[data-testid="play-prompt"]').length > 0) {
-          cy.get(`#nodo-${i}`)
-            .its('0.contentDocument.body')
-            .find('[data-testid="color-option"]')
-            .first()
-            .click({ force: true });
-        }
+        if ($despues.find('[data-testid="play-prompt"]').length === 0) return;
+        cy.get(`#nodo-${i}`)
+          .its('0.contentDocument.body')
+          .find('[data-testid="play-prompt"] button')
+          .not(':contains("cancelar")')
+          .first()
+          .click({ force: true });
       });
     });
   }

@@ -62,7 +62,7 @@ Nomenclatura de las pruebas:
 | R5.1 | Entrar escaneando un QR, sin instalar nada | El QR lleva sala **y** señalización (`?r=&s=`) | E2E `menu.cy.ts` (invitación por QR) y `malla.cy.ts` (los tres nodos entran así), `web/test/signal.test.ts` | ✅ |
 | R5.2 | Interfaz usable en un móvil | Responsive a dos tallas, `100dvh`, botones táctiles | E2E (360 px sin desbordar) | ✅ |
 | R5.3 | Se puede aprender a jugar sin que nadie lo explique | Pantalla "Cómo se juega" con las cartas reales | E2E `menu.cy.ts` y `partida-local.cy.ts` | ✅ |
-| R5.4 | **Pantalla Maestra** para proyector: salud, líder, testigo, huellas | `web/components/MasterScreen.tsx` (tecla `M`) | Manual (feria) + las huellas que compara E2E | ✅ |
+| R5.4 | **Pantalla Maestra** para proyector: salud, líder, testigo, huellas | `web/components/MasterScreen.tsx` (tecla `M`) | E2E `malla.cy.ts`: con tres nodos en partida, comprueba que hay líder, que el testigo está localizado, que los tres salen presentes y que su veredicto de convergencia coincide con el que calcula la prueba | ✅ |
 
 ## Componentes de V&V (bloque de la otra cátedra)
 
@@ -70,7 +70,7 @@ Nomenclatura de las pruebas:
 |---|---|---|---|---|
 | V1 | SonarQube: bugs, vulnerabilidades, *smells*, complejidad, duplicación | `sonar-project.properties`, `vv/docker-compose.yml` | [`reporte-final.md`](reporte-final.md) §2 | ✅ |
 | V2 | Jenkins: build, pruebas, integración con Sonar, **pipeline por commit** | `Jenkinsfile`, `vv/jenkins/` (Configuration-as-Code) | [`reporte-final.md`](reporte-final.md) §3 | ✅ |
-| V3 | Cypress: funcionales, tiempo real, **concurrentes/distribuidas**, informes | `cypress/e2e/`, informe JUnit | 18 pruebas, 3 nodos con WebRTC real | ✅ |
+| V3 | Cypress: funcionales, tiempo real, **concurrentes/distribuidas**, informes | `cypress/e2e/`, informe JUnit | 19 pruebas, 3 nodos con WebRTC real | ✅ |
 | V4 | Burp Suite: tráfico WS, manipulación, spoofing, replay, flooding | [`seguridad-burp.md`](seguridad-burp.md) + `vv/security/attack-suite.mjs` | 11 ataques, 6 vulnerabilidades corregidas | ✅ |
 | V5 | Validación distribuida: sincronización, concurrencia, consistencia, latencia, tolerancia a fallos | `vv/distributed/validate.ts` | 7 propiedades con métricas | ✅ |
 | V6 | Documentación: plan, matriz, reporte, métricas, evidencias | `docs/vv/` | [plan](plan-vv.md), esta matriz, [reporte final](reporte-final.md), [guía de Burp](seguridad-burp.md), [informe de resultados](informe-pruebas.html) (PDF) y las capturas de `evidencias/` | ✅ |
@@ -87,8 +87,8 @@ Leído al revés, para detectar pruebas que no defienden ningún requisito (y re
 | `net/test/` | 60 | R1.1–R1.3, R2.1–R2.4, R3.1–R3.6, R4.1–R4.8 |
 | `signaling/test/` | 27 | R1.1, R4.5, R4.8, el sondeo de salud, y las defensas de S3–S8 |
 | `web/test/` | 29 | R5.1 (validación del enlace), efectos, identidad |
-| `cypress/e2e/` | 18 | R1.2, R3.5, R4.2, R5.1–R5.3 |
+| `cypress/e2e/` | 19 | R1.2, R3.5, R4.2, R5.1–R5.4 |
 | `vv/security/` | 11 | S1–S11 (bloque V4) |
 | `vv/distributed/` | 7 | D1–D7 (bloque V5), que refuerzan los ejes 2, 3 y 4 |
 
-**Total automatizado: 226 comprobaciones.**
+**Total automatizado: 227 comprobaciones.**

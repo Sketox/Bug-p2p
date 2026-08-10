@@ -12,6 +12,7 @@ describe('menú principal', () => {
 
   it('no deja crear una sala sin nombre, y lo permite en cuanto lo hay', () => {
     cy.contains('button', 'Crear sala').should('be.disabled');
+    cy.screenshot('00-pantalla-de-entrada', { overwrite: true });
     cy.get('input').first().type('Ana');
     cy.contains('button', 'Crear sala').should('not.be.disabled');
   });
@@ -35,6 +36,7 @@ describe('menú principal', () => {
     cy.contains('button', 'Cómo se juega').click();
     cy.contains('El objetivo').should('be.visible');
     cy.contains('sin cartas').should('exist');
+    cy.screenshot('07-como-se-juega', { overwrite: true });
     cy.contains('button', 'cerrar').click();
     cy.contains('button', 'Crear sala').should('be.visible'); // vuelve al menú
   });

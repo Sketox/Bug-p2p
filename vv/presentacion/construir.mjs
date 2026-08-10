@@ -9,7 +9,7 @@
 //   node vv/presentacion/construir.mjs          → docs/vv/presentacion.html
 //   node vv/presentacion/construir.mjs --pdf    → además, el PDF (una página por diapositiva)
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, dirname, join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -21,8 +21,60 @@ const salida = join(raiz, 'docs/vv/presentacion.html');
 
 const TIPOS = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml' };
 
+/**
+ * Los recuentos de la presentación salen de los artefactos, no de la plantilla.
+ *
+ * Escribirlos a mano es la forma más fácil de que una diapositiva diga «18 pruebas» tres meses
+ * después de que sean veinte. Si los artefactos no están (nadie ha ejecutado nada aún), se avisa y
+ * se deja el marcador a la vista en vez de inventar un número.
+ */
+function recuentos() {
+  const dir = join(raiz, 'reports');
+  const contar = (f) => {
+    const ruta = join(dir, f);
+    if (!existsSync(ruta)) return null;
+    return (readFileSync(ruta, 'utf8').match(/<testcase\b/g) ?? []).length;
+  };
+
+  const unit = ['junit-engine.xml', 'junit-net.xml', 'junit-signaling.xml', 'junit-web.xml']
+    .map(contar)
+    .reduce((a, b) => (a == null || b == null ? null : a + b), 0);
+
+  let e2e = 0;
+  let malla = 0;
+  if (existsSync(dir)) {
+    for (const f of readdirSync(dir).filter((x) => x.startsWith('junit-cypress-'))) {
+      const xml = readFileSync(join(dir, f), 'utf8');
+      const n = (xml.match(/<testcase\b/g) ?? []).length;
+      e2e += n;
+      if (xml.includes('malla de tres nodos')) malla += n;
+    }
+  }
+
+  const leerJson = (rel) => {
+    const ruta = join(raiz, rel);
+    return existsSync(ruta) ? JSON.parse(readFileSync(ruta, 'utf8')) : null;
+  };
+  const seg = leerJson('vv/informes/seguridad-ultimo.json')?.total ?? 11;
+  const dist = leerJson('vv/informes/distribuida-ultimo.json')?.total ?? 7;
+
+  return {
+    n_unit: unit,
+    n_e2e: e2e || null,
+    n_malla: malla || null,
+    n_total: unit == null || !e2e ? null : unit + e2e + seg + dist,
+  };
+}
+
 let faltan = 0;
-const html = readFileSync(plantilla, 'utf8').replace(/\{\{img:([^}]+)\}\}/g, (_, rel) => {
+const nums = recuentos();
+for (const [clave, valor] of Object.entries(nums)) {
+  if (valor == null) console.warn(`  ⚠ sin dato para {{${clave}}} — ¿se han ejecutado las pruebas?`);
+}
+
+const html = readFileSync(plantilla, 'utf8')
+  .replace(/\{\{(n_unit|n_e2e|n_malla|n_total)\}\}/g, (m, clave) => nums[clave] ?? m)
+  .replace(/\{\{img:([^}]+)\}\}/g, (_, rel) => {
   const ruta = join(raiz, rel.trim());
   if (!existsSync(ruta)) {
     console.warn(`  ⚠ falta la evidencia: ${rel.trim()}`);

@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bug — Verificación y Validación</title>
+<title>Bug — el sistema, cómo está hecho y cómo se prueba</title>
 <style>
   /* ---------------------------------------------------------------------------------------------
      Paleta tomada del propio juego: el verde de sus botones (#50C878), el coral de sus acentos
-     (#FF7F50), el azul de sus cartas (#1E90FF) y el fondo de sus diálogos (#0f1f19). La
-     presentación se ve como el producto del que habla, que es lo menos que puede hacer.
+     (#FF7F50) y el fondo de sus diálogos (#0f1f19). Los cuatro palos de las cartas —Código,
+     Hardware, Internet y Café— traen sus hex del código de la app y se usan tal cual cuando la
+     diapositiva habla de ellos. La presentación se ve como el producto del que habla.
 
-     Un solo tema, oscuro, a propósito: esto se proyecta en una pantalla grande en un aula. Todos
-     los colores se pintan explícitamente para que no herede nada del visor.
+     Un solo tema, oscuro, a propósito: esto se proyecta en un aula. Todos los colores se pintan
+     explícitamente para que no se herede nada del visor.
      ------------------------------------------------------------------------------------------ */
   :root {
     --fondo:      #071410;
@@ -24,6 +25,12 @@
     --coral:      #FF7F50;
     --azul:       #6BB7FF;
     --ambar:      #F2C14E;
+
+    /* Los cuatro palos, como los define `web/lib/cards.ts` */
+    --codigo:     #07d98c;
+    --hardware:   #e0439a;
+    --internet:   #7a63ff;
+    --cafe:       #f27eb4;
 
     --mono: ui-monospace, "Cascadia Mono", "Cascadia Code", Consolas, "DejaVu Sans Mono", monospace;
     --sans: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -53,7 +60,7 @@
     position: absolute; inset: 0;
     display: none;
     grid-template-rows: auto 1fr auto;
-    padding: clamp(24px, 3.4vw, 56px) clamp(28px, 4vw, 68px);
+    padding: clamp(22px, 3.2vw, 52px) clamp(26px, 3.8vw, 64px);
     background: var(--fondo);
   }
   .lam.activa { display: grid; }
@@ -64,80 +71,100 @@
   }
   @keyframes entra { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-  /* --- Cabecera: el identificador es el del enunciado, no un número decorativo ---------------- */
+  /* --- Cabecera ------------------------------------------------------------------------------ */
   .cab { display: flex; align-items: baseline; gap: 14px; color: var(--suave); }
   .cab .eje {
     font-family: var(--mono);
-    font-size: .72em; letter-spacing: .16em; text-transform: uppercase;
+    font-size: .7em; letter-spacing: .16em; text-transform: uppercase;
     color: var(--esmeralda);
     border: 1px solid var(--linea); border-radius: 999px;
-    padding: .25em .8em;
-    white-space: nowrap;
+    padding: .25em .8em; white-space: nowrap;
   }
-  .cab .tema { font-family: var(--mono); font-size: .74em; letter-spacing: .1em; text-transform: uppercase; }
+  .cab .tema { font-family: var(--mono); font-size: .72em; letter-spacing: .1em; text-transform: uppercase; }
 
-  .cuerpo { display: flex; flex-direction: column; justify-content: center; gap: clamp(10px, 1.4vw, 22px); min-height: 0; }
+  .cuerpo { display: flex; flex-direction: column; justify-content: center; gap: clamp(9px, 1.3vw, 20px); min-height: 0; }
 
   h1 {
     font-family: var(--mono);
-    font-size: clamp(30px, 4.6vw, 74px);
-    line-height: 1.02; letter-spacing: -.03em; font-weight: 700;
+    font-size: clamp(28px, 4.4vw, 70px);
+    line-height: 1.03; letter-spacing: -.03em; font-weight: 700;
     margin: 0; text-wrap: balance;
   }
   h2 {
     font-family: var(--mono);
-    font-size: clamp(20px, 2.5vw, 40px);
-    line-height: 1.1; letter-spacing: -.02em; font-weight: 700;
+    font-size: clamp(19px, 2.4vw, 38px);
+    line-height: 1.12; letter-spacing: -.02em; font-weight: 700;
     margin: 0; text-wrap: balance;
   }
   h3 { font-family: var(--mono); font-size: 1em; margin: 0 0 .3em; letter-spacing: -.01em; }
-  p { margin: 0; max-width: 62ch; }
-  .grande { font-size: 1.12em; }
+  p { margin: 0; max-width: 64ch; }
+  .ancho p { max-width: none; }
+  .grande { font-size: 1.1em; }
   .apagado { color: var(--suave); }
   .verde { color: var(--esmeralda); }
   .coral { color: var(--coral); }
   .azul  { color: var(--azul); }
+  .ambar { color: var(--ambar); }
   strong { color: #fff; font-weight: 650; }
   code, .mono { font-family: var(--mono); font-size: .92em; }
   code { color: var(--azul); }
+  kbd {
+    font-family: var(--mono); font-size: .85em; border: 1px solid var(--linea);
+    border-bottom-width: 2px; border-radius: 5px; padding: .05em .4em; background: var(--superficie2);
+  }
+
+  /* --- Separador de acto --------------------------------------------------------------------- */
+  .acto { grid-template-rows: 1fr; place-items: center; text-align: center; }
+  .acto .num {
+    font-family: var(--mono); font-size: clamp(60px, 12vw, 190px); font-weight: 700;
+    line-height: .9; letter-spacing: -.05em; color: var(--superficie2);
+  }
+  .acto h1 { font-size: clamp(26px, 3.8vw, 58px); margin-top: -.25em; }
+  .acto p { margin: .6em auto 0; color: var(--suave); }
 
   /* --- Rejillas ------------------------------------------------------------------------------ */
-  .rejilla { display: grid; gap: clamp(10px, 1.1vw, 18px); }
+  .rejilla { display: grid; gap: clamp(9px, 1vw, 16px); }
   .r2 { grid-template-columns: repeat(2, 1fr); }
   .r3 { grid-template-columns: repeat(3, 1fr); }
   .r4 { grid-template-columns: repeat(4, 1fr); }
-  .split { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(16px, 2.2vw, 40px); align-items: center; min-height: 0; }
+  .split { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(16px, 2.2vw, 38px); align-items: center; min-height: 0; }
 
   .tarj {
     background: var(--superficie);
     border: 1px solid var(--linea);
     border-radius: 14px;
-    padding: clamp(12px, 1.3vw, 20px);
+    padding: clamp(11px, 1.2vw, 18px);
     min-width: 0;
   }
   .tarj .et {
-    font-family: var(--mono); font-size: .7em; letter-spacing: .12em;
+    font-family: var(--mono); font-size: .68em; letter-spacing: .12em;
     text-transform: uppercase; color: var(--suave); display: block; margin-bottom: .35em;
   }
+  .tarj.acento { border-color: var(--esmeralda); }
   .cifra {
     font-family: var(--mono); font-weight: 700; letter-spacing: -.03em;
-    font-size: clamp(26px, 3.4vw, 54px); line-height: 1;
+    font-size: clamp(24px, 3.2vw, 50px); line-height: 1;
     font-variant-numeric: tabular-nums;
   }
-  .cifra.sm { font-size: clamp(20px, 2.2vw, 34px); }
-  .pie-t { font-size: .82em; color: var(--suave); margin-top: .3em; }
+  .cifra.sm { font-size: clamp(18px, 2.1vw, 32px); }
+  .pie-t { font-size: .8em; color: var(--suave); margin-top: .3em; }
 
-  /* --- Lista de hitos ------------------------------------------------------------------------ */
-  ul.limpia { list-style: none; margin: 0; padding: 0; display: grid; gap: .55em; }
-  ul.limpia li { display: grid; grid-template-columns: 1.4em 1fr; gap: .5em; align-items: start; }
+  /* --- Los cuatro palos ---------------------------------------------------------------------- */
+  .palo { border-top: 4px solid var(--pal); }
+  .palo .ic { font-family: var(--mono); font-size: 1.5em; color: var(--pal); line-height: 1; }
+
+  /* --- Listas -------------------------------------------------------------------------------- */
+  ul.limpia { list-style: none; margin: 0; padding: 0; display: grid; gap: .5em; }
+  ul.limpia li { display: grid; grid-template-columns: 1.5em 1fr; gap: .5em; align-items: start; }
   ul.limpia li .m { font-family: var(--mono); color: var(--esmeralda); }
   ul.limpia li .m.x { color: var(--coral); }
+  ul.pasos li .m { color: var(--azul); }
 
-  /* --- Barras (SVG a mano, sin dependencias) ------------------------------------------------- */
-  .barras { display: grid; gap: .5em; }
-  .fila { display: grid; grid-template-columns: minmax(90px, 22%) 1fr auto; gap: .8em; align-items: center; font-size: .92em; }
+  /* --- Barras -------------------------------------------------------------------------------- */
+  .barras { display: grid; gap: .45em; }
+  .fila { display: grid; grid-template-columns: minmax(88px, 22%) 1fr auto; gap: .8em; align-items: center; font-size: .9em; }
   .fila .nom { font-family: var(--mono); color: var(--suave); }
-  .pista { height: .68em; background: var(--superficie2); border-radius: 999px; overflow: hidden; }
+  .pista { height: .64em; background: var(--superficie2); border-radius: 999px; overflow: hidden; }
   .pista i { display: block; height: 100%; border-radius: 999px; background: var(--esmeralda); }
   .fila .val { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
@@ -146,21 +173,20 @@
   .etapa {
     background: var(--superficie); border: 1px solid var(--linea);
     border-top: 3px solid var(--esmeralda);
-    border-radius: 10px; padding: .7em .6em; text-align: center;
+    border-radius: 10px; padding: .65em .5em; text-align: center;
   }
-  .etapa .n { font-family: var(--mono); font-size: .68em; color: var(--suave); }
-  .etapa .t { font-family: var(--mono); font-size: .82em; line-height: 1.2; margin-top: .2em; }
+  .etapa .n { font-family: var(--mono); font-size: .66em; color: var(--suave); }
+  .etapa .t { font-family: var(--mono); font-size: .78em; line-height: 1.2; margin-top: .2em; }
   .etapa.amarilla { border-top-color: var(--ambar); }
 
-  /* --- Evidencia (capturas) ------------------------------------------------------------------ */
-  /* La captura tiene que caber en el hueco que queda entre la cabecera y el pie, sea cual sea su
-     proporción. Toda la cadena lleva `min-height: 0` porque un hijo de grid no encoge por debajo de
-     su contenido si no se le dice: sin eso, una imagen de 1280×820 empuja la lámina y se come el
-     pie de página. `object-fit: contain` hace el resto. */
-  .lam .marco-img { min-height: 0; display: grid; place-items: center; overflow: hidden; padding: clamp(8px, 1.2vw, 20px) 0; }
+  /* --- Evidencia ----------------------------------------------------------------------------- */
+  /* La captura tiene que caber en el hueco entre cabecera y pie, sea cual sea su proporción. Toda
+     la cadena lleva `min-height: 0` porque un hijo de grid no encoge por debajo de su contenido si
+     no se le dice: sin eso, una imagen grande empuja la lámina y se come el pie. */
+  .lam .marco-img { min-height: 0; display: grid; place-items: center; overflow: hidden; padding: clamp(8px, 1.2vw, 18px) 0; }
   figure {
     margin: 0; min-height: 0; height: 100%; width: 100%;
-    display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: .6em; justify-items: center;
+    display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: .55em; justify-items: center;
   }
   figure img {
     min-height: 0; height: 100%; width: auto; max-width: 100%;
@@ -168,24 +194,22 @@
     border: 1px solid var(--linea); border-radius: 12px; background: var(--superficie);
     display: block;
   }
-  figcaption { font-size: .8em; color: var(--suave); font-family: var(--mono); text-align: center; }
+  figcaption { font-size: .78em; color: var(--suave); font-family: var(--mono); text-align: center; max-width: 92ch; }
+  .dupla { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(12px, 1.6vw, 26px); min-height: 0; height: 100%; }
 
   /* --- Tabla --------------------------------------------------------------------------------- */
-  table { border-collapse: collapse; width: 100%; font-size: .84em; }
-  th, td { text-align: left; padding: .38em .6em; border-bottom: 1px solid var(--linea); }
-  th { font-family: var(--mono); font-size: .82em; text-transform: uppercase; letter-spacing: .08em; color: var(--suave); font-weight: 500; }
+  table { border-collapse: collapse; width: 100%; font-size: .82em; }
+  th, td { text-align: left; padding: .34em .55em; border-bottom: 1px solid var(--linea); }
+  th { font-family: var(--mono); font-size: .8em; text-transform: uppercase; letter-spacing: .08em; color: var(--suave); font-weight: 500; }
   td.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
   .tabla-scroll { overflow-x: auto; }
 
-  /* --- Cita / remate ------------------------------------------------------------------------- */
-  .remate {
-    border-left: 3px solid var(--coral);
-    padding-left: 1em;
-    font-size: 1.05em;
-  }
+  /* --- Remate -------------------------------------------------------------------------------- */
+  .remate { border-left: 3px solid var(--coral); padding-left: 1em; font-size: 1.02em; }
+  .remate.ok { border-left-color: var(--esmeralda); }
 
   /* --- Pie y navegación ---------------------------------------------------------------------- */
-  .pie { display: flex; justify-content: space-between; align-items: center; color: var(--suave); font-family: var(--mono); font-size: .72em; letter-spacing: .06em; }
+  .pie { display: flex; justify-content: space-between; align-items: center; color: var(--suave); font-family: var(--mono); font-size: .7em; letter-spacing: .06em; }
   .avance { position: fixed; top: 0; left: 0; height: 3px; background: var(--esmeralda); transition: width .3s ease; z-index: 10; }
   .nav { position: fixed; right: 18px; bottom: 14px; display: flex; gap: 8px; align-items: center; z-index: 10; }
   .nav button {
@@ -195,7 +219,7 @@
     width: 34px; height: 30px; cursor: pointer;
   }
   .nav button:hover { background: var(--superficie2); }
-  .nav button:focus-visible, .lam a:focus-visible { outline: 2px solid var(--esmeralda); outline-offset: 2px; }
+  .nav button:focus-visible { outline: 2px solid var(--esmeralda); outline-offset: 2px; }
 
   /* --- Impresión: una diapositiva por página ------------------------------------------------- */
   @page { size: A4 landscape; margin: 0; }
@@ -204,10 +228,11 @@
   body.imprimir .marco { width: 100%; height: auto; }
   body.imprimir .lam {
     position: static; display: grid !important;
-    width: 297mm; height: 209mm;   /* 1 mm menos que A4 para que no desborde a una página en blanco */
+    width: 297mm; height: 209mm;   /* 1 mm menos que A4: evita la página en blanco de propina */
     page-break-after: always; break-after: page;
     animation: none !important;
   }
+  body.imprimir .lam.acto { grid-template-rows: 1fr; }
   body.imprimir .nav, body.imprimir .avance { display: none; }
   @media print {
     body { background: var(--fondo); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -221,173 +246,514 @@
 <div class="pase">
 <div class="marco" id="marco">
 
-<!-- ═══ 1 · Portada ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Portada ══════════════════════════════════════════════════════════════════════════════ -->
 <section class="lam activa">
   <div class="cab"><span class="eje">Proyecto integrador</span><span class="tema">Sistemas Distribuidos · Gestión para la V&amp;V</span></div>
   <div class="cuerpo">
-    <h1>Bug<span class="verde">.</span><br>Verificar un sistema<br>que no tiene servidor.</h1>
-    <p class="grande apagado">
-      Un juego de cartas donde la partida vive en los navegadores de quienes juegan, sin backend que
-      arbitre. Nadie tiene la versión buena del estado: <strong>o están todos de acuerdo, o no hay partida</strong>.
+    <h1>Bug<span class="verde">.</span></h1>
+    <p class="grande apagado" style="max-width:52ch">
+      Un juego de cartas donde la partida vive en los navegadores de quienes juegan.
+      <strong>No hay servidor de juego.</strong> Nadie tiene la versión buena del estado: o están
+      todos de acuerdo, o no hay partida.
     </p>
-    <div class="rejilla r4" style="margin-top:.6em">
-      <div class="tarj"><span class="et">Comprobaciones</span><span class="cifra">226</span><div class="pie-t">automatizadas</div></div>
-      <div class="tarj"><span class="et">Fallos</span><span class="cifra verde">0</span><div class="pie-t">última ejecución</div></div>
-      <div class="tarj"><span class="et">Defectos hallados</span><span class="cifra coral">17</span><div class="pie-t">+ 4 del laboratorio</div></div>
-      <div class="tarj"><span class="et">Pipeline</span><span class="cifra sm verde">SUCCESS</span><div class="pie-t">7 etapas · 7,2 min</div></div>
+    <div class="rejilla r3" style="margin-top:.4em; max-width:78%">
+      <div class="tarj"><span class="et">Primero</span><h3 class="verde">Qué es y cómo se juega</h3></div>
+      <div class="tarj"><span class="et">Después</span><h3 class="azul">Cómo está hecho</h3></div>
+      <div class="tarj"><span class="et">Y el grueso</span><h3 class="coral">Cómo se prueba, y con qué</h3></div>
     </div>
   </div>
   <div class="pie"><span>Bug — juego de cartas P2P descentralizado</span><span>PUCE · 2026</span></div>
 </section>
 
-<!-- ═══ 2 · El sistema bajo prueba ════════════════════════════════════════════════════════════ -->
+<!-- ═══ ACTO I ═══════════════════════════════════════════════════════════════════════════════ -->
+<section class="lam acto">
+  <div>
+    <div class="num">I</div>
+    <h1>El juego</h1>
+    <p>Qué es, con qué cartas se juega y cómo entra alguien que pasa por el stand.</p>
+  </div>
+</section>
+
+<!-- ═══ Qué es ═══════════════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">Contexto</span><span class="tema">Qué se está verificando</span></div>
+  <div class="cab"><span class="eje">I · El juego</span><span class="tema">Qué es Bug</span></div>
   <div class="cuerpo">
-    <h2>Cuatro ejes que hay que probar<br>sin un árbitro central</h2>
+    <h2>Un UNO con temática de<br>desgracias informáticas</h2>
+    <div class="split">
+      <div>
+        <p>
+          Mismo flujo que el juego de cartas de toda la vida: te reparten <strong>7 cartas</strong>,
+          juegas una que <strong>iguale en color, número o símbolo</strong>, y si no puedes, robas.
+          <strong>Gana quien se queda sin cartas.</strong>
+        </p>
+        <p style="margin-top:.7em" class="apagado">
+          Lo que cambia es el disfraz — y algunas mecánicas propias. Aquí no hay un «+2»: hay un
+          <em>Update de Windows</em>. No hay «salta»: se te <em>fue el WiFi</em>.
+        </p>
+        <p style="margin-top:.7em" class="apagado">
+          Entre <strong>2 y 10 jugadores</strong>, 30 segundos por turno, y se entra escaneando un
+          QR desde el móvil sin instalar nada.
+        </p>
+      </div>
+      <div class="rejilla r2">
+        <div class="tarj palo" style="--pal:var(--codigo)"><span class="ic">{ }</span><h3>Código</h3><p class="pie-t">el palo verde</p></div>
+        <div class="tarj palo" style="--pal:var(--hardware)"><span class="ic">💻</span><h3>Hardware</h3><p class="pie-t">el palo magenta</p></div>
+        <div class="tarj palo" style="--pal:var(--internet)"><span class="ic">📶</span><h3>Internet</h3><p class="pie-t">el palo violeta</p></div>
+        <div class="tarj palo" style="--pal:var(--cafe)"><span class="ic">☕</span><h3>Café</h3><p class="pie-t">el palo rosa</p></div>
+      </div>
+    </div>
+    <p class="apagado" style="font-size:.9em">
+      Los cuatro palos sustituyen a los colores. El arte es propio: las cartas están dibujadas en
+      Inkscape y compiladas a un sprite que viaja dentro del HTML, así que están pintadas desde el
+      primer fotograma.
+    </p>
+  </div>
+  <div class="pie"><span>I · El juego</span><span class="mono">3</span></div>
+</section>
+
+<!-- ═══ Las cartas ═══════════════════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">I · El juego</span><span class="tema">Las cartas especiales</span></div>
+  <div class="cuerpo">
+    <h2>Las de siempre, con otro nombre</h2>
+    <div class="rejilla r3">
+      <div class="tarj"><span class="et">salta</span><h3>Se fue el WiFi</h3><p class="pie-t">El siguiente pierde el turno.</p></div>
+      <div class="tarj"><span class="et">reversa</span><h3>Ctrl+Z</h3><p class="pie-t">La ronda cambia de sentido.</p></div>
+      <div class="tarj"><span class="et">+2 / +4</span><h3>Update de Windows</h3><p class="pie-t">El siguiente roba y calla.</p></div>
+      <div class="tarj"><span class="et">comodín</span><h3>Reinicio de Router</h3><p class="pie-t">Se juega sobre cualquier cosa y eliges palo.</p></div>
+      <div class="tarj"><span class="et">comodín +4</span><h3>Pantalla Azul (BSOD)</h3><p class="pie-t">Lo mismo, y el siguiente roba cuatro.</p></div>
+      <div class="tarj acento"><span class="et verde">solo dos, y sin palo</span><h3>Los comodines</h3><p class="pie-t">Se pintan con las cuatro franjas: es lo que significa «no soy de ningún palo».</p></div>
+    </div>
+    <p class="remate">
+      Un detalle que costó un rato entender jugando: un comodín en el pozo <strong>no dice a qué hay
+      que igualar</strong>. Por eso la carta gira en 3D y aterriza teñida del palo que eligió quien
+      la tiró.
+    </p>
+  </div>
+  <div class="pie"><span>I · El juego</span><span class="mono">4</span></div>
+</section>
+
+<!-- ═══ Cartas de Caos ═══════════════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">I · El juego</span><span class="tema">Cartas de Caos · lo que Bug añade</span></div>
+  <div class="cuerpo">
+    <h2>Cuatro mecánicas que el UNO<br>original no tiene</h2>
+    <div class="rejilla r4">
+      <div class="tarj"><span class="et coral">interrupción</span><h3>Copiar y Pegar</h3><p class="pie-t">Se juega <strong>fuera de tu turno</strong> si tienes la carta gemela de la del pozo. Corta la ronda y el turno salta a ti.</p></div>
+      <div class="tarj"><span class="et">reinicio</span><h3>Apagar y volver a prender</h3><p class="pie-t">Tiras el pozo y pones una carta tuya de base. La partida sigue con ese palo.</p></div>
+      <div class="tarj"><span class="et">barajado</span><h3>Derrame de Café</h3><p class="pie-t">Todos pasan su mano al siguiente. Tu buena mano deja de ser tuya.</p></div>
+      <div class="tarj"><span class="et">ataque</span><h3>Virus Troyano</h3><p class="pie-t">Eliges víctima y le regalas dos cartas tuyas. Cuidado: puede dejarte sin mano.</p></div>
+    </div>
+    <p class="apagado">
+      <strong>Copiar y Pegar</strong> es la que más se nota en el diseño distribuido: es una jugada
+      que llega <em>fuera de turno</em> y desde otro nodo, así que dos personas pueden intentar
+      cortar a la vez. Quién gana no lo decide un servidor — lo decide el reloj lógico, y sale igual
+      en las tres pantallas.
+    </p>
+  </div>
+  <div class="pie"><span>I · El juego</span><span class="mono">5</span></div>
+</section>
+
+<!-- ═══ Cómo se entra ════════════════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">I · El juego</span><span class="tema">Cómo se juega, de principio a fin</span></div>
+  <div class="cuerpo">
+    <h2>Del QR a la primera carta,<br>sin instalar nada</h2>
+    <div class="split">
+      <ul class="limpia pasos">
+        <li><span class="m">1</span><span><strong>Uno hace de anfitrión</strong> y levanta la imagen: <code>docker run -p 7787:7787 sketox/bug</code>. Un solo puerto.</span></li>
+        <li><span class="m">2</span><span>Escribe su nombre, pulsa <strong>Crear sala</strong> y aparece un <strong>código de 4 caracteres</strong> y un <strong>QR</strong>.</span></li>
+        <li><span class="m">3</span><span>Los demás <strong>escanean el QR</strong> desde su móvil. El enlace ya lleva dentro la sala y el punto de encuentro: solo ponen su nombre.</span></li>
+        <li><span class="m">4</span><span>Con 2 o más en el lobby, el anfitrión pulsa <strong>¡Empezar!</strong> — y quién abre lo decide la semilla, no él.</span></li>
+        <li><span class="m">5</span><span>Se juega. <kbd>M</kbd> abre la <strong>Pantalla Maestra</strong> para el proyector.</span></li>
+      </ul>
+      <div class="rejilla" style="gap:.7em">
+        <div class="tarj acento">
+          <span class="et verde">requisito de feria</span>
+          <p style="font-size:.92em">
+            «El público debe poder interactuar de forma inmediata, escaneando un QR, sin instalar
+            aplicaciones».
+          </p>
+          <p class="pie-t">Por eso el QR transporta <strong>sala + señalización</strong>: quien lo
+          escanea no configura nada. Y si el QR apunta a <code>localhost</code>, la propia pantalla
+          lo avisa — solo funcionaría en esa máquina.</p>
+        </div>
+        <div class="tarj">
+          <span class="et">durante la partida</span>
+          <p class="pie-t">
+            30 s por turno · recargar la página <strong>no te echa</strong>, vuelves con tu mano ·
+            si a alguien se le cae la conexión le guardan el sitio y le saltan el turno.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pie"><span>I · El juego</span><span class="mono">6</span></div>
+</section>
+
+<!-- ═══ Evidencia: entrada y reglas ══════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">I · El juego</span><span class="tema">La entrada y la pantalla de reglas</span></div>
+  <div class="marco-img">
+    <div class="dupla">
+      <figure>
+        <img src="{{img:docs/vv/evidencias/cypress/menu.cy.ts/00-pantalla-de-entrada.png}}" alt="Pantalla de entrada de Bug con los campos de nombre y código de sala">
+        <figcaption>La entrada: nombre, crear o unirse, y practicar en local</figcaption>
+      </figure>
+      <figure>
+        <img src="{{img:docs/vv/evidencias/cypress/menu.cy.ts/07-como-se-juega.png}}" alt="Pantalla Cómo se juega, con las reglas y las cartas reales">
+        <figcaption>«Cómo se juega», con las cartas de verdad: se aprende sin que nadie lo explique</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="pie"><span>I · El juego</span><span class="mono">7</span></div>
+</section>
+
+<!-- ═══ Evidencia: mesa y móvil ══════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">I · El juego</span><span class="tema">La mesa, y cómo se ve en un móvil</span></div>
+  <div class="marco-img">
+    <div class="dupla">
+      <figure>
+        <img src="{{img:docs/vv/evidencias/cypress/partida-local.cy.ts/03-mesa-repartida.png}}" alt="Mesa de juego con la mano repartida, el mazo y el pozo">
+        <figcaption>Mesa repartida: siete cartas, mazo, pozo y de quién es el turno</figcaption>
+      </figure>
+      <figure>
+        <img src="{{img:docs/vv/evidencias/cypress/menu.cy.ts/01-menu-en-movil-360px.png}}" alt="La pantalla de entrada en un móvil de 360 píxeles de ancho">
+        <figcaption>360 px: la anchura desde la que llega casi todo el mundo en la feria</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="pie"><span>I · El juego</span><span class="mono">8</span></div>
+</section>
+
+<!-- ═══ ACTO II ══════════════════════════════════════════════════════════════════════════════ -->
+<section class="lam acto">
+  <div>
+    <div class="num">II</div>
+    <h1>Cómo está hecho</h1>
+    <p>Dónde corre el juego de verdad, y qué lo mantiene de acuerdo sin un árbitro.</p>
+  </div>
+</section>
+
+<!-- ═══ La pregunta incómoda ═════════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">La pregunta que siempre cae</span></div>
+  <div class="cuerpo">
+    <h2>«Si hay un contenedor encendido,<br>¿esto no es cliente-servidor?»</h2>
+    <div class="split">
+      <div>
+        <p class="grande">
+          El contenedor <strong>reparte el programa y presenta a los jugadores</strong>.
+          El juego <strong>corre entero dentro de cada navegador</strong>.
+        </p>
+        <p style="margin-top:.8em" class="apagado">
+          Cuando alguien abre el enlace, su navegador <em>se descarga una copia del programa</em> —
+          como bajarse un PDF. Esa copia se ejecuta en su máquina, con el motor de reglas completo y
+          su propia réplica del estado. El contenedor solo los presenta; a partir de ahí, se aparta.
+        </p>
+        <p class="remate ok" style="margin-top:.8em">
+          <strong>Es el portero del edificio, no el árbitro de la partida.</strong>
+        </p>
+      </div>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr><th></th><th>El contenedor</th><th>Tu navegador</th></tr></thead>
+          <tbody>
+            <tr><td>¿Tiene el motor de reglas?</td><td class="coral">No</td><td class="verde">Sí, entero</td></tr>
+            <tr><td>¿Guarda el estado?</td><td class="coral">No</td><td class="verde">Su propia réplica</td></tr>
+            <tr><td>¿Ve las cartas?</td><td class="coral">Nunca</td><td class="verde">Las suyas</td></tr>
+            <tr><td>¿Decide el turno?</td><td class="coral">No</td><td class="verde">El testigo, entre navegadores</td></tr>
+            <tr><td>¿Sale en la Pantalla Maestra?</td><td class="coral">No aparece</td><td class="verde">Sí, como nodo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="apagado" style="font-size:.9em">
+      <strong>La demo que lo demuestra:</strong> empezar una partida entre tres y apagar Docker a la
+      mitad. La partida sigue. Solo dejan de poder entrar los nuevos.
+    </p>
+  </div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono">10</span></div>
+</section>
+
+<!-- ═══ La malla ═════════════════════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">Dos transportes, dos trabajos</span></div>
+  <div class="cuerpo">
+    <h2>El WebSocket presenta.<br>El juego va por WebRTC.</h2>
+    <div class="rejilla r2">
+      <div class="tarj">
+        <span class="et azul">arranque · WebSocket</span>
+        <h3>Encontrarse</h3>
+        <p style="font-size:.92em">
+          Dos navegadores <strong>no pueden encontrarse solos</strong>: no tienen IP pública ni
+          escuchan conexiones entrantes. Alguien tiene que presentarlos. Eso —y solo eso— hace el
+          servidor.
+        </p>
+        <p class="pie-t">Y hace menos de lo que parece: presenta al que llega con <strong>UN</strong>
+        jugador de la sala. Los demás apretones de manos viajan por la propia malla, dando saltos.</p>
+      </div>
+      <div class="tarj acento">
+        <span class="et verde">partida · WebRTC DataChannels</span>
+        <h3>Jugar</h3>
+        <p style="font-size:.92em">
+          Cada nodo abre un canal con cada otro: <strong>malla completa</strong>. Las jugadas viajan
+          directas de navegador a navegador, cifradas con DTLS.
+        </p>
+        <p class="pie-t">Interceptando el WebSocket con un proxy <strong>no se ve ni una carta</strong>:
+        el juego no pasa por ahí.</p>
+      </div>
+    </div>
+    <p class="apagado" style="font-size:.9em">
+      El bootstrap centralizado es irreducible y lo tienen todos: BitTorrent sus <em>trackers</em>,
+      Bitcoin sus <em>DNS seeds</em>, IPFS sus nodos de arranque. Lo que se puede elegir es qué pasa
+      después — y aquí, después, el servidor sobra.
+    </p>
+  </div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono">11</span></div>
+</section>
+
+<!-- ═══ Los cuatro ejes ══════════════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">Qué mantiene la partida en pie</span></div>
+  <div class="cuerpo">
+    <h2>Cuatro mecanismos, ningún árbitro</h2>
     <div class="rejilla r4">
       <div class="tarj">
-        <span class="et">Eje 1 · Comunicación</span>
-        <h3>WebSocket + WebRTC</h3>
-        <p class="apagado" style="font-size:.88em">El servidor solo presenta a dos peers. La partida entera viaja por DataChannels cifrados.</p>
+        <span class="et">Eje 2 · orden</span><h3>Relojes de Lamport</h3>
+        <p class="pie-t">Cada jugada lleva su sello lógico. Los eventos concurrentes se desempatan
+        por <code>peerId</code>: el mismo orden total en todos, llegue lo que llegue cuando llegue.</p>
       </div>
       <div class="tarj">
-        <span class="et">Eje 2 · Sincronización</span>
-        <h3>Relojes de Lamport</h3>
-        <p class="apagado" style="font-size:.88em">Orden total: los eventos concurrentes se desempatan por <code>peerId</code>, igual en todos.</p>
+        <span class="et">Eje 3 · exclusión mutua</span><h3>Testigo de turno</h3>
+        <p class="pie-t">El turno es el recurso crítico. Circula como un testigo con número de
+        secuencia: los anuncios rezagados se descartan solos y nadie puede ceder lo que no tiene.</p>
       </div>
       <div class="tarj">
-        <span class="et">Eje 3 · Exclusión mutua</span>
-        <h3>Testigo con secuencia</h3>
-        <p class="apagado" style="font-size:.88em">El turno es el recurso crítico. Cada nodo guarda su réplica del estado.</p>
+        <span class="et">Eje 3 · consistencia</span><h3>Réplica + huella</h3>
+        <p class="pie-t">Mismo estado inicial (una semilla) + mismo log = mismo estado. Cada nodo
+        publica el <strong>hash</strong> de su estado en cada latido: la convergencia es verificable
+        a simple vista.</p>
       </div>
       <div class="tarj">
-        <span class="et">Eje 4 · Tolerancia a fallos</span>
-        <h3>Latidos + Bully</h3>
-        <p class="apagado" style="font-size:.88em">Se detecta al caído, se elige nuevo líder y la mesa sigue jugando.</p>
+        <span class="et">Eje 4 · tolerancia</span><h3>Latidos + Bully</h3>
+        <p class="pie-t">Silencio de 2,5 s → sospechoso; 6 s → caído. Si cae el coordinador se elige
+        otro con el algoritmo del matón, sin que la mesa se pare.</p>
       </div>
     </div>
     <p class="remate">
-      Verificar pregunta <em>¿está bien construido?</em> Validar pregunta <em>¿sirve para lo que se pidió?</em>
-      Un sistema distribuido añade una tercera: <strong>¿siguen todos de acuerdo?</strong> — y esa es la
-      que sostiene el diseño entero.
+      Y si un nodo <strong>diverge</strong> —le faltó un evento, o le sobra— lo detecta comparando su
+      huella con la del líder, pide la partida entera y <strong>la adopta</strong>. Se repara solo,
+      en vivo, sin que nadie toque nada.
     </p>
   </div>
-  <div class="pie"><span>Contexto</span><span class="mono">2</span></div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono">12</span></div>
 </section>
 
-<!-- ═══ 3 · Estrategia ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Pantalla Maestra ═════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">Estrategia</span><span class="tema">226 comprobaciones, cinco capas</span></div>
+  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">El sistema por dentro, en vivo</span></div>
+  <div class="marco-img">
+    <figure>
+      <img src="{{img:docs/vv/evidencias/cypress/distribuido/malla.cy.ts/06-pantalla-maestra.png}}" alt="La Pantalla Maestra mostrando los nodos, el líder, el testigo y la convergencia">
+      <figcaption>Tecla <kbd>M</kbd> · quién vive, quién es líder 👑, dónde está el testigo 🎫 y la huella de cada nodo — la columna que decide si hay partida</figcaption>
+    </figure>
+  </div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono">13</span></div>
+</section>
+
+<!-- ═══ ACTO III ═════════════════════════════════════════════════════════════════════════════ -->
+<section class="lam acto">
+  <div>
+    <div class="num">III</div>
+    <h1>Cómo se prueba</h1>
+    <p>Qué herramienta para qué pregunta — y qué encontró cada una.</p>
+  </div>
+</section>
+
+<!-- ═══ El problema de probar esto ═══════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">III · V&amp;V</span><span class="tema">Por qué esto no se prueba como una web normal</span></div>
   <div class="cuerpo">
-    <h2>La pirámide es ancha por abajo<br><span class="apagado">— y también por arriba</span></h2>
+    <h2>No hay servidor al que preguntarle<br>cuál era la verdad</h2>
+    <div class="split">
+      <div>
+        <p>
+          En una aplicación con backend, comprobar el estado es fácil: se le pregunta a la base de
+          datos. Aquí <strong>no hay a quién preguntar</strong>. Hay tres réplicas y ninguna manda.
+        </p>
+        <p style="margin-top:.7em">
+          Por eso la pregunta central no es <em>¿está bien construido?</em> (verificación) ni
+          <em>¿sirve para lo que se pidió?</em> (validación), sino una tercera:
+        </p>
+        <p class="remate" style="margin-top:.7em"><strong>¿siguen todos de acuerdo?</strong></p>
+      </div>
+      <div class="rejilla" style="gap:.7em">
+        <div class="tarj">
+          <span class="et coral">y además</span>
+          <h3>Lo que no existe en Node</h3>
+          <p class="pie-t"><code>RTCPeerConnection</code> no existe fuera de un navegador. La malla
+          de verdad <strong>solo</strong> se puede probar en uno.</p>
+        </div>
+        <div class="tarj">
+          <span class="et coral">y además</span>
+          <h3>Lo que no se repite</h3>
+          <p class="pie-t">Un evento que llega tarde, un nodo que cae a media elección, dos jugadas
+          en el mismo milisegundo. No se reproducen a mano: hay que <strong>provocarlos</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pie"><span>III · V&amp;V</span><span class="mono">15</span></div>
+</section>
+
+<!-- ═══ Estrategia ═══════════════════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">III · V&amp;V</span><span class="tema">La estrategia, en cinco capas</span></div>
+  <div class="cuerpo">
+    <h2>{{n_total}} comprobaciones,<br>cada una en la capa que le toca</h2>
     <div class="split">
       <div class="barras">
-        <div class="fila"><span class="nom">Vitest</span><div class="pista"><i style="width:84%"></i></div><span class="val">190</span></div>
-        <div class="fila"><span class="nom">Cypress</span><div class="pista"><i style="width:8%; background:var(--azul)"></i></div><span class="val">18</span></div>
+        <div class="fila"><span class="nom">Vitest</span><div class="pista"><i style="width:84%"></i></div><span class="val">{{n_unit}}</span></div>
+        <div class="fila"><span class="nom">Cypress</span><div class="pista"><i style="width:8.4%; background:var(--azul)"></i></div><span class="val">{{n_e2e}}</span></div>
         <div class="fila"><span class="nom">Seguridad</span><div class="pista"><i style="width:4.9%; background:var(--coral)"></i></div><span class="val">11</span></div>
         <div class="fila"><span class="nom">Distribuida</span><div class="pista"><i style="width:3.1%; background:var(--ambar)"></i></div><span class="val">7</span></div>
         <div class="fila" style="margin-top:.4em; border-top:1px solid var(--linea); padding-top:.5em">
-          <span class="nom">Total</span><div class="pista"><i style="width:100%"></i></div><span class="val">226</span>
+          <span class="nom">Total</span><div class="pista"><i style="width:100%"></i></div><span class="val">{{n_total}}</span>
         </div>
       </div>
       <div>
         <p>
-          Hay cosas que <strong>solo</strong> se pueden probar arriba. <code>RTCPeerConnection</code> no
-          existe en Node, así que la malla de verdad únicamente se prueba en un navegador.
+          La pirámide es ancha por abajo —{{n_unit}} unitarias sostienen el motor y los algoritmos—
+          pero también <strong>ancha por arriba</strong>, y eso no es doctrina: es lo que dijeron los
+          defectos.
         </p>
         <p style="margin-top:.7em" class="apagado">
-          Y los defectos lo confirman: de los 17 encontrados, <strong class="coral">11 eran invisibles
-          para una prueba unitaria</strong>. Aparecieron jugando, en un navegador real, o atacando el
-          servidor a mano.
+          De los 17 encontrados, <strong class="coral">11 eran invisibles para una prueba
+          unitaria</strong>. Salieron jugando, en un navegador real, atacando el servidor a mano o
+          montando el propio control de calidad.
         </p>
       </div>
     </div>
+    <p class="apagado" style="font-size:.9em">
+      Encima de todo queda la validación con personas: la feria. Debajo del todo, el análisis
+      estático, que mira incluso el código que nadie llega a ejecutar.
+    </p>
   </div>
-  <div class="pie"><span>Estrategia</span><span class="mono">3</span></div>
+  <div class="pie"><span>III · V&amp;V</span><span class="mono">16</span></div>
 </section>
 
-<!-- ═══ 4 · SonarQube ════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Por qué SonarQube ════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">4.1 · SonarQube</span><span class="tema">Calidad de código · Community Build 26.8</span></div>
+  <div class="cab"><span class="eje">4.1 · SonarQube</span><span class="tema">Por qué esta herramienta</span></div>
   <div class="cuerpo">
-    <h2>5 395 líneas analizadas como<br>un solo proyecto</h2>
+    <h2>Para lo que las pruebas<br>no pueden ver</h2>
     <div class="split">
-      <div class="rejilla r2">
-        <div class="tarj"><span class="et">Cobertura</span><span class="cifra verde">89,0 %</span><div class="pie-t">1 250 líneas por cubrir</div></div>
-        <div class="tarj"><span class="et">Duplicación</span><span class="cifra verde">1,3 %</span><div class="pie-t">umbral &lt; 3 %</div></div>
-        <div class="tarj"><span class="et">Deuda técnica</span><span class="cifra verde">A</span><div class="pie-t">751 min · 162 smells</div></div>
-        <div class="tarj"><span class="et">Complejidad</span><span class="cifra sm">1 410</span><div class="pie-t">cognitiva 967</div></div>
-      </div>
-      <div class="barras">
-        <h3 class="apagado">Cobertura de líneas por paquete</h3>
-        <div class="fila"><span class="nom">engine</span><div class="pista"><i style="width:93.1%"></i></div><span class="val">93,1 %</span></div>
-        <div class="fila"><span class="nom">net</span><div class="pista"><i style="width:98.1%"></i></div><span class="val">98,1 %</span></div>
-        <div class="fila"><span class="nom">signaling</span><div class="pista"><i style="width:83.0%"></i></div><span class="val">83,0 %</span></div>
-        <div class="fila"><span class="nom">web/lib</span><div class="pista"><i style="width:64.7%"></i></div><span class="val">64,7 %</span></div>
-        <p class="apagado" style="font-size:.84em; margin-top:.5em">
-          La interfaz no se mide con unitarias: la prueba Cypress en un navegador, que es donde han
-          aparecido sus fallos. Cada exclusión lleva escrito su motivo.
+      <div>
+        <h3 class="verde">¿Qué pregunta responde?</h3>
+        <p style="font-size:.95em">
+          Una prueba solo puede juzgar el código <em>que ejecuta</em>. El análisis estático lee
+          <strong>todo</strong> —incluido lo que nadie llama nunca— y contesta a lo que las pruebas
+          ni se plantean: ¿hay duplicación? ¿qué función se ha vuelto impenetrable? ¿cuánta deuda
+          hemos acumulado? ¿la cobertura sube o baja?
+        </p>
+        <p style="margin-top:.7em" class="apagado">
+          Se analiza el monorepo <strong>como un solo proyecto</strong> y no como cuatro: los cuatro
+          paquetes se despliegan juntos, así que la duplicación entre <code>engine</code> y
+          <code>net</code> es duplicación de verdad y queremos verla.
         </p>
       </div>
+      <div class="rejilla r2">
+        <div class="tarj"><span class="et">Quality gate</span><span class="cifra sm verde">Passed</span></div>
+        <div class="tarj"><span class="et">Bugs</span><span class="cifra verde">0</span><div class="pie-t">fiabilidad A</div></div>
+        <div class="tarj"><span class="et">Cobertura</span><span class="cifra verde">89 %</span><div class="pie-t">100 % en código nuevo</div></div>
+        <div class="tarj"><span class="et">Duplicación</span><span class="cifra verde">1,3 %</span><div class="pie-t">umbral &lt; 3 %</div></div>
+      </div>
+    </div>
+    <div class="barras">
+      <div class="fila"><span class="nom">engine</span><div class="pista"><i style="width:93.1%"></i></div><span class="val">93,1 %</span></div>
+      <div class="fila"><span class="nom">net</span><div class="pista"><i style="width:98.1%"></i></div><span class="val">98,1 %</span></div>
+      <div class="fila"><span class="nom">signaling</span><div class="pista"><i style="width:83.0%"></i></div><span class="val">83,0 %</span></div>
     </div>
   </div>
-  <div class="pie"><span>4.1 · Calidad de código</span><span class="mono">4</span></div>
+  <div class="pie"><span>4.1 · Calidad de código</span><span class="mono">17</span></div>
 </section>
 
-<!-- ═══ 5 · Evidencia Sonar ══════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Evidencia Sonar ══════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">4.1 · SonarQube</span><span class="tema">Evidencia · panel del análisis</span></div>
+  <div class="cab"><span class="eje">4.1 · SonarQube</span><span class="tema">Evidencia · el panel</span></div>
   <div class="marco-img">
     <figure>
-      <img src="{{img:docs/vv/evidencias/laboratorio/07-sonarqube-dashboard.png}}" alt="Panel de SonarQube con el análisis del proyecto bug-p2p">
-      <figcaption>SonarQube 26.8 · proyecto <code>bug-p2p</code> · análisis lanzado por el pipeline</figcaption>
+      <img src="{{img:docs/vv/evidencias/laboratorio/07-sonarqube-dashboard.png}}" alt="Panel de SonarQube con el quality gate en Passed">
+      <figcaption>SonarQube Community Build 26.8 · 5 406 líneas · análisis lanzado desde el pipeline</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>4.1 · Calidad de código</span><span class="mono">5</span></div>
+  <div class="pie"><span>4.1 · Calidad de código</span><span class="mono">18</span></div>
 </section>
 
-<!-- ═══ 6 · Hallazgos de Sonar ═══════════════════════════════════════════════════════════════ -->
+<!-- ═══ Qué encontró Sonar ═══════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">4.1 · SonarQube</span><span class="tema">Qué se hizo con los hallazgos</span></div>
+  <div class="cab"><span class="eje">4.1 · SonarQube</span><span class="tema">Qué encontró, y qué se hizo</span></div>
   <div class="cuerpo">
     <h2>Un número que no se mira<br>no significa nada</h2>
     <div class="rejilla r2">
       <div class="tarj">
-        <span class="et">1 bug · accesibilidad</span>
+        <span class="et coral">1 bug · accesibilidad</span>
         <p style="font-size:.92em">
-          El fondo del diálogo de jugada cerraba con ratón y no con teclado. Se arregló cambiando el
-          elemento: un <code>&lt;dialog&gt;</code> nativo cierra con <kbd>Esc</kbd>, atrapa el foco y se
-          anuncia como diálogo.
+          El fondo del diálogo de jugada cerraba con ratón y <strong>no con teclado</strong>. Los dos
+          parches evidentes fallaron: un <code>onKeyDown</code> en un <code>div</code> sin foco no se
+          dispara nunca, y <code>role="presentation"</code> cambiaba una queja por dos.
         </p>
-        <p class="pie-t coral">Los dos parches evidentes no funcionaban o cambiaban una queja por otra.</p>
+        <p class="pie-t verde">La señal era que el elemento era el equivocado: ahora es un
+        <code>&lt;dialog&gt;</code> nativo, que trae hecho <kbd>Esc</kbd>, foco atrapado y backdrop.</p>
       </div>
       <div class="tarj">
-        <span class="et">22 vulnerabilidades · una sola regla</span>
+        <span class="et ambar">22 avisos · todos la misma regla</span>
         <p style="font-size:.92em">
-          Todas son <code>Math.random</code>. Revisadas una a una: 16 son partículas de efectos, el resto
-          códigos de sala y semillas <strong>públicos por diseño</strong>.
+          <code>Math.random</code>. Revisados uno a uno: 16 son partículas de efectos visuales, el
+          resto códigos de sala y semillas <strong>públicos por diseño</strong>.
         </p>
-        <p class="pie-t">
-          La única que merecía dudar: <code>uid()</code> genera el <em>secret</em> de reconexión. Sus dos
-          ramas reales usan <code>crypto</code>; la de <code>Math.random</code> es inalcanzable para quien
-          pueda jugar. <span class="verde">0 explotables.</span>
-        </p>
+        <p class="pie-t">El único que merecía dudar: <code>uid()</code>, que genera el secreto de
+        reconexión. Sus dos ramas reales usan <code>crypto</code>. <span class="verde">0 explotables.</span></p>
       </div>
     </div>
     <p class="remate">
-      Y una lección de propina: escribir los comentarios en español dispara falsos positivos de reglas
-      pensadas para inglés — la palabra «todo» se lee como un marcador <code>TODO</code> pendiente.
+      Y dos incidencias quedaron marcadas como <strong>falso positivo, con la justificación escrita
+      en la herramienta</strong>: el analizador cree que un <code>&lt;dialog&gt;</code> no es
+      interactivo. Gestionar hallazgos incluye decidir cuáles no son defectos — lo que no se puede es
+      dejarlos sin mirar.
     </p>
   </div>
-  <div class="pie"><span>4.1 · Calidad de código</span><span class="mono">6</span></div>
+  <div class="pie"><span>4.1 · Calidad de código</span><span class="mono">19</span></div>
 </section>
 
-<!-- ═══ 7 · Jenkins ══════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Por qué Jenkins ══════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">4.2 · Jenkins</span><span class="tema">Integración continua · LTS JDK 21</span></div>
+  <div class="cab"><span class="eje">4.2 · Jenkins</span><span class="tema">Por qué esta herramienta</span></div>
   <div class="cuerpo">
-    <h2>Siete etapas, ordenadas por<br>lo que falla más barato primero</h2>
+    <h2>Para que la calidad deje de<br>depender de que alguien se acuerde</h2>
+    <div class="split">
+      <div>
+        <h3 class="verde">¿Qué pregunta responde?</h3>
+        <p style="font-size:.95em">
+          Todo lo anterior existe solo si <strong>se ejecuta</strong>. Sin integración continua las
+          pruebas se corren cuando uno se acuerda —o sea, cuando ya sospecha algo—. El pipeline por
+          commit convierte {{n_total}} comprobaciones en un <strong>hábito automático</strong>: nadie
+          rompe el motor de reglas y se entera tres días después.
+        </p>
+        <p style="margin-top:.7em" class="apagado">
+          Y algo que solo da la CI: <strong>ejecutar en una máquina que no es la tuya</strong>. La
+          mitad de los fallos de este semestre eran «en mi equipo funciona».
+        </p>
+      </div>
+      <div class="rejilla r2">
+        <div class="tarj"><span class="et">Resultado</span><span class="cifra sm verde">SUCCESS</span><div class="pie-t">las 7 etapas</div></div>
+        <div class="tarj"><span class="et">Duración</span><span class="cifra sm">7,2 min</span></div>
+        <div class="tarj"><span class="et">Disparo</span><span class="cifra sm">por commit</span><div class="pie-t">sondeo cada minuto</div></div>
+        <div class="tarj"><span class="et">Configuración</span><span class="cifra sm">as code</span><div class="pie-t">se reconstruye desde cero</div></div>
+      </div>
+    </div>
     <div class="tuberia">
       <div class="etapa"><div class="n">1</div><div class="t">Dependencias</div></div>
       <div class="etapa"><div class="n">2</div><div class="t">Tipos</div></div>
@@ -397,35 +763,31 @@
       <div class="etapa"><div class="n">6</div><div class="t">Seguridad</div></div>
       <div class="etapa"><div class="n">7</div><div class="t">Validación<br>distribuida</div></div>
     </div>
-    <div class="rejilla r3">
-      <div class="tarj"><span class="et">Disparo</span><span class="cifra sm">por commit</span><div class="pie-t"><code>pollSCM</code> cada minuto, definido como código</div></div>
-      <div class="tarj"><span class="et">Configuración</span><span class="cifra sm">as code</span><div class="pie-t">Configuration-as-Code + Job DSL: el laboratorio se reconstruye desde cero</div></div>
-      <div class="tarj"><span class="et">Artefactos</span><span class="cifra sm">archivados</span><div class="pie-t">JUnit, <code>lcov</code> y los JSON de los bancos, build a build</div></div>
-    </div>
-    <p class="apagado" style="font-size:.9em">
-      La etapa 5 es la única que no tumba la construcción: un servidor de métricas apagado no debería
-      convertir un commit sano en un commit roto. Se marca <span class="mono" style="color:var(--ambar)">inestable</span>.
+    <p class="apagado" style="font-size:.88em">
+      Ordenadas por <strong>lo que falla más barato primero</strong>: no tiene sentido gastar cinco
+      minutos construyendo Next.js para descubrir después un error de tipos que se detecta en veinte
+      segundos.
     </p>
   </div>
-  <div class="pie"><span>4.2 · Integración continua</span><span class="mono">7</span></div>
+  <div class="pie"><span>4.2 · Integración continua</span><span class="mono">20</span></div>
 </section>
 
-<!-- ═══ 8 · Evidencia Jenkins ════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Evidencia Jenkins ════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">4.2 · Jenkins</span><span class="tema">Evidencia · construcción en verde</span></div>
   <div class="marco-img">
     <figure>
-      <img src="{{img:docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png}}" alt="Jenkins con la construcción del proyecto en verde y sus artefactos archivados">
-      <figcaption>Las 7 etapas verdes en 7,2 min · 190 pruebas sin fallos · artefactos de cobertura, seguridad y validación distribuida</figcaption>
+      <img src="{{img:docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png}}" alt="Jenkins con la construcción en verde y sus artefactos archivados">
+      <figcaption>190 pruebas sin fallos · artefactos de cobertura, seguridad y validación distribuida archivados build a build</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>4.2 · Integración continua</span><span class="mono">8</span></div>
+  <div class="pie"><span>4.2 · Integración continua</span><span class="mono">21</span></div>
 </section>
 
-<!-- ═══ 9 · El laboratorio que no arrancaba ══════════════════════════════════════════════════ -->
+<!-- ═══ El laboratorio que no arrancaba ══════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">4.2 · Jenkins</span><span class="tema">Hallazgo · lo que costó llegar al verde</span></div>
-  <div class="cuerpo">
+  <div class="cuerpo ancho">
     <h2>El pipeline llevaba semanas escrito.<br>Nunca se había ejecutado.</h2>
     <ul class="limpia">
       <li><span class="m x">1</span><span><strong>Jenkins no arrancaba.</strong> El Job DSL dinámico (<code>scmGit { remotes }</code>) ya no existe en las versiones de hoy: se llevaba por delante a Configuration-as-Code y el contenedor moría en <code>Exited (5)</code>.</span></li>
@@ -439,66 +801,94 @@
       estuviera apagado</strong>. Un fallo disfrazado de comportamiento tolerado no lo investiga nadie.
     </p>
   </div>
-  <div class="pie"><span>4.2 · Integración continua</span><span class="mono">9</span></div>
+  <div class="pie"><span>4.2 · Integración continua</span><span class="mono">22</span></div>
 </section>
 
-<!-- ═══ 10 · Cypress ═════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Por qué Cypress ══════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">4.3 · Cypress</span><span class="tema">Pruebas automatizadas · 13.17</span></div>
+  <div class="cab"><span class="eje">4.3 · Cypress</span><span class="tema">Por qué esta herramienta, y no Selenium</span></div>
   <div class="cuerpo">
-    <h2>18 pruebas funcionales,<br>4 de ellas con tres nodos reales</h2>
-    <div class="rejilla r3">
-      <div class="tarj"><span class="et">menu.cy.ts</span><span class="cifra">8</span><div class="pie-t">Flujos de entrada, invitación por QR, validación del enlace, móvil de 360 px</div></div>
-      <div class="tarj"><span class="et">partida-local.cy.ts</span><span class="cifra">6</span><div class="pie-t">Reparto, robar, no pasar sin robar, rotación del turno</div></div>
-      <div class="tarj" style="border-color:var(--esmeralda)"><span class="et verde">distribuido/malla.cy.ts</span><span class="cifra verde">4</span><div class="pie-t"><strong>Tres nodos simultáneos con WebRTC real</strong>, comparando la huella del estado</div></div>
+    <h2>Porque corre <span class="verde">dentro</span><br>del navegador</h2>
+    <div class="split">
+      <div>
+        <p style="font-size:.95em">
+          El enunciado deja elegir entre Selenium y Cypress. Aquí la elección la decidió una
+          necesidad concreta: para afirmar que <strong>tres réplicas convergieron</strong> hay que
+          leer la huella de estado de cada nodo — un objeto vivo en la memoria de la página.
+        </p>
+        <p style="margin-top:.7em" class="apagado">
+          Cypress se ejecuta <strong>en el mismo bucle de eventos que la aplicación</strong>: entra
+          en <code>window</code> y compara esas huellas directamente. Selenium conduce el navegador
+          <em>desde fuera</em>, por el protocolo WebDriver, y todo lo que quiera leer tiene que
+          serializarse por ese puente.
+        </p>
+        <p style="margin-top:.7em" class="apagado">
+          Y algo igual de decisivo: los tres nodos son <strong>iframes del mismo origen</strong> en
+          una sola pestaña, y Cypress puede hablarle a cada uno por separado.
+        </p>
+      </div>
+      <div class="rejilla" style="gap:.7em">
+        <div class="tarj"><span class="et">menu.cy.ts</span><span class="cifra sm">8</span><div class="pie-t">entrada, QR, validación del enlace, móvil de 360 px</div></div>
+        <div class="tarj"><span class="et">partida-local.cy.ts</span><span class="cifra sm">6</span><div class="pie-t">reparto, robar, no pasar sin robar, rotación del turno</div></div>
+        <div class="tarj acento"><span class="et verde">distribuido/malla.cy.ts</span><span class="cifra sm verde">{{n_malla}}</span><div class="pie-t"><strong>Tres nodos con WebRTC real</strong>: lobby, convergencia, jugada compartida, Pantalla Maestra y caída</div></div>
+      </div>
     </div>
-    <p>
-      Los tres nodos son contextos de navegación independientes, cada uno con su propia
-      <code>RTCPeerConnection</code>. La prueba no mira cartas en pantalla: compara
-      <strong>la huella del estado replicado</strong> de los tres — el mismo número que se proyecta en
-      la Pantalla Maestra.
-    </p>
-    <p class="apagado">
-      Que el lobby lo muestre el anfitrión no bastaría, y por eso se comprueba en los tres: el que llega
-      segundo se conecta con el tercero <em>por la malla</em>, no por el servidor.
-    </p>
   </div>
-  <div class="pie"><span>4.3 · Pruebas automatizadas</span><span class="mono">10</span></div>
+  <div class="pie"><span>4.3 · Pruebas automatizadas</span><span class="mono">23</span></div>
 </section>
 
-<!-- ═══ 11 · Evidencia convergencia ══════════════════════════════════════════════════════════ -->
+<!-- ═══ Evidencia convergencia ═══════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">4.3 · Cypress</span><span class="tema">Evidencia · tres réplicas de acuerdo</span></div>
   <div class="marco-img">
     <figure>
-      <img src="{{img:docs/vv/evidencias/cypress/distribuido/malla.cy.ts/04-tres-nodos-convergen.png}}" alt="Tres nodos del juego en pantalla, cada uno con su mano, mostrando el mismo pozo y el mismo turno">
-      <figcaption>Ana, Beto y Dina · tres contextos de navegación, mismo pozo y mismo turno · la prueba compara sus tres huellas de estado</figcaption>
+      <img src="{{img:docs/vv/evidencias/cypress/distribuido/malla.cy.ts/04-tres-nodos-convergen.png}}" alt="Tres nodos del juego con el mismo pozo y el mismo turno">
+      <figcaption>Ana, Beto y Dina · tres contextos de navegación con su propia RTCPeerConnection · la prueba compara sus tres huellas de estado</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>4.3 · Pruebas automatizadas</span><span class="mono">11</span></div>
+  <div class="pie"><span>4.3 · Pruebas automatizadas</span><span class="mono">24</span></div>
 </section>
 
-<!-- ═══ 12 · Evidencia caída ═════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Evidencia caída ══════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">4.3 · Cypress</span><span class="tema">Evidencia · se cae un nodo y la mesa sigue</span></div>
   <div class="marco-img">
     <figure>
-      <img src="{{img:docs/vv/evidencias/cypress/distribuido/malla.cy.ts/05-cae-un-nodo-los-otros-siguen.png}}" alt="Dos nodos siguen jugando y de acuerdo después de que el tercero desaparece">
+      <img src="{{img:docs/vv/evidencias/cypress/distribuido/malla.cy.ts/05-cae-un-nodo-los-otros-siguen.png}}" alt="Dos nodos siguen jugando y de acuerdo tras desaparecer el tercero">
       <figcaption>Se quita el tercer nodo de golpe · los dos que quedan siguen convergiendo entre ellos</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>4.3 · Pruebas automatizadas</span><span class="mono">12</span></div>
+  <div class="pie"><span>4.3 · Pruebas automatizadas</span><span class="mono">25</span></div>
 </section>
 
-<!-- ═══ 13 · Burp ════════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Por qué Burp ═════════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">4.4 · Burp Suite</span><span class="tema">Seguridad · 11 ataques contra la señalización</span></div>
+  <div class="cab"><span class="eje">4.4 · Burp Suite</span><span class="tema">Por qué esta herramienta</span></div>
   <div class="cuerpo">
-    <h2>6 vulnerabilidades encontradas.<br>Las 6, corregidas y vigiladas.</h2>
+    <h2>Porque un atacante no usa<br>la interfaz</h2>
     <div class="split">
+      <div>
+        <p style="font-size:.95em">
+          Todas las pruebas anteriores usan el sistema <em>como está previsto</em>. Un atacante no:
+          coge un mensaje del protocolo, lo edita a mano y lo reenvía. Para eso hay que sentarse
+          <strong>en medio del tráfico</strong>, y eso es Burp — un proxy de interceptación que
+          además <strong>entiende WebSocket</strong>, que es por donde pasa aquí lo único
+          centralizado.
+        </p>
+        <p style="margin-top:.7em" class="apagado">
+          Con <em>Repeater</em> se reenvía un mensaje cambiando un campo; con <em>Intruder</em> se
+          repite veinte mil veces. Ninguna prueba unitaria «descubre» un ataque: hay que jugar con el
+          protocolo a mano y ver qué se rompe.
+        </p>
+        <p class="remate" style="margin-top:.7em">
+          Pero Burp es con lo que se <strong>encuentran</strong> los fallos, no con lo que se
+          <strong>vigilan</strong>. Los once quedaron escritos en un banco que corre en cada
+          construcción: lo que solo vive en la memoria de quien lo encontró vuelve en tres commits.
+        </p>
+      </div>
       <div class="tabla-scroll">
         <table>
-          <thead><tr><th>Severidad</th><th>Ataque</th><th class="num">Antes</th><th class="num">Ahora</th></tr></thead>
+          <thead><tr><th>Sev.</th><th>Ataque</th><th class="num">Antes</th><th class="num">Ahora</th></tr></thead>
           <tbody>
             <tr><td class="coral">Crítica</td><td>S3 · secuestro de plaza</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
             <tr><td class="coral">Crítica</td><td>S8 · malformados</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
@@ -506,31 +896,17 @@
             <tr><td>Alta</td><td>S2 · inyección desde fuera</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
             <tr><td>Media</td><td>S6 · agotar conexiones</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
             <tr><td>Media</td><td>S7 · mensaje de 32 MB</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
-            <tr><td class="apagado">S4 · S5 · S9 · S10 · S11</td><td class="apagado">ya defendidos</td><td class="num verde">✓</td><td class="num verde">✓</td></tr>
+            <tr><td class="apagado">—</td><td class="apagado">S4·S5·S9·S10·S11 ya defendidos</td><td class="num verde">✓</td><td class="num verde">✓</td></tr>
           </tbody>
         </table>
-      </div>
-      <div>
-        <p>
-          Burp es con lo que se <strong>encuentran</strong> los fallos; no con lo que se
-          <strong>vigilan</strong>. Un hallazgo que solo existe en la memoria de quien lo encontró vuelve
-          a aparecer en tres commits.
-        </p>
-        <p style="margin-top:.7em" class="apagado">
-          Por eso los once están escritos en <code>attack-suite.mjs</code> y corren en cada construcción
-          contra el servidor real.
-        </p>
-        <p style="margin-top:.7em" class="remate">
-          Y el resultado que más dice del diseño no es ningún ataque bloqueado, sino lo que
-          <strong>no aparece</strong> en el proxy: ni una carta. El juego no pasa por ahí.
-        </p>
+        <p class="pie-t"><strong>11/11 bloqueados</strong> · 6 vulnerabilidades corregidas</p>
       </div>
     </div>
   </div>
-  <div class="pie"><span>4.4 · Seguridad</span><span class="mono">13</span></div>
+  <div class="pie"><span>4.4 · Seguridad</span><span class="mono">26</span></div>
 </section>
 
-<!-- ═══ 14 · S8 ══════════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ S8 ═══════════════════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">4.4 · Burp Suite</span><span class="tema">El hallazgo con más consecuencias</span></div>
   <div class="cuerpo">
@@ -538,60 +914,74 @@
     <div class="split">
       <div class="tarj">
         <span class="et">S8 · mensajes malformados</span>
-        <pre class="mono" style="margin:.4em 0 0; color:var(--azul); font-size:.92em; overflow-x:auto">{"t":"introduce","room":"AB12",
+        <pre class="mono" style="margin:.4em 0 0; color:var(--azul); font-size:.9em; overflow-x:auto">{"t":"introduce","room":"AB12",
  "peerId":"x","tried":<span class="coral">7</span>}</pre>
-        <p class="pie-t">Enviado desde la consola del navegador por cualquier jugador.</p>
+        <p class="pie-t">Enviado desde la consola del navegador por cualquier jugador de la sala.</p>
       </div>
       <div>
         <p>
-          El servidor hacía <code>new Set([peerId, ...msg.tried])</code>. Desparramar un número lanza una
-          excepción, y una excepción dentro de un manejador de eventos de Node sube hasta
+          El servidor hacía <code>new Set([peerId, ...msg.tried])</code>. Desparramar un número lanza
+          una excepción, y una excepción dentro de un manejador de eventos de Node sube hasta
           <code>uncaughtException</code> y <strong class="coral">mata el proceso</strong>.
         </p>
         <p style="margin-top:.7em" class="apagado">
-          Corregido en dos capas: <code>parseClientMsg</code> valida tipo, longitud y forma de todo lo que
-          entra, y el manejador va envuelto en un <code>try/catch</code> para el fallo que no se nos
-          ocurrió.
+          Corregido en dos capas: se valida tipo, longitud y forma de todo lo que entra, y el
+          manejador va envuelto en un <code>try/catch</code> para el fallo que no se nos ocurrió.
         </p>
       </div>
     </div>
     <p class="apagado" style="font-size:.9em">
-      El más instructivo, en cambio, es S1: el cifrado de WebRTC protege el contenido del canal, no la
-      identidad de quien lo abrió. Esa la garantiza la señalización, o no la garantiza nadie.
+      El más instructivo, en cambio, es <strong>S1</strong>: el cifrado de WebRTC protege el contenido
+      del canal, <strong>no la identidad de quien lo abrió</strong>. Esa la garantiza la señalización,
+      o no la garantiza nadie.
     </p>
   </div>
-  <div class="pie"><span>4.4 · Seguridad</span><span class="mono">14</span></div>
+  <div class="pie"><span>4.4 · Seguridad</span><span class="mono">27</span></div>
 </section>
 
-<!-- ═══ 15 · Validación distribuida ══════════════════════════════════════════════════════════ -->
+<!-- ═══ Por qué banco propio ═════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">4.5 · Validación distribuida</span><span class="tema">7 propiedades, con métricas</span></div>
+  <div class="cab"><span class="eje">4.5 · Validación distribuida</span><span class="tema">Por qué aquí no hay herramienta que comprar</span></div>
   <div class="cuerpo">
-    <h2>No un verde: una medición</h2>
-    <div class="tabla-scroll">
-      <table>
-        <thead><tr><th>ID</th><th>Propiedad</th><th>Lo que se midió</th></tr></thead>
-        <tbody>
-          <tr><td class="mono verde">D1</td><td>Consistencia</td><td>3/5/10 nodos, latencias de 5–120 ms y <strong>64 entregas duplicadas</strong> → todas las réplicas con la misma huella</td></tr>
-          <tr><td class="mono verde">D2</td><td>Orden causal</td><td><strong>12 órdenes de entrega distintos</strong> → una sola secuencia acordada</td></tr>
-          <tr><td class="mono verde">D3</td><td>Exclusión mutua</td><td>200 cesiones del testigo · <strong>0 violaciones</strong> · 234 anuncios rezagados descartados</td></tr>
-          <tr><td class="mono verde">D4</td><td>Detección de fallos</td><td>sospechoso a <strong>2 500 ms</strong>, caído a <strong>6 000 ms</strong>, readmitido al volver</td></tr>
-          <tr><td class="mono verde">D5</td><td>Elección de líder</td><td>Bully con 3/5/10 nodos y caída encadenada del favorito → acuerdo unánime</td></tr>
-          <tr><td class="mono verde">D6</td><td>Recuperación</td><td>el rezagado converge al completar el log; <strong>el corrupto no</strong> — necesita adoptar</td></tr>
-          <tr><td class="mono verde">D7</td><td>Rendimiento</td><td>factor de replay 18,4× / 6,5× / 8,5× · la malla usa 240 mensajes donde un servidor usaría 360</td></tr>
-        </tbody>
-      </table>
+    <h2>Nadie vende un medidor<br>de <span class="verde">tu</span> protocolo</h2>
+    <div class="split">
+      <div>
+        <p style="font-size:.95em">
+          Sonar mide código, Cypress conduce navegadores, Burp manipula tráfico. Ninguno sabe qué es
+          «el testigo de turno de Bug» ni qué significa que dos réplicas hayan convergido. Esas
+          propiedades <strong>son del diseño</strong>, así que el instrumento hay que escribirlo.
+        </p>
+        <p style="margin-top:.7em" class="apagado">
+          El banco monta una <strong>red simulada con reloj virtual</strong>: elige latencias entre
+          5 y 120 ms, duplica entregas, reordena mensajes y provoca caídas encadenadas — cosas que en
+          una red de verdad pasan una vez cada mil partidas y nunca cuando estás mirando.
+        </p>
+        <p class="remate ok" style="margin-top:.7em">
+          Y no devuelve un verde: devuelve <strong>números</strong>. El enunciado pide medir latencia
+          y tiempos de respuesta, no aprobar.
+        </p>
+      </div>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr><th>ID</th><th>Propiedad</th><th>Medición</th></tr></thead>
+          <tbody>
+            <tr><td class="mono verde">D1</td><td>Consistencia</td><td>3/5/10 nodos · 64 duplicados → misma huella</td></tr>
+            <tr><td class="mono verde">D2</td><td>Orden causal</td><td>12 órdenes → 1 sola secuencia</td></tr>
+            <tr><td class="mono verde">D3</td><td>Exclusión mutua</td><td>200 cesiones · <strong>0 violaciones</strong></td></tr>
+            <tr><td class="mono verde">D4</td><td>Detección</td><td>2 500 ms sospechoso · 6 000 ms caído</td></tr>
+            <tr><td class="mono verde">D5</td><td>Elección (Bully)</td><td>acuerdo unánime con caída encadenada</td></tr>
+            <tr><td class="mono verde">D6</td><td>Recuperación</td><td>el corrupto <strong>no</strong> converge sin adoptar</td></tr>
+            <tr><td class="mono verde">D7</td><td>Rendimiento</td><td>240 mensajes donde un servidor usaría 360</td></tr>
+          </tbody>
+        </table>
+        <p class="pie-t"><strong>7/7 propiedades verificadas</strong></p>
+      </div>
     </div>
-    <p class="apagado" style="font-size:.9em">
-      <strong>D6 justifica una decisión de diseño:</strong> a un nodo corrupto no le basta con recibir los
-      eventos que le faltan, porque además tiene eventos de más. Por eso la reparación tira el log propio
-      y adopta el ajeno.
-    </p>
   </div>
-  <div class="pie"><span>4.5 · Validación distribuida</span><span class="mono">15</span></div>
+  <div class="pie"><span>4.5 · Validación distribuida</span><span class="mono">28</span></div>
 </section>
 
-<!-- ═══ 16 · D7 ══════════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ D7 ═══════════════════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">4.5 · Validación distribuida</span><span class="tema">Hallazgo · el instrumento también falla</span></div>
   <div class="cuerpo">
@@ -599,24 +989,18 @@
     <div class="split">
       <div>
         <p>
-          D7 exigía que el caso realista convergiera en <strong>menos de 2 segundos de reloj de pared</strong>.
-          Con la máquina cargada, falló — <em>y las tres réplicas habían convergido perfectamente</em>.
+          D7 exigía que el caso realista convergiera en <strong>menos de 2 segundos de reloj de
+          pared</strong>. Con la máquina cargada, falló — <em>y las tres réplicas habían convergido
+          perfectamente</em>.
         </p>
         <p style="margin-top:.7em">
-          Un umbral que depende de lo que haya de fondo produce rojos sin defecto detrás. Y un rojo que no
-          significa nada <strong class="coral">enseña a ignorar los demás</strong>.
+          Un umbral que depende de lo que haya de fondo produce rojos sin defecto detrás. Y un rojo
+          que no significa nada <strong class="coral">enseña a ignorar los demás</strong>.
         </p>
       </div>
       <div class="rejilla" style="gap:.7em">
-        <div class="tarj">
-          <span class="et coral">Antes · mide la máquina</span>
-          <p class="mono" style="font-size:.9em">msRealista &lt; 2000</p>
-        </div>
-        <div class="tarj" style="border-color:var(--esmeralda)">
-          <span class="et verde">Ahora · mide el algoritmo</span>
-          <p class="mono" style="font-size:.9em">aplicaciones por evento ≤ 30×</p>
-          <p class="pie-t">Sale idéntico en un portátil cargado y en el agente de CI. Los tiempos se siguen midiendo; ya no deciden.</p>
-        </div>
+        <div class="tarj"><span class="et coral">antes · medía la máquina</span><p class="mono" style="font-size:.9em">msRealista &lt; 2000</p></div>
+        <div class="tarj acento"><span class="et verde">ahora · mide el algoritmo</span><p class="mono" style="font-size:.9em">aplicaciones por evento ≤ 30×</p><p class="pie-t">Sale idéntico en un portátil cargado y en el agente de CI. Los tiempos se siguen midiendo; ya no deciden.</p></div>
       </div>
     </div>
     <p class="remate">
@@ -624,12 +1008,12 @@
       encontrar un bug en el producto — y llega antes.
     </p>
   </div>
-  <div class="pie"><span>4.5 · Validación distribuida</span><span class="mono">16</span></div>
+  <div class="pie"><span>4.5 · Validación distribuida</span><span class="mono">29</span></div>
 </section>
 
-<!-- ═══ 17 · De dónde salieron los defectos ══════════════════════════════════════════════════ -->
+<!-- ═══ De dónde salieron los defectos ═══════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">Resultado</span><span class="tema">De dónde salieron los 17 defectos</span></div>
+  <div class="cab"><span class="eje">III · V&amp;V</span><span class="tema">Resultado · de dónde salieron los 17 defectos</span></div>
   <div class="cuerpo">
     <h2>Solo 6 los habría visto<br>una prueba unitaria</h2>
     <div class="barras">
@@ -637,56 +1021,56 @@
       <div class="fila"><span class="nom">Burp Suite</span><div class="pista"><i style="width:29.4%; background:var(--ambar)"></i></div><span class="val">5</span></div>
       <div class="fila"><span class="nom">Montando la V&amp;V</span><div class="pista"><i style="width:17.6%; background:var(--azul)"></i></div><span class="val">3</span></div>
     </div>
-    <div class="rejilla r3" style="margin-top:.4em">
-      <div class="tarj"><span class="et">Ciclo de vida de React</span><p class="pie-t">La sala no se creaba: StrictMode monta, desmonta y vuelve a montar.</p></div>
-      <div class="tarj"><span class="et">Anchura en CSS</span><p class="pie-t">El menú desbordaba a 360 px — y así entra casi todo el mundo en la feria.</p></div>
-      <div class="tarj"><span class="et">Un evento a destiempo</span><p class="pie-t">Llegaba antes de existir el motor y se tiraba: divergencia permanente.</p></div>
+    <div class="rejilla r3" style="margin-top:.3em">
+      <div class="tarj"><span class="et">ciclo de vida de React</span><p class="pie-t">La sala no se creaba: StrictMode monta, desmonta y vuelve a montar.</p></div>
+      <div class="tarj"><span class="et">anchura en CSS</span><p class="pie-t">El menú desbordaba a 360 px — y así entra casi todo el mundo en la feria.</p></div>
+      <div class="tarj"><span class="et">un evento a destiempo</span><p class="pie-t">Llegaba antes de existir el motor y se tiraba: divergencia permanente.</p></div>
     </div>
     <p class="remate">
-      No es un argumento contra las pruebas unitarias — son 190 y sostienen el motor y los algoritmos.
-      Es un argumento contra leerlas como si fueran la V&amp;V entera.
+      No es un argumento contra las pruebas unitarias — son {{n_unit}} y sostienen el motor y los
+      algoritmos. Es un argumento contra leerlas como si fueran la V&amp;V entera.
     </p>
   </div>
-  <div class="pie"><span>Resultado</span><span class="mono">17</span></div>
+  <div class="pie"><span>III · V&amp;V</span><span class="mono">30</span></div>
 </section>
 
-<!-- ═══ 18 · Lo que no cubrimos ══════════════════════════════════════════════════════════════ -->
+<!-- ═══ Lo que no cubrimos ═══════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">Cierre</span><span class="tema">Riesgos abiertos</span></div>
-  <div class="cuerpo">
+  <div class="cuerpo ancho">
     <h2>Lo que este proceso <span class="coral">no</span> cubre</h2>
     <ul class="limpia">
       <li><span class="m x">!</span><span><strong>Partida entre redes distintas de verdad.</strong> El código lleva STUN y TURN configurable, pero la prueba necesita dos ubicaciones y no se ha hecho. Es el riesgo abierto más importante para la feria.</span></li>
       <li><span class="m x">·</span><span><strong>Diez jugadores en móviles reales.</strong> Está medido en simulación (D1, D7), no con diez teléfonos.</span></li>
-      <li><span class="m x">·</span><span><strong>Accesibilidad completa.</strong> No es requisito del enunciado y no se ha auditado — más allá del diálogo que salió del análisis estático.</span></li>
-      <li><span class="m x">·</span><span><strong>Cypress no corre en cada commit.</strong> El agente no tiene navegador; las 18 funcionales se lanzan a mano.</span></li>
+      <li><span class="m x">·</span><span><strong>Accesibilidad completa.</strong> No es requisito del enunciado y no se ha auditado, más allá del diálogo que salió del análisis estático.</span></li>
+      <li><span class="m x">·</span><span><strong>Cypress no corre en cada commit.</strong> El agente de CI no tiene navegador; las {{n_e2e}} funcionales se lanzan a mano.</span></li>
     </ul>
     <p class="remate">
       Un plan de V&amp;V que promete cubrirlo todo no es creíble. Decir dónde no se ha mirado es parte
       del informe, no una concesión.
     </p>
   </div>
-  <div class="pie"><span>Cierre</span><span class="mono">18</span></div>
+  <div class="pie"><span>Cierre</span><span class="mono">31</span></div>
 </section>
 
-<!-- ═══ 19 · Remate ══════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Remate ═══════════════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">Cierre</span><span class="tema">Bug · V&amp;V</span></div>
+  <div class="cab"><span class="eje">Cierre</span><span class="tema">Bug · Sistemas Distribuidos + V&amp;V</span></div>
   <div class="cuerpo">
     <h1>Un requisito sin prueba<br>es una intención.</h1>
     <p class="grande apagado">
       Y una configuración que nunca se ha ejecutado, también. El pipeline llevaba semanas escrito y no
-      arrancaba; el criterio de D7 medía la máquina en vez del algoritmo; el arnés de tres nodos perdía
-      una carrera. Nada de eso se ve leyendo el código.
+      arrancaba; el criterio de D7 medía la máquina en vez del algoritmo; el arnés de tres nodos
+      perdía una carrera. Nada de eso se ve leyendo el código.
     </p>
     <div class="rejilla r4">
-      <div class="tarj"><span class="et">SonarQube</span><span class="cifra sm verde">89,0 %</span><div class="pie-t">cobertura · dup. 1,3 %</div></div>
-      <div class="tarj"><span class="et">Jenkins</span><span class="cifra sm verde">7/7</span><div class="pie-t">etapas en verde</div></div>
-      <div class="tarj"><span class="et">Cypress</span><span class="cifra sm verde">18/18</span><div class="pie-t">3 nodos, WebRTC real</div></div>
+      <div class="tarj"><span class="et">SonarQube</span><span class="cifra sm verde">Passed</span><div class="pie-t">89 % cobertura · dup. 1,3 %</div></div>
+      <div class="tarj"><span class="et">Jenkins</span><span class="cifra sm verde">7/7</span><div class="pie-t">etapas, por commit</div></div>
+      <div class="tarj"><span class="et">Cypress</span><span class="cifra sm verde">{{n_e2e}}/{{n_e2e}}</span><div class="pie-t">3 nodos, WebRTC real</div></div>
       <div class="tarj"><span class="et">Seguridad · Distribuida</span><span class="cifra sm verde">11/11 · 7/7</span><div class="pie-t">ataques · propiedades</div></div>
     </div>
   </div>
-  <div class="pie"><span>Reproducible con <code>npm run e2e</code>, <code>vv:security</code>, <code>vv:distributed</code></span><span class="mono">19</span></div>
+  <div class="pie"><span>Reproducible con <code>npm run e2e</code>, <code>vv:security</code>, <code>vv:distributed</code></span><span class="mono">32</span></div>
 </section>
 
 </div><!-- /marco -->
