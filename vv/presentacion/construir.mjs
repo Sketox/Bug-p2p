@@ -117,9 +117,23 @@ if (html.includes('aviso-plantilla')) {
   process.exit(1);
 }
 
+// Una evidencia que falta deja un hueco con el nombre del archivo dentro. Eso ya se subió una vez
+// —siete huecos, incluida la mesa repartida y la pantalla de entrada— y quien se descargó el
+// repositorio en esa media hora se encontró la presentación llena de recuadros vacíos.
+//
+// Avisar no bastó: el aviso pasa entre el resto de la salida y el archivo se escribe igual. Así que
+// ahora no se escribe. Para trabajar en el diseño sin haber corrido las pruebas está
+// `--permitir-huecos`, que lo dice en voz alta y deja claro que eso no se publica.
+if (faltan > 0 && !process.argv.includes('--permitir-huecos')) {
+  console.error(`\n  ✕ faltan ${faltan} evidencia(s): la presentación saldría con huecos.`);
+  console.error('    Genéralas con `npm run e2e` y vuelve a construir.');
+  console.error('    (Si es a propósito, `node vv/presentacion/construir.mjs --permitir-huecos`.)\n');
+  process.exit(1);
+}
+
 writeFileSync(salida, html, 'utf8');
 console.log(`presentación: ${salida} (${(html.length / 1024 / 1024).toFixed(2)} MB)`);
-if (faltan) console.log(`${faltan} evidencia(s) sin generar — corre \`npm run e2e\` y vuelve a construir`);
+if (faltan) console.log(`  ⚠ ${faltan} hueco(s) dentro: esto NO se publica`);
 
 if (process.argv.includes('--pdf')) {
   const chrome = process.env.CHROME_PATH ?? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
