@@ -506,27 +506,53 @@ const COPA = [
 
 const TINTA_COPA: Record<string, string> = { o: '#B8860B', O: '#F2C14E', s: '#FFE9A8' };
 
-function CopaPixel() {
-  const ancho = COPA[0]!.length;
+/**
+ * El bicho: el que da nombre al juego, y el que te ganó. Se dibuja entero y de frente, no aplastado
+ * — perder no es matarlo, es quedártelo en la mano sin resolver.
+ *
+ * Va aquí y no una Pantalla Azul porque **el azul ya significa otra cosa**: es la carta «Pantalla
+ * Azul de la Muerte», con su propio efecto cuando alguien la juega. Repetir esa imagen para el
+ * final de la partida hacía creer que el juego se había roto — dos mensajes distintos con la misma
+ * cara.
+ */
+const BICHO = [
+  ' x       x ',
+  '  x     x  ',
+  '  ooooooo  ',
+  ' oo ooo oo ',
+  'ooooooooooo',
+  'o ooooooo o',
+  'o o     o o',
+  '   oo oo   ',
+];
+
+const TINTA_BICHO: Record<string, string> = { o: '#FF7F50', x: '#ffffff' };
+
+/** Dibuja un mapa de caracteres como píxeles. Lo usan la copa y el bicho. */
+function Pixeles({ mapa, tinta, clase }: { mapa: string[]; tinta: Record<string, string>; clase: string }) {
+  const ancho = mapa[0]!.length;
   return (
     <motion.svg
-      viewBox={`0 0 ${ancho} ${COPA.length}`}
-      className="w-32 sm:w-40 mx-auto pixelated"
-      role="img"
-      aria-label="Copa de ganador"
+      viewBox={`0 0 ${ancho} ${mapa.length}`}
+      className={`${clase} mx-auto pixelated`}
+      aria-hidden
       initial={{ scale: 0.4, rotate: -12, opacity: 0 }}
       animate={{ scale: 1, rotate: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 180, damping: 12, delay: 0.15 }}
     >
-      {COPA.flatMap((fila, y) =>
+      {mapa.flatMap((fila, y) =>
         [...fila].map((c, x) =>
-          TINTA_COPA[c] ? (
-            <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={TINTA_COPA[c]} />
+          tinta[c] ? (
+            <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={tinta[c]} />
           ) : null,
         ),
       )}
     </motion.svg>
   );
+}
+
+function CopaPixel() {
+  return <Pixeles mapa={COPA} tinta={TINTA_COPA} clase="w-32 sm:w-40" />;
 }
 
 /** Ganar es compilar sin errores: la pantalla que todo programador quiere ver. */
@@ -585,47 +611,53 @@ function Victoria({ porAbandono, onReset }: { porAbandono: boolean; onReset?: ()
 }
 
 /**
- * Perder es una Pantalla Azul de la Muerte… en pequeño.
+ * Perder es que la compilación falle: el reverso exacto de ganar.
  *
- * El guiño es bueno —el BSOD **es una carta del mazo**— pero la primera versión ocupaba la pantalla
- * entera y copiaba el texto de Windows demasiado bien: quien la vio creyó que el juego se había
- * caído, no que había perdido. Un chiste que asusta al jugador no es un chiste, es un susto.
- *
- * Así que el BSOD se queda dentro de una tarjeta, con la mesa visible detrás —se ve que no se ha
- * cerrado nada— y lo primero que se lee es **PERDISTE** y quién ganó. La broma del código de
- * detención sigue ahí, pero debajo y en pequeño, que es su sitio.
+ * Ganar dice «0 errores, compilado sin un solo bug»; perder dice lo contrario, con el bicho
+ * delante. Es la misma metáfora leída al revés, y por eso se entiende sin explicarla — mientras que
+ * la Pantalla Azul que había aquí antes chocaba con la carta del mismo nombre: la misma imagen para
+ * «alguien jugó una carta» y para «se acabó la partida» hacía pensar que el juego se había roto.
  */
 function Derrota({ ganador, onReset }: { ganador: string; onReset?: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative w-full h-full grid place-items-center bg-black/80 p-4"
+      className="relative w-full h-full grid place-items-center bg-black/85 p-4"
     >
       <motion.div
         initial={{ scale: 0.85, y: 16, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 210, damping: 20 }}
-        className="w-full max-w-md rounded-2xl border-2 border-black/60 bg-[#1246c8] p-6 sm:p-8 shadow-pixel text-center"
+        className="w-full max-w-md rounded-2xl border-2 border-[#FF7F50] bg-[#1c0d0a] p-6 sm:p-8 shadow-pixel text-center"
       >
-        <p className="font-pixel text-5xl sm:text-6xl text-white leading-none select-none mb-3">:(</p>
+        <Pixeles mapa={BICHO} tinta={TINTA_BICHO} clase="w-28 sm:w-36" />
 
-        <h2 className="font-pixel text-xl sm:text-3xl text-white mb-2">PERDISTE</h2>
+        <motion.h2
+          className="font-pixel text-2xl sm:text-4xl text-[#FF7F50] mt-4 mb-1 drop-shadow-[3px_3px_0_rgba(0,0,0,.6)]"
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.35 }}
+        >
+          PERDISTE
+        </motion.h2>
 
-        <p className="font-pixel text-[11px] sm:text-sm text-white/90 mb-5">
+        <p className="font-pixel text-[11px] sm:text-sm text-white/70 mb-5">
           ganó <span className="text-white">{ganador}</span>
         </p>
 
-        {/* El guiño al BSOD, en su sitio: pequeño y debajo de lo que de verdad importa. */}
-        <div className="font-pixel text-[8px] sm:text-[10px] text-white/60 leading-relaxed bg-black/20 rounded-lg p-3 mb-6">
-          <p>Código de detención: SE_QUEDO_SIN_CARTAS</p>
-          <p className="text-white/40">no es un error del sistema: es que te ganaron</p>
+        {/* La consola del que no llegó a compilar. Mismo formato que la de victoria, al revés. */}
+        <div className="text-left font-pixel text-[9px] sm:text-[11px] leading-relaxed bg-black/50 rounded-lg p-3 sm:p-4 border border-[#FF7F50]/30 mb-6">
+          <p className="text-[#FF7F50]">&gt; build --release</p>
+          <p className="text-white/70">te quedaste con cartas en la mano</p>
+          <p className="text-[#FF7F50]">✗ 1 error &nbsp; build failed</p>
+          <p className="text-white/40">quedó un bug sin resolver</p>
         </div>
 
         {onReset && (
           <button
             onClick={onReset}
-            className="w-full font-pixel text-xs sm:text-sm px-5 py-4 rounded-lg shadow-pixel bg-white text-[#1246c8] hover:brightness-95 active:translate-y-0.5"
+            className="w-full font-pixel text-xs sm:text-sm px-5 py-4 rounded-lg shadow-pixel bg-[#FF7F50] text-[#2b0a02] hover:brightness-110 active:translate-y-0.5"
           >
             Volver al menú
           </button>
