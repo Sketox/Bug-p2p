@@ -19,8 +19,16 @@
 /**
  * Un UUID v4. Usa `crypto.randomUUID` si existe, y si no lo construye con `getRandomValues`.
  *
- * Sirve para identificar jugadores y cargas de página, no para nada secreto: quien mira la red ya
- * ve los identificadores, que viajan en claro por la señalización.
+ * Identifica jugadores y cargas de página —que viajan en claro por la señalización, así que de
+ * secreto no tienen nada— **y además genera el `secret` de reconexión** desde que se corrigió el
+ * ataque S3. Eso sube el listón: un secreto predecible no sería secreto, y el mecanismo que impide
+ * echar a alguien de su propia partida volvería a estar abierto.
+ *
+ * Las dos primeras ramas lo cumplen: `randomUUID` y `getRandomValues` son criptográficamente
+ * seguras. La tercera no —`Math.random` no lo es, y el análisis estático lo señala—, pero es
+ * inalcanzable para cualquiera que pueda jugar: un navegador sin `crypto.getRandomValues` (anterior
+ * a 2011) tampoco tiene `RTCPeerConnection`, así que no llega a entrar en una sala. Se deja como
+ * último recurso para que la página no muera con una excepción, que es lo que hacía antes.
  */
 export function uid(): string {
   const c = globalThis.crypto;

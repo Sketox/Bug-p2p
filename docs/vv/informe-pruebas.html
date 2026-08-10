@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Bug — Informe de resultados de pruebas</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  :root {
+    --tinta: #14261d; --suave: #5b6b62; --linea: #d7e0da;
+    --verde: #1c7c4c; --rojo: #b3261e; --fondo: #f6f8f7;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--tinta); background: #fff;
+    font: 10.5pt/1.5 "Segoe UI", system-ui, sans-serif;
+  }
+  .hoja { max-width: 190mm; margin: 0 auto; padding: 10mm 0 20mm; }
+  h1 { font-size: 22pt; margin: 0 0 2mm; letter-spacing: -0.4pt; }
+  h2 {
+    font-size: 13pt; margin: 10mm 0 3mm; padding-bottom: 1.5mm;
+    border-bottom: 2px solid var(--tinta); page-break-after: avoid;
+  }
+  h3 { font-size: 10.5pt; margin: 5mm 0 2mm; color: var(--suave); page-break-after: avoid; }
+  .sub { color: var(--suave); margin: 0 0 6mm; }
+  .resumen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin: 5mm 0 8mm; }
+  .kpi { border: 1px solid var(--linea); border-radius: 3mm; padding: 4mm; background: var(--fondo); }
+  .kpi .n { font-size: 20pt; font-weight: 700; line-height: 1; }
+  .kpi .t { font-size: 8pt; color: var(--suave); margin-top: 1.5mm; }
+  .ok { color: var(--verde); } .no { color: var(--rojo); }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9pt; }
+  th, td { text-align: left; padding: 1.4mm 2mm; border-bottom: 1px solid var(--linea); vertical-align: top; }
+  th { font-size: 8pt; text-transform: uppercase; letter-spacing: 0.4pt; color: var(--suave); }
+  td.estado { width: 6mm; color: var(--verde); font-weight: 700; }
+  tr.malo td.estado { color: var(--rojo); }
+  td.num { width: 18mm; text-align: right; color: var(--suave); font-variant-numeric: tabular-nums; }
+  tbody tr { page-break-inside: avoid; }
+  .barra { height: 3mm; background: var(--linea); border-radius: 2mm; overflow: hidden; min-width: 30mm; }
+  .barra i { display: block; height: 100%; background: var(--verde); }
+  .met { font-size: 8.5pt; color: var(--suave); }
+  .met code { color: var(--tinta); }
+  .nota { background: var(--fondo); border-left: 3px solid var(--suave); padding: 3mm 4mm; margin: 3mm 0; font-size: 9pt; }
+  .pie { margin-top: 10mm; padding-top: 3mm; border-top: 1px solid var(--linea); color: var(--suave); font-size: 8pt; }
+  .sec { page-break-inside: avoid; }
+</style>
+</head>
+<body>
+<div class="hoja">
+
+<h1>Bug — Informe de resultados de pruebas</h1>
+<p class="sub">
+  Juego de cartas distribuido sin servidor de partida · Bloque de Verificación y Validación<br>
+  Generado el 10 de agosto de 2026, 12:01 p. m. a partir de los artefactos de la última ejecución.
+</p>
+
+<div class="resumen">
+  <div class="kpi"><div class="n">227</div><div class="t">comprobaciones</div></div>
+  <div class="kpi"><div class="n ok">0</div><div class="t">fallos</div></div>
+  <div class="kpi"><div class="n">190</div><div class="t">unitarias (Vitest)</div></div>
+  <div class="kpi"><div class="n">19</div><div class="t">funcionales (Cypress)</div></div>
+</div>
+
+<h2>1 · Pruebas unitarias y de integración — Vitest</h2>
+<div class="sec">
+  <h3>engine — motor de reglas — 74 casos, 0 fallos <span class="met">· 10 de agosto de 2026, 11:59 a. m.</span></h3>
+  <table><tbody><tr class="">
+        <td class="estado">✓</td>
+        <td>las cartas de Caos tienen color: hay que igualar &gt; una carta de Caos de otro color no se puede jugar</td>
+        <td class="num">0.009 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>las cartas de Caos tienen color: hay que igualar &gt; pero sí sobre su color, o sobre otra carta de su tipo</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Virus Troyano — lo que el motor no deja hacer &gt; no puedes infectarte a ti mismo</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Virus Troyano — lo que el motor no deja hacer &gt; hay que elegir víctima</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Virus Troyano — lo que el motor no deja hacer &gt; no puedes regalar cartas que no tienes</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Virus Troyano — lo que el motor no deja hacer &gt; la partida sigue con el color del troyano, sin preguntar</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Virus Troyano — lo que el motor no deja hacer &gt; si el regalo te deja sin cartas, GANAS (y la mesa no se queda muerta)</td>
+        <td class="num">0.004 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Virus Troyano — lo que el motor no deja hacer &gt; regala como mucho 2, aunque mandes más</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Apagar y volver a prender — la carta base &gt; la base fija el color, sin preguntar</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Apagar y volver a prender — la carta base &gt; sin base, la partida sigue con el color del propio reinicio</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Apagar y volver a prender — la carta base &gt; la base no puede ser un comodín (un pozo que arranca en comodín no dice a qué igualar)</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Apagar y volver a prender — la carta base &gt; la base tampoco puede ser una carta de Caos</td>
+        <td class="num">0.007 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Apagar y volver a prender — la carta base &gt; si la base era tu última carta, ganas</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>mazo &gt; tiene 124 cartas (29 por color + 8 comodines)</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>mazo &gt; tiene ids únicos</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>mazo &gt; composición por color y comodines</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>mazo &gt; solo los comodines van sin color; el resto lleva el suyo</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>rng determinista &gt; misma semilla → misma baraja</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>rng determinista &gt; semillas distintas → baraja distinta</td>
+        <td class="num">0.004 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>createGame &gt; reparte 7 cartas a cada jugador</td>
+        <td class="num">0.007 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>createGame &gt; inicia el pozo con una carta numérica y fija el color</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>createGame &gt; es determinista: misma semilla → misma reparticón</td>
+        <td class="num">0.009 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>createGame &gt; rechaza menos de 2 jugadores</td>
+        <td class="num">0.004 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>createGame &gt; el que abre la partida sale de la semilla, no es siempre el primero de la lista</td>
+        <td class="num">0.016 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>createGame &gt; …y aun así es el mismo en todos los nodos (misma semilla → mismo turno inicial)</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>canPlay &gt; coincide por color</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>canPlay &gt; coincide por número aunque cambie el color</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>canPlay &gt; coincide por símbolo (skip sobre skip)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>canPlay &gt; los comodines siempre se pueden jugar</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>canPlay &gt; rechaza cartas que no coinciden</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>jugar cartas (PLAY) &gt; juega una carta válida y pasa el turno</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>jugar cartas (PLAY) &gt; no muta el estado previo (pureza)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>jugar cartas (PLAY) &gt; rechaza jugar fuera de turno</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>jugar cartas (PLAY) &gt; rechaza jugada ilegal</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efectos de especiales &gt; skip salta al siguiente jugador</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efectos de especiales &gt; reverse invierte la dirección con 3+ jugadores</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efectos de especiales &gt; reverse actúa como skip con 2 jugadores</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efectos de especiales &gt; draw2: la víctima roba 2 y pierde el turno</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efectos de especiales &gt; wild exige color y lo fija</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efectos de especiales &gt; wild_draw4: la víctima roba 4 y es saltada</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>robar y pasar &gt; DRAW roba una carta; si no es jugable pasa el turno</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>robar y pasar &gt; DRAW mantiene el turno si la carta robada es jugable</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>victoria &gt; gana quien descarta su última carta</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>victoria &gt; no se puede jugar tras terminar</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>regla ¡Bug! &gt; acusar a quien no gritó Bug con 1 carta lo penaliza con 2</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>regla ¡Bug! &gt; si gritó Bug, no hay penalización</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Update de Windows +4 (con color) &gt; el siguiente roba 4 y pierde el turno</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Update de Windows +4 (con color) &gt; no es un comodín: hay que igualar el pozo y el color lo trae la carta</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>cartas de caos &gt; trojan entrega 2 cartas a otro jugador</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>cartas de caos &gt; coffee_spill hace que todos pasen su mano al siguiente</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>cartas de caos &gt; reboot con carta base coloca un nuevo tope y color</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; se puede jugar aunque no sea tu turno, y la ronda sigue desde el que interrumpe</td>
+        <td class="num">0.007 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; para cortar hay que igualar el pozo: con otro color, no cuelas</td>
+        <td class="num">0.004 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; copia el efecto de la carta interrumpida: un +2 lo paga el siguiente al que interrumpe</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; también copia el Update grande: el +4 de color</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; no puedes interrumpir tu propia jugada</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; el portapapeles no copia el caos: si el tope es una carta de caos, solo te cuelas</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; interrumpir con tu última carta gana la partida</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; el que se queda sin turno por una interrupción ve rechazada su jugada</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; en tu propio turno es una carta corriente: fija su color y pasa el turno</td>
+        <td class="num">0.009 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Copiar y Pegar — interrupción fuera de turno &gt; un ausente no puede interrumpir</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>QUIT — abandono &gt; marca al jugador como caído y devuelve su mano al mazo</td>
+        <td class="num">0.010 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>QUIT — abandono &gt; si abandona el que estaba en turno, la mesa no se congela</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>QUIT — abandono &gt; el turno salta al ausente para siempre (no hay que rescatarlo cada ronda)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>QUIT — abandono &gt; quedarse solo en la mesa gana la partida por abandono</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>QUIT — abandono &gt; es idempotente: el mismo abandono dos veces deja el estado igual</td>
+        <td class="num">0.004 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>QUIT — abandono &gt; el Derrame de Café no le pasa la mano a quien ya abandonó</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>QUIT — abandono &gt; el Troyano no puede infectar a un ausente</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>no se pasa sin robar &gt; pasar sin haber robado se rechaza</td>
+        <td class="num">0.009 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>no se pasa sin robar &gt; tras robar, ya puedes pasar</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>no se pasa sin robar &gt; robar marca el turno como &quot;ya robado&quot;</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>no se pasa sin robar &gt; la marca se borra sola al cambiar el turno (no se hereda)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>se acabó el tiempo &gt; robas 2 cartas de castigo y pierdes el turno</td>
+        <td class="num">0.004 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>se acabó el tiempo &gt; un TIMEOUT contra quien NO está en turno se rechaza</td>
+        <td class="num">0.002 s</td>
+      </tr></tbody></table>
+</div>
+<div class="sec">
+  <h3>net — malla, Lamport, testigo, Bully — 60 casos, 0 fallos <span class="met">· 10 de agosto de 2026, 12:00 p. m.</span></h3>
+  <table><tbody><tr class="">
+        <td class="estado">✓</td>
+        <td>BullyElection &gt; el nodo más alto se proclama sin esperar a nadie</td>
+        <td class="num">0.007 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>BullyElection &gt; si cae el líder, gana el peerId más alto de los que quedan</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>BullyElection &gt; sobrevive a una segunda caída durante la propia elección</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>BullyElection &gt; quien recibe un anuncio de alguien inferior lo desafía y acaba mandando él</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>BullyElection &gt; la caída de un nodo cualquiera (que no es el líder) no dispara elecciones</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>FailureDetector &gt; presume vivo al peer recién vigilado</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>FailureDetector &gt; escala de vivo a sospechoso y de sospechoso a caído según el silencio</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>FailureDetector &gt; un latido rescata al sospechoso antes de declararlo caído</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>FailureDetector &gt; un caído que vuelve a latir resucita (reconexión)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>FailureDetector &gt; cada caída se anuncia una sola vez, aunque se siga barriendo</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>FailureDetector &gt; el latido propio respeta el intervalo</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>FailureDetector &gt; olvidar a un peer lo saca del informe (salida limpia)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>FailureDetector &gt; uno NUNCA se da por caído a sí mismo</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>interrupción en la malla &gt; no necesita el testigo, y aun así todos los nodos convergen</td>
+        <td class="num">0.026 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>interrupción en la malla &gt; el que tenía el turno cede el testigo cuando el estado deja de dárselo</td>
+        <td class="num">0.008 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>interrupción en la malla &gt; carrera: si la interrupción gana, la jugada del que tenía el turno se rechaza en TODOS los nodos</td>
+        <td class="num">0.012 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>interrupción en la malla &gt; dos interrupciones a la vez: solo la primera corta; la segunda se resuelve igual en todos</td>
+        <td class="num">0.016 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>LamportClock &gt; avanza de uno en uno al emitir eventos propios</td>
+        <td class="num">0.006 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>LamportClock &gt; al recibir un sello ajeno se sincroniza a max(propio, ajeno) + 1</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>LamportClock &gt; preserva la causalidad: si A causa B, lamport(A) &lt; lamport(B)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>orden total &gt; ordena por sello de Lamport</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>orden total &gt; desempata eventos concurrentes por peerId, igual en todos los nodos</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>orden total &gt; dos nodos ordenan un lote desordenado de forma idéntica</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>TurnToken (exclusión mutua) &gt; solo el poseedor puede actuar</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>TurnToken (exclusión mutua) &gt; quien no tiene el testigo no puede cederlo</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>TurnToken (exclusión mutua) &gt; el testigo circula y hay exactamente un poseedor en todo momento</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>TurnToken (exclusión mutua) &gt; descarta anuncios rezagados (fantasmas de una vuelta anterior)</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>TurnToken (exclusión mutua) &gt; la regeneración tras una elección gana sobre el testigo perdido (Fase 5)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización por la malla &gt; el que llega hace UN handshake por el servidor, y el resto de la malla se hace sola</td>
+        <td class="num">0.028 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización por la malla &gt; si el servidor muere justo tras el primer contacto, el recién llegado completa su malla igual</td>
+        <td class="num">0.007 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización por la malla &gt; si el introductor es un fantasma, se pide otro (y se entra igual)</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización por la malla &gt; el que se va y vuelve se reconecta con TODA la mesa, no solo con su introductor</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización por la malla &gt; a uno se le cae el WebSocket y NADIE derriba sus canales sanos</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización por la malla &gt; pero si SE DESPIDE de verdad, sus canales sí se cierran</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización por la malla &gt; la señalización de la malla no se cuela en los mensajes del juego</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>desconexión limpia: un jugador se despide &gt; la mesa lo saca de la rotación y los que quedan siguen convergidos</td>
+        <td class="num">0.043 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>desconexión limpia: un jugador se despide &gt; nadie puede echar a nadie: el adiós solo vale si lo firma el que se va</td>
+        <td class="num">0.004 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>desconexión limpia: un jugador se despide &gt; si el que se va tenía el testigo, lo cede al salir</td>
+        <td class="num">0.009 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>desconexión limpia: un jugador se despide &gt; quedarse solo gana la partida: no hay mesa contra nadie</td>
+        <td class="num">0.010 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>desconexión limpia: un jugador se despide &gt; un adiós repetido no descuadra a nadie (la malla reenvía)</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>tolerancia a fallos: caída del jugador en turno &gt; el líder destraba la partida y todos (incluido el que vuelve) convergen</td>
+        <td class="num">0.032 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>tolerancia a fallos: caída del jugador en turno &gt; un TIMEOUT contra quien no está en turno lo rechaza el motor, en todos los nodos por igual</td>
+        <td class="num">0.006 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>un nodo que se desvía &gt; se queda con otra partida: perder UN evento basta</td>
+        <td class="num">0.019 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>un nodo que se desvía &gt; adoptar la historia ajena la devuelve a la partida</td>
+        <td class="num">0.009 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>un nodo que se desvía &gt; funciona aunque el desviado tenga eventos DE MÁS (no solo huecos)</td>
+        <td class="num">0.015 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>un nodo que se desvía &gt; tras adoptar, sigue jugando con normalidad (no queda tocada)</td>
+        <td class="num">0.008 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>el testigo, tras adoptar otra partida &gt; se acepta aunque su `seq` sea menor que el mío</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>convergencia de la malla &gt; la simulación produce una partida con suficientes eventos para ser interesante</td>
+        <td class="num">0.174 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>convergencia de la malla &gt; 3 nodos con órdenes de entrega distintos convergen al mismo estado</td>
+        <td class="num">3.969 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>convergencia de la malla &gt; el estado convergido es el mismo que aplicando el log en orden, sin réplica</td>
+        <td class="num">2.113 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>convergencia de la malla &gt; un evento que llega tarde dispara replay y no corrompe el estado</td>
+        <td class="num">0.376 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>convergencia de la malla &gt; reentregar un evento no lo aplica dos veces (idempotencia)</td>
+        <td class="num">0.158 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>eventos concurrentes &gt; dos eventos con el mismo sello se ordenan igual en todos los nodos</td>
+        <td class="num">0.075 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>eventos inválidos &gt; una jugada fuera de turno se rechaza igual en todos los nodos</td>
+        <td class="num">0.219 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>la sala está llena &gt; avisa con el aforo, para que la pantalla pueda decir cuánta gente cabía</td>
+        <td class="num">0.016 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>la sala está llena &gt; no se queda aporreando la puerta: un &quot;no cabes&quot; no se reintenta</td>
+        <td class="num">0.007 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>la señalización se cae a media partida &gt; los DataChannels sobreviven y las jugadas siguen llegando y convergiendo</td>
+        <td class="num">0.035 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>la señalización se cae a media partida &gt; cuando vuelve, la sala se recompone SIN tocar los canales que seguían sanos</td>
+        <td class="num">0.011 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>la señalización se cae a media partida &gt; pero si el peer RECARGÓ de verdad, su canal viejo sí se tira y se rehace</td>
+        <td class="num">0.006 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>la señalización se cae a media partida &gt; nadie nuevo puede entrar mientras esté caída: es lo único que se pierde</td>
+        <td class="num">0.007 s</td>
+      </tr></tbody></table>
+</div>
+<div class="sec">
+  <h3>signaling — servidor WebSocket — 27 casos, 0 fallos <span class="met">· 10 de agosto de 2026, 12:00 p. m.</span></h3>
+  <table><tbody><tr class="">
+        <td class="estado">✓</td>
+        <td>aforo de la sala &gt; cabe la misma gente que en una partida (las dos copias del número, atadas)</td>
+        <td class="num">0.005 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>aforo de la sala &gt; deja entrar a 10 y rebota al siguiente</td>
+        <td class="num">0.174 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>aforo de la sala &gt; al rebotado le cierran la puerta: no se queda dentro a medias</td>
+        <td class="num">0.090 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>aforo de la sala &gt; quien YA estaba dentro puede volver aunque la sala esté llena</td>
+        <td class="num">0.098 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>aforo de la sala &gt; … pero solo él: con la sala llena, un impostor con su peerId no entra en su lugar</td>
+        <td class="num">0.080 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>aforo de la sala &gt; el aforo es por sala, no del servidor entero</td>
+        <td class="num">0.051 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>parseClientMsg: nada entra sin comprobarse (ataque S8) &gt; acepta los cuatro mensajes del protocolo bien formados</td>
+        <td class="num">0.009 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>parseClientMsg: nada entra sin comprobarse (ataque S8) &gt; rechaza el mensaje que tumbaba el proceso: `tried` que no es una lista</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>parseClientMsg: nada entra sin comprobarse (ataque S8) &gt; rechaza JSON inválido, valores sueltos y tipos que no tocan</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>parseClientMsg: nada entra sin comprobarse (ataque S8) &gt; rechaza campos desmesurados sin necesidad de mirar su contenido</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>parseClientMsg: nada entra sin comprobarse (ataque S8) &gt; deja pasar `data` opaco: aquí no se interpreta SDP</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>parseClientMsg: nada entra sin comprobarse (ataque S8) &gt; el tope de tamaño deja sitio de sobra para una señal real</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Cubo: límite de ritmo con ráfaga (ataque S5) &gt; admite la ráfaga de entrada a una sala y luego corta el ritmo sostenido</td>
+        <td class="num">0.010 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Cubo: límite de ritmo con ráfaga (ataque S5) &gt; se rellena con el tiempo: un cliente normal nunca lo nota</td>
+        <td class="num">0.006 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Cubo: límite de ritmo con ráfaga (ataque S5) &gt; no acumula más allá de su capacidad</td>
+        <td class="num">0.008 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Repeticiones: la misma señal dos veces (ataque S4) &gt; descarta la repetición exacta dentro de la ventana</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Repeticiones: la misma señal dos veces (ataque S4) &gt; deja pasar la misma señal cuando ya pasó la ventana</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>Repeticiones: la misma señal dos veces (ataque S4) &gt; no confunde señales distintas: cada candidato ICE es uno nuevo</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>endpoint de salud &gt; responde a GET en /health y en la raíz</td>
+        <td class="num">0.219 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>endpoint de salud &gt; responde a HEAD igual que a GET, y sin cuerpo</td>
+        <td class="num">0.037 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>endpoint de salud &gt; lo que no es un sondeo de salud sigue siendo 404</td>
+        <td class="num">0.008 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>el servidor presenta a uno, no a la sala entera &gt; al primero que llega no le presenta a nadie</td>
+        <td class="num">0.128 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>el servidor presenta a uno, no a la sala entera &gt; con tres dentro, al cuarto le da UN introductor (no tres)</td>
+        <td class="num">0.313 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>el servidor presenta a uno, no a la sala entera &gt; solo avisa al introductor de que llegó alguien; los demás se enteran por la malla</td>
+        <td class="num">0.305 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>el servidor presenta a uno, no a la sala entera &gt; si el introductor no sirve, da otro (y avisa a ese otro)</td>
+        <td class="num">0.294 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>el servidor presenta a uno, no a la sala entera &gt; distingue al que SE DESPIDE del que se le cayó el socket</td>
+        <td class="num">0.516 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>el servidor presenta a uno, no a la sala entera &gt; cuando no queda nadie por probar, contesta la lista vacía y se acabó</td>
+        <td class="num">0.220 s</td>
+      </tr></tbody></table>
+</div>
+<div class="sec">
+  <h3>web — lógica de interfaz — 29 casos, 0 fallos <span class="met">· 10 de agosto de 2026, 12:00 p. m.</span></h3>
+  <table><tbody><tr class="">
+        <td class="estado">✓</td>
+        <td>sprite y mazo &gt; cada carta del mazo tiene su dibujo, con su color</td>
+        <td class="num">0.010 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>sprite y mazo &gt; el reverso de las cartas y el logo también están</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>sprite y mazo &gt; los dos comodines son los únicos sin color en el dibujo</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>qué se le pregunta al jugador &gt; solo los comodines (color), el troyano (víctima) y el reinicio (base)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efecto de cada carta &gt; el BSOD (+4) tiene su pantalla azul</td>
+        <td class="num">0.006 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efecto de cada carta &gt; los especiales de color interfieren la señal</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efecto de cada carta &gt; las de reinicio apagan y prenden la pantalla</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efecto de cada carta &gt; cada carta de caos tiene el suyo</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efecto de cada carta &gt; los números no montan espectáculo (si no, la partida sería un epiléptico)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>efecto de cada carta &gt; ninguna carta especial se queda sin efecto</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>arranque desde una invitación &gt; la sala explícita del enlace desplaza a la sala guardada en la pestaña</td>
+        <td class="num">0.006 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>qué señalización se usa &gt; sin parámetro ni memoria, la configurada en el build</td>
+        <td class="num">0.007 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>qué señalización se usa &gt; el enlace del QR manda: la sala se juega en la señalización del anfitrión</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>qué señalización se usa &gt; sin parámetro, vale la que se recordó de esta sesión (un F5 no te echa de la sala)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>qué señalización se usa &gt; el enlace gana a la memoria (te acaban de invitar a otra sala)</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>qué señalización se usa &gt; rechaza esquemas que no sean ws/wss</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>qué señalización se usa &gt; una memoria corrupta tampoco cuela</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización del propio sitio (imagen todo-en-uno) &gt; la deduce del origen cuando no hay nada configurado</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización del propio sitio (imagen todo-en-uno) &gt; en `next dev` no: ahí la señalización corre en su propio puerto</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización del propio sitio (imagen todo-en-uno) &gt; pero el CONTENEDOR en localhost sí la deduce de su origen</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>señalización del propio sitio (imagen todo-en-uno) &gt; el enlace del QR sigue mandando sobre el origen</td>
+        <td class="num">0.001 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>enlace de invitación (el que va dentro del QR) &gt; lleva la sala y la señalización</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>enlace de invitación (el que va dentro del QR) &gt; no arrastra la invitación anterior (el anfitrión pudo llegar por otro QR)</td>
+        <td class="num">0.003 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>sala invitada &gt; se lee del enlace y se normaliza</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>aviso de &quot;solo funciona aquí&quot; &gt; detecta las URLs locales, que no significan nada para el móvil que escanea</td>
+        <td class="num">0.002 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>identificadores únicos &gt; usa `crypto.randomUUID` cuando el navegador lo tiene</td>
+        <td class="num">0.014 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>identificadores únicos &gt; sigue funcionando SIN `randomUUID` (la web servida por IP, sin HTTPS)</td>
+        <td class="num">0.004 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>identificadores únicos &gt; no repite (mil seguidos, sin `randomUUID`)</td>
+        <td class="num">0.039 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>identificadores únicos &gt; y aguanta un navegador sin `crypto` en absoluto</td>
+        <td class="num">0.003 s</td>
+      </tr></tbody></table>
+</div>
+
+<h2>2 · Pruebas funcionales en navegador — Cypress</h2>
+<div class="nota">
+  Las cuatro de <code>malla de tres nodos</code> levantan <strong>tres nodos simultáneos con WebRTC
+  real</strong> y comparan la huella del estado replicado de los tres. Es la capa que ninguna prueba
+  unitaria puede dar: <code>RTCPeerConnection</code> no existe en Node.
+</div>
+<div class="sec">
+  <h3>malla de tres nodos — 5 casos, 0 fallos
+    <span class="met">· 10 de agosto de 2026, 11:52 a. m.</span></h3>
+  <table><tbody><tr class="">
+        <td class="estado">✓</td>
+        <td>malla de tres nodos los tres se ven en el lobby y el anfitrión reparte el código</td>
+        <td class="num">14.294 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>malla de tres nodos al empezar la partida, los tres convergen al mismo estado</td>
+        <td class="num">20.025 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>malla de tres nodos una jugada de uno la ven los tres, y siguen de acuerdo</td>
+        <td class="num">20.442 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>malla de tres nodos la Pantalla Maestra enseña la malla por dentro: líder, testigo y convergencia</td>
+        <td class="num">21.705 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>malla de tres nodos el que se va deja de estar en la mesa, y los que quedan siguen de acuerdo</td>
+        <td class="num">17.390 s</td>
+      </tr></tbody></table>
+</div>
+<div class="sec">
+  <h3>partida local (hot-seat) — 6 casos, 0 fallos
+    <span class="met">· 10 de agosto de 2026, 11:50 a. m.</span></h3>
+  <table><tbody><tr class="">
+        <td class="estado">✓</td>
+        <td>partida local (hot-seat) reparte, muestra la mesa y dice de quién es el turno</td>
+        <td class="num">5.505 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>partida local (hot-seat) robar te deja la carta si sirve, y te quita el turno si no</td>
+        <td class="num">4.113 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>partida local (hot-seat) una carta que no encaja no se puede jugar; una que sí, se juega y cambia el pozo</td>
+        <td class="num">4.020 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>partida local (hot-seat) nunca se puede pasar sin haber robado</td>
+        <td class="num">3.306 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>partida local (hot-seat) el turno acaba rotando al siguiente jugador</td>
+        <td class="num">3.418 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>partida local (hot-seat) se puede consultar las reglas sin salir de la partida</td>
+        <td class="num">3.679 s</td>
+      </tr></tbody></table>
+</div>
+<div class="sec">
+  <h3>menú principal — 8 casos, 0 fallos
+    <span class="met">· 10 de agosto de 2026, 11:50 a. m.</span></h3>
+  <table><tbody><tr class="">
+        <td class="estado">✓</td>
+        <td>menú principal no deja crear una sala sin nombre, y lo permite en cuanto lo hay</td>
+        <td class="num">5.234 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>menú principal unirse exige nombre Y código</td>
+        <td class="num">3.490 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>menú principal el código de sala se escribe siempre en mayúsculas</td>
+        <td class="num">2.631 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>menú principal las reglas se pueden leer sin empezar ninguna partida</td>
+        <td class="num">41.197 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>menú principal cabe en un móvil de 360 px sin desbordar a lo ancho</td>
+        <td class="num">6.108 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>invitación por QR quien llega con `?r=` solo tiene que poner su nombre</td>
+        <td class="num">3.806 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>invitación por QR un enlace no puede elegir a qué se conecta tu navegador</td>
+        <td class="num">2.976 s</td>
+      </tr>
+<tr class="">
+        <td class="estado">✓</td>
+        <td>invitación por QR acepta la señalización que venga en el enlace si es un WebSocket</td>
+        <td class="num">2.974 s</td>
+      </tr></tbody></table>
+</div>
+
+<h2>3 · Pruebas de seguridad — 11/11 ataques bloqueados</h2>
+<p class="met">Objetivo: <code>signaling/src/server.ts (WebSocket + HTTP)</code> · ejecución del 8 de agosto de 2026, 3:59 p. m.</p>
+<table>
+  <thead><tr><th></th><th>ID</th><th>Ataque</th><th>Categoría</th><th>Severidad</th><th>Observado</th></tr></thead>
+  <tbody>
+  <tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S1</strong></td>
+      <td>Suplantación del emisor en una señal WebRTC</td>
+      <td>Spoofing</td>
+      <td>alta</td>
+      <td>El servidor descartó la señal con emisor falsificado.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S2</strong></td>
+      <td>Inyección de señales sin pertenecer a la sala</td>
+      <td>Control de acceso</td>
+      <td>alta</td>
+      <td>El servidor exige pertenecer a la sala para enviar señales.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S3</strong></td>
+      <td>Secuestro de plaza: `join` con el peerId de otro</td>
+      <td>Spoofing / DoS dirigido</td>
+      <td>crítica</td>
+      <td>Los dos impostores fueron rechazados y Alice recuperó su sitio con su secreto.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S4</strong></td>
+      <td>Replay de una oferta de handshake</td>
+      <td>Replay</td>
+      <td>media</td>
+      <td>A Bob le llegaron 1 copias de la misma oferta.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S5</strong></td>
+      <td>Inundación de mensajes desde una conexión</td>
+      <td>Flooding / DoS</td>
+      <td>alta</td>
+      <td>Jugador legítimo atendido en 87 ms; el inundador fue desconectado.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S6</strong></td>
+      <td>Agotamiento de memoria creando salas</td>
+      <td>Flooding / DoS</td>
+      <td>media</td>
+      <td>64 conexiones aceptadas y 2936 rechazadas de 3000 intentos; el servidor sigue en pie y atendió a un jugador normal en 2620 ms.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S7</strong></td>
+      <td>Mensaje desmesurado (32 MB en un `signal`)</td>
+      <td>Flooding / DoS</td>
+      <td>media</td>
+      <td>El mensaje desmesurado fue rechazado y la conexión cerrada.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S8</strong></td>
+      <td>Mensajes malformados y tipos inesperados</td>
+      <td>Robustez de entrada</td>
+      <td>crítica</td>
+      <td>Sobrevivió a las 9 entradas malformadas y siguió atendiendo.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S9</strong></td>
+      <td>Saltarse el aforo de la sala</td>
+      <td>Control de acceso</td>
+      <td>media</td>
+      <td>10 admitidos y 5 rechazados con `room-full` (aforo 10).</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S10</strong></td>
+      <td>Fuga del censo de la sala a un curioso</td>
+      <td>Fuga de información</td>
+      <td>baja</td>
+      <td>El servidor reveló 1 identidad(es) de una mesa de 4.</td>
+    </tr>
+<tr class="">
+      <td class="estado">✓</td>
+      <td><strong>S11</strong></td>
+      <td>Expulsar a otro con un `leave` ajeno</td>
+      <td>Spoofing</td>
+      <td>alta</td>
+      <td>El `leave` solo afecta a quien lo envía (el servidor ignora el peerId del mensaje).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>4 · Validación distribuida — 7/7 propiedades</h2>
+<p class="met">Ejecución del 8 de agosto de 2026, 4:03 p. m.</p>
+<div class="sec">
+  <h3>D1 · Convergencia de réplicas con la red revuelta — <span class="ok">CUMPLE</span></h3>
+  <p class="met"><strong>Consistencia (todos los nodos acaban en el mismo estado).</strong> Con 3, 5 y 10 nodos, latencias de 5-120 ms y entregas duplicadas, todas las réplicas terminan con la misma huella de estado, y esa huella coincide con aplicar el log en orden.</p>
+  <table><tbody>
+  <tr><td>nodos 3 eventos</td><td class="num" style="width:auto">120</td></tr>
+<tr><td>nodos 3 entregas</td><td class="num" style="width:auto">424</td></tr>
+<tr><td>nodos 3 duplicados</td><td class="num" style="width:auto">64</td></tr>
+<tr><td>nodos 3 convergen</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 3 igual al oraculo</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 3 ms virtuales</td><td class="num" style="width:auto">119</td></tr>
+<tr><td>nodos 3 ms cpu</td><td class="num" style="width:auto">17836.7</td></tr>
+<tr><td>nodos 5 eventos</td><td class="num" style="width:auto">30</td></tr>
+<tr><td>nodos 5 entregas</td><td class="num" style="width:auto">167</td></tr>
+<tr><td>nodos 5 duplicados</td><td class="num" style="width:auto">17</td></tr>
+<tr><td>nodos 5 convergen</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 5 igual al oraculo</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 5 ms virtuales</td><td class="num" style="width:auto">119</td></tr>
+<tr><td>nodos 5 ms cpu</td><td class="num" style="width:auto">1882</td></tr>
+<tr><td>nodos 10 eventos</td><td class="num" style="width:auto">59</td></tr>
+<tr><td>nodos 10 entregas</td><td class="num" style="width:auto">682</td></tr>
+<tr><td>nodos 10 duplicados</td><td class="num" style="width:auto">92</td></tr>
+<tr><td>nodos 10 convergen</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 10 igual al oraculo</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 10 ms virtuales</td><td class="num" style="width:auto">119</td></tr>
+<tr><td>nodos 10 ms cpu</td><td class="num" style="width:auto">13910.3</td></tr>
+  </tbody></table>
+</div>
+<div class="sec">
+  <h3>D2 · Orden total de eventos concurrentes (Lamport + desempate) — <span class="ok">CUMPLE</span></h3>
+  <p class="met"><strong>Ordenamiento causal.</strong> Tres eventos con el mismo sello de Lamport, entregados en 12 órdenes distintos, quedan en la misma secuencia y producen el mismo estado en todos los nodos.</p>
+  <table><tbody>
+  <tr><td>ordenesProbados</td><td class="num" style="width:auto">12</td></tr>
+<tr><td>secuenciaAcordada</td><td class="num" style="width:auto">[&quot;p00&quot;,&quot;p01&quot;,&quot;p02&quot;]</td></tr>
+<tr><td>huellasDistintas</td><td class="num" style="width:auto">1</td></tr>
+<tr><td>relojRespetaCausalidad</td><td class="num" style="width:auto">true</td></tr>
+  </tbody></table>
+</div>
+<div class="sec">
+  <h3>D3 · Exclusión mutua sobre el turno (testigo con secuencia) — <span class="ok">CUMPLE</span></h3>
+  <p class="met"><strong>Exclusión mutua.</strong> En 200 cesiones sobre 5 nodos, nunca hay dos que se crean con el testigo, los anuncios rezagados se descartan por su número de secuencia, y quien no lo tiene no puede cederlo.</p>
+  <table><tbody>
+  <tr><td>cesiones</td><td class="num" style="width:auto">200</td></tr>
+<tr><td>instantesConPoseedorUnico</td><td class="num" style="width:auto">200</td></tr>
+<tr><td>violacionesDeExclusionMutua</td><td class="num" style="width:auto">0</td></tr>
+<tr><td>anunciosRezagadosDescartados</td><td class="num" style="width:auto">234</td></tr>
+<tr><td>cesionSinTestigoRechazada</td><td class="num" style="width:auto">true</td></tr>
+  </tbody></table>
+</div>
+<div class="sec">
+  <h3>D4 · Detección de caídas por latidos (dos escalones) — <span class="ok">CUMPLE</span></h3>
+  <p class="met"><strong>Tolerancia a fallos — detección.</strong> Un nodo que deja de latir pasa a sospechoso al superar 2,5 s de silencio y a caído al superar 6 s; al volver se readmite; ningún nodo se declara caído a sí mismo.</p>
+  <table><tbody>
+  <tr><td>vigilados</td><td class="num" style="width:auto">3</td></tr>
+<tr><td>msHastaSospechoso</td><td class="num" style="width:auto">2500</td></tr>
+<tr><td>msHastaCaido</td><td class="num" style="width:auto">6000</td></tr>
+<tr><td>umbralSospechoso</td><td class="num" style="width:auto">2500</td></tr>
+<tr><td>umbralCaido</td><td class="num" style="width:auto">6000</td></tr>
+<tr><td>readmitidoAlVolver</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>noSeDeclaraCaidoASiMismo</td><td class="num" style="width:auto">true</td></tr>
+  </tbody></table>
+</div>
+<div class="sec">
+  <h3>D5 · Elección de líder con el algoritmo del matón (Bully) — <span class="ok">CUMPLE</span></h3>
+  <p class="met"><strong>Tolerancia a fallos — reconfiguración dinámica.</strong> Al caer el líder, los nodos vivos acuerdan por unanimidad el siguiente peerId mayor. Si el favorito se cae a media elección, esta se reabre y vuelven a acordar, sin quedarse sin coordinador.</p>
+  <table><tbody>
+  <tr><td>nodos 3 mensajes</td><td class="num" style="width:auto">8</td></tr>
+<tr><td>nodos 3 ms eleccion</td><td class="num" style="width:auto">6000</td></tr>
+<tr><td>nodos 3 lider</td><td class="num" style="width:auto">p01</td></tr>
+<tr><td>nodos 3 acuerdo unanime</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 3 ms reeleccion</td><td class="num" style="width:auto">10000</td></tr>
+<tr><td>nodos 3 acuerdo tras doble caida</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 5 mensajes</td><td class="num" style="width:auto">78</td></tr>
+<tr><td>nodos 5 ms eleccion</td><td class="num" style="width:auto">6000</td></tr>
+<tr><td>nodos 5 lider</td><td class="num" style="width:auto">p03</td></tr>
+<tr><td>nodos 5 acuerdo unanime</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 5 ms reeleccion</td><td class="num" style="width:auto">10000</td></tr>
+<tr><td>nodos 5 acuerdo tras doble caida</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 10 mensajes</td><td class="num" style="width:auto">4954</td></tr>
+<tr><td>nodos 10 ms eleccion</td><td class="num" style="width:auto">6000</td></tr>
+<tr><td>nodos 10 lider</td><td class="num" style="width:auto">p08</td></tr>
+<tr><td>nodos 10 acuerdo unanime</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 10 ms reeleccion</td><td class="num" style="width:auto">10000</td></tr>
+<tr><td>nodos 10 acuerdo tras doble caida</td><td class="num" style="width:auto">true</td></tr>
+  </tbody></table>
+</div>
+<div class="sec">
+  <h3>D6 · Recuperación de un nodo desviado — <span class="ok">CUMPLE</span></h3>
+  <p class="met"><strong>Tolerancia a fallos — recuperación.</strong> Un nodo que se perdió media partida converge al recibir el log completo. Un nodo con un evento que nadie más tiene no converge completando el log —hay que adoptar el ajeno— y tras adoptarlo su huella coincide con la de la mesa.</p>
+  <table><tbody>
+  <tr><td>eventosDeLaPartida</td><td class="num" style="width:auto">120</td></tr>
+<tr><td>eventosQueLeFaltaban</td><td class="num" style="width:auto">60</td></tr>
+<tr><td>rezagadoDivergiaAntes</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>rezagadoConvergeAlCompletarLog</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>corruptoDivergia</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>corruptoSigueDivergiendoTrasCompletarLog</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>corruptoConvergeAlAdoptar</td><td class="num" style="width:auto">true</td></tr>
+  </tbody></table>
+</div>
+<div class="sec">
+  <h3>D7 · Coste de la replicación (mensajes y tiempo de recálculo) — <span class="ok">CUMPLE</span></h3>
+  <p class="met"><strong>Rendimiento / latencia.</strong> Los tres órdenes de entrega (natural, desorden realista de la malla y log invertido) convergen al mismo estado, y el desorden realista no multiplica por más de 30 el trabajo del reductor. Los tiempos se anotan como medición de latencia, no como criterio: el reloj de pared mide la máquina que ejecuta el banco, no el algoritmo. El log invertido es la cota superior del rollback &amp; replay, y no se le exige nada: la red no lo produce.</p>
+  <table><tbody>
+  <tr><td>nodos 3 eventos</td><td class="num" style="width:auto">120</td></tr>
+<tr><td>nodos 3 mensajes malla</td><td class="num" style="width:auto">240</td></tr>
+<tr><td>nodos 3 mensajes si hubiera servidor</td><td class="num" style="width:auto">360</td></tr>
+<tr><td>nodos 3 aplicaciones en orden</td><td class="num" style="width:auto">120</td></tr>
+<tr><td>nodos 3 aplicaciones desorden realista</td><td class="num" style="width:auto">2206</td></tr>
+<tr><td>nodos 3 aplicaciones cota log invertido</td><td class="num" style="width:auto">7260</td></tr>
+<tr><td>nodos 3 factor replay realista</td><td class="num" style="width:auto">18.38</td></tr>
+<tr><td>nodos 3 ms en orden</td><td class="num" style="width:auto">87.9</td></tr>
+<tr><td>nodos 3 ms desorden realista</td><td class="num" style="width:auto">1275</td></tr>
+<tr><td>nodos 3 ms cota log invertido</td><td class="num" style="width:auto">4754.2</td></tr>
+<tr><td>nodos 3 mismo estado en los tres</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 5 eventos</td><td class="num" style="width:auto">30</td></tr>
+<tr><td>nodos 5 mensajes malla</td><td class="num" style="width:auto">120</td></tr>
+<tr><td>nodos 5 mensajes si hubiera servidor</td><td class="num" style="width:auto">150</td></tr>
+<tr><td>nodos 5 aplicaciones en orden</td><td class="num" style="width:auto">30</td></tr>
+<tr><td>nodos 5 aplicaciones desorden realista</td><td class="num" style="width:auto">195</td></tr>
+<tr><td>nodos 5 aplicaciones cota log invertido</td><td class="num" style="width:auto">465</td></tr>
+<tr><td>nodos 5 factor replay realista</td><td class="num" style="width:auto">6.5</td></tr>
+<tr><td>nodos 5 ms en orden</td><td class="num" style="width:auto">17.5</td></tr>
+<tr><td>nodos 5 ms desorden realista</td><td class="num" style="width:auto">110.9</td></tr>
+<tr><td>nodos 5 ms cota log invertido</td><td class="num" style="width:auto">233.9</td></tr>
+<tr><td>nodos 5 mismo estado en los tres</td><td class="num" style="width:auto">true</td></tr>
+<tr><td>nodos 10 eventos</td><td class="num" style="width:auto">59</td></tr>
+<tr><td>nodos 10 mensajes malla</td><td class="num" style="width:auto">531</td></tr>
+<tr><td>nodos 10 mensajes si hubiera servidor</td><td class="num" style="width:auto">590</td></tr>
+<tr><td>nodos 10 aplicaciones en orden</td><td class="num" style="width:auto">59</td></tr>
+<tr><td>nodos 10 aplicaciones desorden realista</td><td class="num" style="width:auto">504</td></tr>
+<tr><td>nodos 10 aplicaciones cota log invertido</td><td class="num" style="width:auto">1770</td></tr>
+<tr><td>nodos 10 factor replay realista</td><td class="num" style="width:auto">8.54</td></tr>
+<tr><td>nodos 10 ms en orden</td><td class="num" style="width:auto">30.3</td></tr>
+<tr><td>nodos 10 ms desorden realista</td><td class="num" style="width:auto">247.9</td></tr>
+<tr><td>nodos 10 ms cota log invertido</td><td class="num" style="width:auto">1069.9</td></tr>
+<tr><td>nodos 10 mismo estado en los tres</td><td class="num" style="width:auto">true</td></tr>
+  </tbody></table>
+</div>
+
+<h2>5 · Cobertura de código</h2>
+<p class="met">Del <code>lcov</code> combinado del 10 de agosto de 2026, 12:00 p. m., con las mismas exclusiones que declara SonarQube.</p>
+<table>
+  <thead><tr><th>Paquete</th><th>Líneas cubiertas</th><th style="width:45mm">%</th><th class="num">Valor</th></tr></thead>
+  <tbody>
+  <tr>
+        <td><strong>engine</strong></td>
+        <td>434 / 466</td>
+        <td><div class="barra"><i style="width:93.1%"></i></div></td>
+        <td class="num">93.13 %</td>
+      </tr>
+<tr>
+        <td><strong>net</strong></td>
+        <td>304 / 310</td>
+        <td><div class="barra"><i style="width:98.1%"></i></div></td>
+        <td class="num">98.06 %</td>
+      </tr>
+<tr>
+        <td><strong>signaling</strong></td>
+        <td>234 / 272</td>
+        <td><div class="barra"><i style="width:86.0%"></i></div></td>
+        <td class="num">86.03 %</td>
+      </tr>
+<tr>
+        <td><strong>web</strong></td>
+        <td>128 / 198</td>
+        <td><div class="barra"><i style="width:64.6%"></i></div></td>
+        <td class="num">64.65 %</td>
+      </tr>
+  </tbody>
+</table>
+<h3>Excluido de la medición, y por qué</h3>
+<table>
+  <thead><tr><th>Fichero</th><th class="num">Líneas</th><th>Motivo</th></tr></thead>
+  <tbody>
+  <tr><td><code>net/src/room.ts</code></td><td class="num">348</td><td>Habla con RTCPeerConnection, que no existe en Node (los tests de malla simulada sí lo recorren: 92 %).</td></tr>
+<tr><td><code>signaling/src/smoke.ts</code></td><td class="num">60</td><td>Utilidad de desarrollo; no se despliega.</td></tr>
+<tr><td><code>web/lib/pixiEffects.ts</code></td><td class="num">214</td><td>Necesita WebGL.</td></tr>
+<tr><td><code>web/lib/useBugGame.ts</code></td><td class="num">43</td><td>Igual que useBugRoom.</td></tr>
+<tr><td><code>web/lib/useBugRoom.ts</code></td><td class="num">678</td><td>Orquesta el ciclo de vida de React sobre WebRTC. Lo cubre Cypress.</td></tr>
+  </tbody>
+</table>
+
+<div class="pie">
+  Reproducible con <code>npm run typecheck</code>, <code>npm run test:coverage</code>,
+  <code>npm run vv:security</code>, <code>npm run vv:distributed</code> y <code>npm run e2e</code>.
+  Este documento lo genera <code>node vv/informe-pruebas.mjs</code> a partir de los artefactos de esas
+  ejecuciones — no se edita a mano.
+</div>
+
+</div>
+</body>
+</html>

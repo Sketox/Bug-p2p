@@ -20,6 +20,11 @@ pipeline {
     SONAR_HOST_URL = "${env.SONAR_HOST_URL ?: 'http://sonarqube:9000'}"
     // Los tests de red montan mallas simuladas: no hacen falta navegadores para esta parte.
     CI = 'true'
+    // Y por eso mismo no se descarga el binario de Cypress: son ~250 MB por construcción para una
+    // herramienta que este agente no ejecuta (no hay navegador en la imagen). Las 18 pruebas
+    // funcionales se corren con `npm run e2e` en una máquina con interfaz; lo que el pipeline sí
+    // necesita de Cypress son sus **tipos**, que vienen en el paquete de npm y se instalan igual.
+    CYPRESS_INSTALL_BINARY = '0'
   }
 
   stages {
@@ -35,7 +40,12 @@ pipeline {
 
     stage('Tipos') {
       steps {
-        // TypeScript en modo estricto sobre los cuatro workspaces. Barato y atrapa mucho.
+        // TypeScript en modo estricto sobre los cuatro workspaces **y sobre la suite de Cypress**.
+        // Lo segundo se añadió tarde y por un motivo: `cypress/` tiene su propio `tsconfig.json`
+        // (los workspaces no lo alcanzan), así que sus errores de tipos no los veía nadie. Cuando
+        // por fin se compiló, había cuatro — y uno era de verdad: un comando que devolvía el
+        // `<iframe>` en vez de `undefined` cuando el nodo aún no tenía partida. El código de las
+        // pruebas es código.
         sh 'npm run typecheck'
       }
     }

@@ -33,30 +33,24 @@ unclassified:
     url: http://localhost:8080/
 
 jobs:
+  # Se usa el DSL **estático** (`cpsScm` + `git { remote { … } }`) y no el dinámico
+  # (`cpsScmFlowDefinition` + `scmGit { remotes { … } }`). No es cuestión de estilo: el dinámico se
+  # genera a partir de los descriptores de los plugins instalados, y con las versiones de hoy
+  # `remotes` no existe en ese contexto — el Job DSL falla, Configuration-as-Code se cae con él y
+  # **Jenkins no llega a arrancar** (`BootFailure`, contenedor en `Exited (5)`). El estático forma
+  # parte de la API documentada del plugin y no se mueve con las versiones.
   - script: |
       pipelineJob('bug-p2p') {
         description('Monorepo de Bug. Dispara con cada commit de la rama principal (sondeo del repo montado en /repo-src).')
         definition {
-          cpsScmFlowDefinition {
+          cpsScm {
             scm {
-              scmGit {
-                remotes {
-                  remote {
-                    url('/repo-src')
-                  }
+              git {
+                // El repo se monta en solo lectura: se clona a la carpeta de trabajo del job.
+                remote {
+                  url('/repo-src')
                 }
-                branches('*/main')
-                extensions {
-                  // El repo se monta en solo lectura: se clona a la carpeta de trabajo del job.
-                  cloneOption {
-                    shallow(false)
-                    noTags(true)
-                    reference('')
-                    depth(0)
-                    honorRefspec(false)
-                    timeout(20)
-                  }
-                }
+                branch('*/main')
               }
             }
             scriptPath('Jenkinsfile')

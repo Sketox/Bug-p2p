@@ -27,12 +27,32 @@ RUN curl -fsSL -o /tmp/scanner.zip \
  && rm /tmp/scanner.zip
 ENV PATH="/opt/sonar-scanner/bin:${PATH}"
 
+# El repo llega montado desde el host, así que sus archivos son de otro usuario que el `jenkins`
+# del contenedor. Git se niega a trabajar con un repositorio ajeno ("detected dubious ownership")
+# porque la configuración de un repo puede ejecutar comandos, y un repo de otro usuario es código
+# de otro usuario. Aquí ese "otro" es quien está desarrollando —el mismo que levanta el
+# laboratorio— y el montaje es de solo lectura, así que se declara la excepción para esa ruta.
+#
+# `--system` (que escribe en `/etc/gitconfig`) y no `--global`, por la misma razón por la que
+# `casc.yaml` no vive en `/var/jenkins_home`: `--global` escribiría en `$HOME`, que **es el
+# volumen**, y en un laboratorio ya creado no llegaría nunca. Cuesta un `USER root` y ahorra la
+# tarde de no entender por qué reconstruir la imagen no cambia nada.
+RUN git config --system --add safe.directory /repo-src \
+ && git config --system --add safe.directory /repo-src/.git
+
 # Los plugins que usa el Jenkinsfile: pipeline, git y el publicador de resultados JUnit/HTML.
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
 
 # Usuario admin y el job ya creado: al levantar el contenedor hay pipeline, no un asistente.
-COPY casc.yaml /var/jenkins_home/casc.yaml
-ENV CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
+#
+# Va a `/usr/share/jenkins/ref/` y NO a `/var/jenkins_home/`, aunque lo segundo sea lo que se ve en
+# media internet. `/var/jenkins_home` es un volumen: la primera vez Docker copia ahí lo que traiga
+# la imagen, y a partir de entonces **el volumen manda**. Con la configuración dentro, corregir un
+# error de `casc.yaml` y reconstruir no sirve de nada — el contenedor sigue leyendo la versión
+# vieja del volumen, y la única salida es borrarlo. Fuera del volumen, cada arranque lee la
+# configuración de la imagen, que es lo que uno espera al reconstruirla.
+COPY casc.yaml /usr/share/jenkins/ref/casc.yaml
+ENV CASC_JENKINS_CONFIG=/usr/share/jenkins/ref/casc.yaml
 
 USER jenkins

@@ -12,20 +12,25 @@
   "scripts": {
     "test": "npm run test --workspaces --if-present",
     "test:coverage": "npm run test:coverage --workspaces --if-present && node tools/merge-coverage.mjs",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && npm run typecheck:e2e",
+    "typecheck:e2e": "tsc --noEmit -p cypress/tsconfig.json",
     "build": "npm run build --workspaces --if-present",
     "signaling": "npm run start --workspace @bug/signaling",
     "web": "npm run dev --workspace @bug/web",
     "art": "node tools/build-sprite.js",
     "vv:security": "node vv/security/attack-suite.mjs",
-    "vv:distributed": "node vv/distributed/validate.mjs",
+    "vv:distributed": "tsx vv/distributed/validate.ts",
     "e2e": "start-server-and-test \"npm run vv:stack\" \"http://localhost:3000|http://localhost:8787/health\" \"cypress run\"",
     "e2e:open": "start-server-and-test \"npm run vv:stack\" \"http://localhost:3000|http://localhost:8787/health\" \"cypress open\"",
-    "vv:stack": "node vv/stack.mjs"
+    "vv:stack": "node vv/stack.mjs",
+    "vv:informe": "node vv/informe-pruebas.mjs --pdf",
+    "vv:presentacion": "node vv/presentacion/construir.mjs --pdf",
+    "vv:entregables": "npm run vv:informe && npm run vv:presentacion"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.9",
     "cypress": "^13.17.0",
-    "start-server-and-test": "^2.1.5"
+    "start-server-and-test": "^2.1.5",
+    "tsx": "^4.23.11"
   }
 }

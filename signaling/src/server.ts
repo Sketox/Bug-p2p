@@ -126,8 +126,15 @@ function leave(client: Client, reason: 'bye' | 'offline'): void {
 }
 
 // Servidor HTTP para health-checks de la plataforma de deploy; el WebSocket comparte el puerto.
+//
+// `HEAD` cuenta tanto como `GET`, y no es un detalle académico: es el método con el que sondean por
+// defecto media docena de herramientas —`wait-on`, que es quien espera al servidor antes de lanzar
+// las pruebas de extremo a extremo, entre ellas— y varios balanceadores. Con solo `GET`, el
+// servidor estaba vivo y contestando y aun así se le daba por caído. Node no deriva `HEAD` de
+// `GET` por su cuenta; sí se encarga de no mandar el cuerpo cuando el método es `HEAD`.
 const httpServer = createServer((req, res) => {
-  if (req.method === 'GET' && (req.url === '/' || req.url === '/health')) {
+  const sondeo = req.method === 'GET' || req.method === 'HEAD';
+  if (sondeo && (req.url === '/' || req.url === '/health')) {
     res.writeHead(200, { 'content-type': 'text/plain' });
     res.end('bug-signaling ok');
     return;

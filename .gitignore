@@ -7,7 +7,11 @@ coverage/
 .DS_Store
 .env
 .env.local
+# Los PDF que no son nuestros (enunciados, propuestas) se quedan fuera. Los de `docs/vv/` sí van:
+# son entregables —el informe de resultados y la presentación— y se regeneran con
+# `npm run vv:entregables`, así que quien clone el repo los tiene sin tener que levantar nada.
 *.pdf
+!docs/vv/*.pdf
 # La documentación de trabajo (PLAN.md, JUGAR.md…) se queda en local. Lo que va al repo es el
 # README y lo que se ponga a mano en `docs/`.
 *.md

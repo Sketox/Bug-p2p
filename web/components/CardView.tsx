@@ -20,6 +20,15 @@ interface Props {
   /** Posición en la mano: las cartas entran escalonadas, como si te las estuvieran repartiendo. */
   dealIndex?: number;
   /**
+   * Gancho estable para las pruebas de extremo a extremo (`data-testid`), y con él la identidad de
+   * la carta (`data-card`) y si la UI la ofrece o no (`data-playable`).
+   *
+   * Buscar por clases de Tailwind sería atarlo todo al diseño: un cambio de color rompería las
+   * pruebas sin que nada estuviera roto. Con esto, lo que se afirma es qué carta hay y si se puede
+   * jugar, que es lo que de verdad se quiere comprobar.
+   */
+  testId?: string;
+  /**
    * Color (hex) que eligió quien jugó este comodín. Solo lo usa la carta del pozo: la carta gira en
    * 3D y aterriza teñida del color elegido.
    *
@@ -49,7 +58,19 @@ const SIZES = {
 // `forwardRef` no es decorativo: `AnimatePresence` mide el elemento que sale (la carta que vuela al
 // pozo) a través de su ref. Sin reenviarla, React avisa y la animación de salida se pierde.
 export const CardView = forwardRef<HTMLElement, Props>(function CardView(
-  { card, faceDown, playable, dimmed, onClick, layoutId, size = 'md', interrupt, wildColor, dealIndex },
+  {
+    card,
+    faceDown,
+    playable,
+    dimmed,
+    onClick,
+    layoutId,
+    size = 'md',
+    interrupt,
+    wildColor,
+    dealIndex,
+    testId,
+  },
   ref,
 ) {
   const clickable = Boolean(onClick && playable);
@@ -60,6 +81,7 @@ export const CardView = forwardRef<HTMLElement, Props>(function CardView(
     return (
       <motion.div
         ref={ref as React.Ref<HTMLDivElement>}
+        data-testid={testId}
         layout
         layoutId={layoutId}
         style={{ aspectRatio: ASPECT }}
@@ -78,6 +100,9 @@ export const CardView = forwardRef<HTMLElement, Props>(function CardView(
   return (
     <motion.button
       ref={ref as React.Ref<HTMLButtonElement>}
+      data-testid={testId}
+      data-card={card.id}
+      data-playable={clickable}
       layout
       layoutId={layoutId}
       type="button"
