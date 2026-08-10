@@ -480,6 +480,55 @@ function Confeti() {
   );
 }
 
+/**
+ * La copa, dibujada píxel a píxel como las cartas.
+ *
+ * Se escribe como un mapa de caracteres en vez de con un `<path>` porque así se lee —y se
+ * retoca— igual que el arte del juego: cada letra es un píxel y se ve la forma en el propio
+ * código. `o` es el borde, `O` el relleno, `s` la sombra que le da volumen.
+ */
+const COPA = [
+  '  oooooooooo  ',
+  '  oOOOOOOOOo  ',
+  ' oOOOOOOOOOOo ',
+  'ooOOOOOOOOOOoo',
+  'oOsOOOOOOOOsOo',
+  'oOsOOOOOOOOsOo',
+  ' ooOOOOOOOOoo ',
+  '  oOOOOOOOOo  ',
+  '   oOOOOOOo   ',
+  '    oOOOOo    ',
+  '     oOOo     ',
+  '     oOOo     ',
+  '   ooOOOOoo   ',
+  '  oOOOOOOOOo  ',
+];
+
+const TINTA_COPA: Record<string, string> = { o: '#B8860B', O: '#F2C14E', s: '#FFE9A8' };
+
+function CopaPixel() {
+  const ancho = COPA[0]!.length;
+  return (
+    <motion.svg
+      viewBox={`0 0 ${ancho} ${COPA.length}`}
+      className="w-32 sm:w-40 mx-auto pixelated"
+      role="img"
+      aria-label="Copa de ganador"
+      initial={{ scale: 0.4, rotate: -12, opacity: 0 }}
+      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 180, damping: 12, delay: 0.15 }}
+    >
+      {COPA.flatMap((fila, y) =>
+        [...fila].map((c, x) =>
+          TINTA_COPA[c] ? (
+            <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill={TINTA_COPA[c]} />
+          ) : null,
+        ),
+      )}
+    </motion.svg>
+  );
+}
+
 /** Ganar es compilar sin errores: la pantalla que todo programador quiere ver. */
 function Victoria({ porAbandono, onReset }: { porAbandono: boolean; onReset?: () => void }) {
   return (
@@ -496,11 +545,21 @@ function Victoria({ porAbandono, onReset }: { porAbandono: boolean; onReset?: ()
         transition={{ type: 'spring', stiffness: 200, damping: 18 }}
         className="relative w-full max-w-lg rounded-2xl border-2 border-[#07d98c] bg-[#082016] p-6 sm:p-8 text-center shadow-pixel"
       >
-        <svg viewBox="0 0 100 66" className="w-28 sm:w-36 mx-auto mb-4 text-[#07d98c]" aria-hidden>
+        <CopaPixel />
+
+        <motion.h2
+          className="font-pixel text-2xl sm:text-4xl text-[#F2C14E] mt-4 mb-1 drop-shadow-[3px_3px_0_rgba(0,0,0,.6)]"
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.35 }}
+        >
+          ¡GANASTE!
+        </motion.h2>
+
+        {/* El logo se queda, pero pequeño y debajo: quien gana quiere ver la copa, no la marca. */}
+        <svg viewBox="0 0 100 66" className="w-16 sm:w-20 mx-auto mb-4 text-[#07d98c] opacity-70" aria-hidden>
           <use href="#c-logo" width="100" height="66" />
         </svg>
-
-        <h2 className="font-pixel text-xl sm:text-3xl text-[#07d98c] mb-3">¡GANASTE!</h2>
 
         {/* La consola del que compila bien: cero errores, cero avisos. */}
         <div className="text-left font-pixel text-[9px] sm:text-[11px] leading-relaxed bg-black/50 rounded-lg p-3 sm:p-4 border border-[#07d98c]/30 mb-6">
