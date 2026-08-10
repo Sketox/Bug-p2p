@@ -258,7 +258,23 @@
 </head>
 <body>
 
-{{sprite}}
+<!-- El sprite del juego (logo y cartas) se incrusta aquí al construir. Va dentro de un comentario
+     para que este archivo, si alguien lo abre directamente en el navegador, no enseñe el marcador
+     suelto en una esquina. -->
+<!--{{sprite}}-->
+
+<!-- Lo mismo con este aviso: existe solo en la plantilla y el generador lo quita. Sin él, abrir
+     este archivo por error parece una presentación rota (sin cartas y con marcadores a la vista)
+     en vez de lo que es: el fuente. -->
+<div id="aviso-plantilla" style="position:fixed;inset:0;z-index:99;display:grid;place-items:center;
+     background:#071410;color:#E6F0E9;font:16px/1.6 system-ui,sans-serif;text-align:center;padding:2rem">
+  <div>
+    <p style="font-size:1.4em;margin:0 0 .6em"><strong>Esto es la plantilla, no la presentación.</strong></p>
+    <p style="margin:0;color:#8AA79A">La presentación montada —con el logo, las cartas y las
+      evidencias dentro— es <code style="color:#6BB7FF">docs/vv/presentacion.html</code>.</p>
+    <p style="margin:.8em 0 0;color:#8AA79A">Se genera con <code style="color:#6BB7FF">npm run vv:presentacion</code>.</p>
+  </div>
+</div>
 
 <div class="avance" id="avance"></div>
 

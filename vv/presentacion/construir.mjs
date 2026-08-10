@@ -82,8 +82,13 @@ for (const [clave, valor] of Object.entries(nums)) {
  */
 const sprite = readFileSync(join(raiz, 'web/public/cards.svg'), 'utf8');
 
-const html = readFileSync(plantilla, 'utf8')
-  .replace('{{sprite}}', sprite)
+const fuente = readFileSync(plantilla, 'utf8');
+
+// El marcador del sprite y el aviso «esto es la plantilla» viven dentro del fuente y desaparecen
+// aquí. Si alguno sobreviviera, se vería en la presentación proyectada, así que se comprueba abajo.
+const html = fuente
+  .replace('<!--{{sprite}}-->', sprite)
+  .replace(/<!-- Lo mismo con este aviso:[\s\S]*?-->\s*<div id="aviso-plantilla"[\s\S]*?<\/div>\s*<\/div>/, '')
   .replace(/\{\{(n_unit|n_e2e|n_malla|n_total)\}\}/g, (m, clave) => nums[clave] ?? m)
   .replace(/\{\{img:([^}]+)\}\}/g, (_, rel) => {
   const ruta = join(raiz, rel.trim());
@@ -98,6 +103,19 @@ const html = readFileSync(plantilla, 'utf8')
   const mime = TIPOS[extname(ruta).toLowerCase()] ?? 'application/octet-stream';
   return `data:${mime};base64,${readFileSync(ruta).toString('base64')}`;
 });
+
+// Ningún marcador puede llegar a la presentación: uno suelto se proyecta en pantalla delante de
+// gente. Pasó —`{{sprite}}` acabó visible en una esquina— y por eso esto revienta en vez de avisar.
+const sueltos = [...html.matchAll(/\{\{[^}]{1,40}\}\}/g)].map((m) => m[0]);
+if (sueltos.length > 0) {
+  console.error(`\n  ✕ quedaron marcadores sin sustituir: ${[...new Set(sueltos)].join(', ')}`);
+  console.error('    Se habrían visto en la diapositiva. No se escribe el archivo.\n');
+  process.exit(1);
+}
+if (html.includes('aviso-plantilla')) {
+  console.error('\n  ✕ el aviso de «esto es la plantilla» no se quitó al construir.\n');
+  process.exit(1);
+}
 
 writeFileSync(salida, html, 'utf8');
 console.log(`presentación: ${salida} (${(html.length / 1024 / 1024).toFixed(2)} MB)`);

@@ -13,6 +13,24 @@ import { join, resolve } from 'node:path';
 export default defineConfig({
   e2e: {
     setupNodeEvents(on) {
+      // Pasar el tráfico por Burp, cuando se le pide.
+      //
+      //   BURP_PROXY=127.0.0.1:8081 npm run e2e
+      //
+      // Sirve para llenar el histórico de Burp con tráfico de verdad —tres jugadores entrando a una
+      // sala— en vez de tener que jugar a mano para tener algo que interceptar.
+      //
+      // `--proxy-bypass-list=<-loopback>` no es opcional: Chrome se salta el proxy para `localhost`
+      // por su cuenta, así que sin esto el juego se abre igual y por Burp no pasa ni un byte, sin
+      // ningún aviso.
+      on('before:browser:launch', (_navegador, opciones) => {
+        const proxy = process.env.BURP_PROXY;
+        if (proxy && Array.isArray(opciones.args)) {
+          opciones.args.push(`--proxy-server=${proxy}`, '--proxy-bypass-list=<-loopback>');
+        }
+        return opciones;
+      });
+
       // Los JUnit llevan un hash en el nombre —hace falta, porque si no los specs se pisarían el
       // archivo entre ellos— y por eso se acumulan ejecución tras ejecución. Sin limpiarlos, la
       // carpeta acaba mezclando el resultado de hoy con el de un run de hace tres horas que falló,
