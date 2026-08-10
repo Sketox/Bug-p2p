@@ -10,13 +10,13 @@
 |---|---|---|---|
 | 4.1 Calidad de código | SonarQube Community Build 26.8.0 | *(§2)* | ✅ |
 | 4.2 Integración continua | Jenkins 2.568 LTS (JDK 21) | 7 etapas en verde en 7,2 min, por commit | ✅ |
-| 4.3 Pruebas automatizadas | Cypress 13.17 + Vitest 2.1 | 19 E2E + 190 unitarias, 0 fallos | ✅ |
+| 4.3 Pruebas automatizadas | Cypress 13.17 + Vitest 2.1 | 22 E2E + 190 unitarias, 0 fallos | ✅ |
 | 4.4 Seguridad | Burp Suite Community + banco propio | 11 ataques, 11 bloqueados, 6 vulnerabilidades corregidas | ✅ |
 | 4.5 Validación distribuida | Banco propio con métricas | 7 de 7 propiedades verificadas | ✅ |
 | 5 Documentación | — | Plan, matriz, reporte, guía de Burp, evidencias | ✅ |
 
-**227 comprobaciones automatizadas** vigilan el sistema, y todas corren en el mismo pipeline: 190
-unitarias, 19 funcionales en navegador, 11 ataques de seguridad y 7 propiedades distribuidas.
+**230 comprobaciones automatizadas** vigilan el sistema, y todas corren en el mismo pipeline: 190
+unitarias, 22 funcionales en navegador, 11 ataques de seguridad y 7 propiedades distribuidas.
 
 La conclusión que más peso tiene no es ninguno de esos números, sino de dónde salieron los defectos.
 De los **dieciséis fallos** registrados en este proyecto, **once no eran detectables por una prueba
@@ -266,7 +266,7 @@ la latencia de convergencia empeora commit a commit, no solo si hoy pasa.
 | `net/test/` | 60 | Lamport, réplica, testigo, latidos, Bully, reparación, malla simulada |
 | `signaling/test/` | 27 | Servidor WebSocket real: aforo, introductor, `bye`/`offline`, guardas, sondeo de salud |
 | `web/test/` | 29 | Validación del enlace/QR, efectos, identidad de sesión |
-| `cypress/e2e/` | **19** | Flujos de usuario y **la malla de tres nodos con WebRTC real** |
+| `cypress/e2e/` | **22** | Flujos de usuario y **la malla de tres nodos con WebRTC real** |
 
 ### 4.2 Las pruebas funcionales (componente 4.3)
 
@@ -427,6 +427,26 @@ tratando como *irse de la partida*, y cerraba DataChannels que estaban perfectam
 distinguirlas. Medido en 4 Chrome contra la imagen publicada: el escenario que daba **0 conexiones**
 pasó a dar **3 de 3** (`mesh-signaling.test.ts`, `introductor.test.ts`).
 
+### 7.1 Lo que apareció al probar con diez
+
+El aforo estaba cubierto contra el servidor —seis pruebas en `signaling/test/aforo.test.ts`— pero
+nunca con diez navegadores a la vez. Diez nodos no son diez conexiones: son **45 canales punto a
+punto**, y es el escenario que se va a dar en la feria si el stand se llena.
+
+Al montarlo aparecieron dos cosas que no se sabían:
+
+- **La malla de diez se estabiliza sola, pero tarda.** Durante los primeros segundos, varios nodos
+  se ven entre sí como *sospechosos* —el aviso ⚠ de la Pantalla Maestra— simplemente porque el
+  primer latido de cada uno aún no ha dado la vuelta. La primera versión de la prueba solo miraba
+  al primero y al último y pasaba; al exigirlo en **los diez**, sigue pasando. Es importante que
+  la exigencia sea esa: que el aviso se apague, no que no llegue a encenderse nunca.
+- **La captura enseñaba cuatro jugadores de diez.** Diez marcos de 400 px son cuatro mil de ancho;
+  la evidencia de «diez jugadores» mostraba los cuatro primeros. Una evidencia que no prueba lo que
+  dice su nombre es peor que no tenerla.
+
+Y el número once ve **«SALA LLENA»** con el aforo dibujado, en vez de quedarse en una pantalla
+muerta esperando a una sala en la que no cabe.
+
 ## 8. Lo que este proceso demuestra sobre la propia V&V
 
 De los dieciséis defectos de la tabla, **nueve** (los 1–9) son de una clase que ninguna prueba
@@ -461,7 +481,7 @@ no es creíble:
 | Riesgo abierto | Impacto | Propuesta |
 |---|---|---|
 | **Partida entre redes distintas de verdad** (dos casas, NAT simétrico) | Los DataChannels podrían no abrirse en la feria | El código ya lleva STUN + TURN configurable; falta la prueba con dos ubicaciones. Es el riesgo abierto **más importante**. |
-| Carga con 10 jugadores en móviles reales | Degradación no medida | Está medido en simulación (D1, D7), no con diez teléfonos |
+| Carga con 10 jugadores en **móviles** reales | Degradación no medida en hardware modesto | Ya no es del todo cierto: `aforo.cy.ts` levanta **diez navegadores de verdad** con sus 45 canales, comprueba que la malla se estabiliza en los diez y que las diez réplicas convergen. Lo que sigue sin probarse es hacerlo en diez teléfonos, no en diez pestañas de un portátil |
 | Accesibilidad (lectores de pantalla, contraste) | — | No es requisito del enunciado; no auditado |
 | El pipeline no corre Cypress en cada commit | Retroalimentación más lenta en lo distribuido | Añadir una etapa con el navegador headless en la imagen del agente |
 | Sonar solo en el laboratorio local | Sin histórico entre máquinas | Publicar el `quality gate` como comprobación obligatoria antes de fusionar |
@@ -483,7 +503,7 @@ Y tres mejoras de proceso que este semestre deja apuntadas:
 
 | Evidencia | Dónde |
 |---|---|
-| **Informe de resultados de pruebas** (las 227, una a una) | `docs/vv/informe-pruebas.html` y `.pdf` — lo genera `node vv/informe-pruebas.mjs --pdf` |
+| **Informe de resultados de pruebas** (las 230, una a una) | `docs/vv/informe-pruebas.html` y `.pdf` — lo genera `node vv/informe-pruebas.mjs --pdf` |
 | **Presentación de defensa** | `docs/vv/presentacion.html` y `.pdf` — la genera `node vv/presentacion/construir.mjs --pdf` |
 | Informes JUnit (Vitest y Cypress) | `reports/junit-*.xml` |
 | Cobertura combinada (`lcov`) | `coverage/lcov.info` |
@@ -518,7 +538,7 @@ npm run typecheck            # tipos en los 4 paquetes
 npm run test:coverage        # 190 unitarias + lcov combinado
 npm run vv:security          # 11 ataques contra la señalización
 npm run vv:distributed       # 7 propiedades distribuidas, con métricas
-npm run e2e                  # levanta el stack y corre las 19 de Cypress
+npm run e2e                  # levanta el stack y corre las 22 de Cypress
 
 docker compose -f vv/docker-compose.yml up -d
 node vv/setup.mjs            # token de Sonar → Jenkins

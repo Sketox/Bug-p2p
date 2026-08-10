@@ -37,7 +37,7 @@ solos si no hay WebGL) y el comportamiento con más de 10 jugadores (el aforo lo
         ┌───────────────────────────────────────────────┐
         │  Validación en feria (personas, móviles, QR)  │  manual
         ├───────────────────────────────────────────────┤
-        │  Cypress: 3 nodos, WebRTC real, convergencia  │  19 pruebas
+        │  Cypress: 3 nodos, WebRTC real, convergencia  │  22 pruebas
         ├───────────────────────────────────────────────┤
         │  Bancos de V&V: seguridad (11) y              │  automáticos,
         │  validación distribuida (7 propiedades)       │  con métricas

@@ -429,40 +429,156 @@ function GameOver({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[60] grid place-items-center bg-black/85 p-4"
+      className="fixed inset-0 z-[60] grid place-items-center p-0"
     >
+      {gané ? (
+        <Victoria porAbandono={porAbandono} onReset={onReset} />
+      ) : (
+        <Derrota ganador={winner?.name ?? '—'} onReset={onReset} />
+      )}
+    </motion.div>
+  );
+}
+
+/**
+ * Confeti de píxeles: cuadraditos que caen girando, en los cuatro palos del juego.
+ *
+ * Las posiciones salen del índice y no de `Math.random`, por dos motivos que van en la misma
+ * dirección: sale igual en las tres pantallas de una partida en red —que es de lo que va este
+ * proyecto— y una captura de la pantalla de victoria es reproducible en vez de distinta cada vez.
+ */
+function Confeti() {
+  const PALOS = ['#07d98c', '#a60d61', '#4227f2', '#f27eb4'];
+  const piezas = Array.from({ length: 44 }, (_, i) => ({
+    izq: (i * 37) % 100,
+    color: PALOS[i % PALOS.length]!,
+    retraso: ((i * 13) % 30) / 10,
+    duracion: 2.6 + ((i * 7) % 20) / 10,
+    tam: 6 + (i % 3) * 4,
+    giro: i % 2 === 0 ? 360 : -360,
+  }));
+
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+      {piezas.map((p, i) => (
+        <motion.div
+          key={i}
+          initial={{ y: '-12vh', rotate: 0, opacity: 1 }}
+          animate={{ y: '112vh', rotate: p.giro, opacity: [1, 1, 0.9] }}
+          transition={{ duration: p.duracion, delay: p.retraso, repeat: Infinity, ease: 'linear' }}
+          style={{
+            position: 'absolute',
+            left: `${p.izq}%`,
+            width: p.tam,
+            height: p.tam,
+            backgroundColor: p.color,
+            boxShadow: '2px 2px 0 rgba(0,0,0,.45)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Ganar es compilar sin errores: la pantalla que todo programador quiere ver. */
+function Victoria({ porAbandono, onReset }: { porAbandono: boolean; onReset?: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative w-full h-full bg-[#04120c] grid place-items-center p-4 overflow-hidden"
+    >
+      <Confeti />
+
       <motion.div
-        initial={{ scale: 0.7, rotate: -4 }}
-        animate={{ scale: 1, rotate: 0 }}
+        initial={{ scale: 0.8, y: 18 }}
+        animate={{ scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 18 }}
-        className={`w-full max-w-sm rounded-2xl p-6 sm:p-8 text-center shadow-pixel border-2 ${
-          gané ? 'bg-[#0d2b1f] border-[#07d98c]' : 'bg-[#2b0a1b] border-[#a60d61]'
-        }`}
+        className="relative w-full max-w-lg rounded-2xl border-2 border-[#07d98c] bg-[#082016] p-6 sm:p-8 text-center shadow-pixel"
       >
-        <div className="text-6xl mb-4">{gané ? '🏆' : '💀'}</div>
+        <svg viewBox="0 0 100 66" className="w-28 sm:w-36 mx-auto mb-4 text-[#07d98c]" aria-hidden>
+          <use href="#c-logo" width="100" height="66" />
+        </svg>
 
-        <h2
-          className={`font-pixel text-lg sm:text-2xl mb-2 ${gané ? 'text-[#07d98c]' : 'text-[#f27eb4]'}`}
-        >
-          {gané ? '¡GANASTE!' : 'PERDISTE'}
-        </h2>
+        <h2 className="font-pixel text-xl sm:text-3xl text-[#07d98c] mb-3">¡GANASTE!</h2>
 
-        <p className="font-pixel text-[10px] sm:text-xs text-white/60 mb-6 leading-relaxed">
-          {gané
-            ? porAbandono
-              ? 'te quedaste solo en la mesa'
-              : 'te quedaste sin cartas'
-            : `ganó ${winner?.name ?? '—'}`}
-        </p>
+        {/* La consola del que compila bien: cero errores, cero avisos. */}
+        <div className="text-left font-pixel text-[9px] sm:text-[11px] leading-relaxed bg-black/50 rounded-lg p-3 sm:p-4 border border-[#07d98c]/30 mb-6">
+          <p className="text-[#07d98c]">&gt; build --release</p>
+          <p className="text-white/70">
+            {porAbandono ? 'te quedaste solo en la mesa' : 'te quedaste sin cartas'}
+          </p>
+          <p className="text-[#07d98c]">✓ 0 errores &nbsp; 0 avisos</p>
+          <p className="text-white/40">compilado sin un solo bug</p>
+        </div>
 
         {onReset && (
           <button
             onClick={onReset}
-            className={`w-full font-pixel text-xs sm:text-sm px-5 py-4 rounded-lg shadow-pixel hover:brightness-110 ${
-              gané ? 'bg-[#07d98c] text-[#04241a]' : 'bg-[#a60d61] text-white'
-            }`}
+            className="w-full font-pixel text-xs sm:text-sm px-5 py-4 rounded-lg shadow-pixel bg-[#07d98c] text-[#04241a] hover:brightness-110 active:translate-y-0.5"
           >
             Volver al menú
+          </button>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/**
+ * Perder es una Pantalla Azul de la Muerte.
+ *
+ * No es un adorno: el BSOD **es una carta del mazo** ("Pantalla Azul de la Muerte", el comodín +4).
+ * Cerrar la partida con la misma imagen que te puede tirar a la cara un rival remata la broma del
+ * juego entero — y es lo que la gente recuerda del stand.
+ */
+function Derrota({ ganador, onReset }: { ganador: string; onReset?: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative w-full h-full bg-[#1246c8] grid place-items-center p-6 sm:p-10 overflow-hidden"
+    >
+      {/* El parpadeo de un monitor viejo, muy leve. Se apaga si el sistema pide menos movimiento. */}
+      <motion.div
+        className="pointer-events-none absolute inset-0 bg-white/5 motion-reduce:hidden"
+        animate={{ opacity: [0, 0.06, 0] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+        aria-hidden
+      />
+
+      <motion.div
+        initial={{ y: 14, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+        className="relative w-full max-w-xl text-left"
+      >
+        <p className="font-pixel text-6xl sm:text-8xl text-white mb-6 leading-none select-none">:(</p>
+
+        <h2 className="font-pixel text-sm sm:text-xl text-white leading-relaxed mb-5">
+          Tu partida encontró un problema
+          <br />y tuvo que cerrarse.
+        </h2>
+
+        <p className="font-pixel text-[10px] sm:text-xs text-white/80 leading-relaxed mb-6">
+          Estamos recopilando información sobre el error… <span className="text-white/50">0 %</span>
+        </p>
+
+        <div className="font-pixel text-[9px] sm:text-[11px] text-white/70 leading-relaxed mb-8">
+          <p>
+            Código de detención: <span className="text-white">SE_QUEDO_SIN_CARTAS</span>
+          </p>
+          <p>
+            Causado por: <span className="text-white">{ganador}</span>
+          </p>
+        </div>
+
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="font-pixel text-xs sm:text-sm px-6 py-4 rounded-lg shadow-pixel bg-white text-[#1246c8] hover:brightness-95 active:translate-y-0.5"
+          >
+            Reiniciar
           </button>
         )}
       </motion.div>

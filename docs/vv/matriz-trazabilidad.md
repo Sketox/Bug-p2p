@@ -15,7 +15,7 @@ Nomenclatura de las pruebas:
 | ID | Requisito | Implementación | Verificación | Estado |
 |---|---|---|---|---|
 | R1.1 | Comunicación bidireccional en tiempo real, sin *polling* | **WebSocket** para el arranque (`signaling/src/server.ts`) y **DataChannels de WebRTC** para el juego (`net/src/room.ts`) | `signaling/test/introductor.test.ts`, E2E `malla.cy.ts` | ✅ |
-| R1.2 | Mínimo 3 nodos cliente simultáneos sobre el mismo estado | Malla completa: cada nodo abre un canal con cada otro | E2E `malla.cy.ts` (3 nodos, WebRTC real), D1 (3/5/10 nodos) | ✅ |
+| R1.2 | Mínimo 3 nodos cliente simultáneos sobre el mismo estado | Malla completa: cada nodo abre un canal con cada otro | E2E `malla.cy.ts` (3 nodos, WebRTC real) y `aforo.cy.ts` (**10 nodos**, 45 canales), D1 (3/5/10 nodos) | ✅ |
 | R1.3 | El estado es el mismo para todos | Replicación de máquina de estados: mismo estado inicial + mismo log | D1, `net/test/replication.test.ts` | ✅ |
 
 > Nota sobre la rúbrica: el enunciado nombra WebSockets o gRPC. Aquí el WebSocket está —es el
@@ -62,6 +62,7 @@ Nomenclatura de las pruebas:
 | R5.1 | Entrar escaneando un QR, sin instalar nada | El QR lleva sala **y** señalización (`?r=&s=`) | E2E `menu.cy.ts` (invitación por QR) y `malla.cy.ts` (los tres nodos entran así), `web/test/signal.test.ts` | ✅ |
 | R5.2 | Interfaz usable en un móvil | Responsive a dos tallas, `100dvh`, botones táctiles | E2E (360 px sin desbordar) | ✅ |
 | R5.3 | Se puede aprender a jugar sin que nadie lo explique | Pantalla "Cómo se juega" con las cartas reales | E2E `menu.cy.ts` y `partida-local.cy.ts` | ✅ |
+| R5.5 | El aforo se respeta en la interfaz, no solo en el servidor | `MAX_PLAYERS = 10`, pantalla `RoomFull` | E2E `aforo.cy.ts`: diez navegadores entran y se ven, la malla se estabiliza en los diez, la partida arranca y convergen; al once se le dice «SALA LLENA» | ✅ |
 | R5.4 | **Pantalla Maestra** para proyector: salud, líder, testigo, huellas | `web/components/MasterScreen.tsx` (tecla `M`) | E2E `malla.cy.ts`: con tres nodos en partida, comprueba que hay líder, que el testigo está localizado, que los tres salen presentes y que su veredicto de convergencia coincide con el que calcula la prueba | ✅ |
 
 ## Componentes de V&V (bloque de la otra cátedra)
@@ -87,8 +88,8 @@ Leído al revés, para detectar pruebas que no defienden ningún requisito (y re
 | `net/test/` | 60 | R1.1–R1.3, R2.1–R2.4, R3.1–R3.6, R4.1–R4.8 |
 | `signaling/test/` | 27 | R1.1, R4.5, R4.8, el sondeo de salud, y las defensas de S3–S8 |
 | `web/test/` | 29 | R5.1 (validación del enlace), efectos, identidad |
-| `cypress/e2e/` | 19 | R1.2, R3.5, R4.2, R5.1–R5.4 |
+| `cypress/e2e/` | 22 | R1.2, R3.5, R4.2, R5.1–R5.5 |
 | `vv/security/` | 11 | S1–S11 (bloque V4) |
 | `vv/distributed/` | 7 | D1–D7 (bloque V5), que refuerzan los ejes 2, 3 y 4 |
 
-**Total automatizado: 227 comprobaciones.**
+**Total automatizado: 230 comprobaciones.**
