@@ -20,16 +20,25 @@ reproducir a mano en Burp, paso a paso.
 ## 1. Montar el laboratorio
 
 ```powershell
-# Terminal 1 — la señalización, que es el objetivo
-npm run signaling            # ws://localhost:8787
-
-# Terminal 2 — la web
-npm run web                  # http://localhost:3000
+# Levanta la web y la señalización de una vez (es lo mismo que usan las pruebas de Cypress)
+npm run vv:stack             # http://localhost:3000  ·  ws://localhost:8787
 ```
 
-En Burp: **Proxy → Proxy settings → Proxy listeners**, escuchando en `127.0.0.1:8080` (el
-predeterminado). Abrir el navegador de Burp (**Proxy → Intercept → Open browser**), que ya viene con
-el certificado instalado, y entrar a `http://localhost:3000`.
+> **Antes de nada, el puerto.** Burp escucha por defecto en `127.0.0.1:8080`, que es **donde está
+> Jenkins**. Si el laboratorio de calidad está levantado, el listener de Burp no arranca y no se ve
+> ni un mensaje — sin decir por qué. Dos salidas: cambiar el listener a **`127.0.0.1:8081`**
+> (*Proxy → Proxy settings → Proxy listeners → Edit*), o apagar Jenkins mientras se ataca
+> (`docker compose -f vv/docker-compose.yml stop jenkins`). Lo primero es más cómodo.
+
+Abrir el navegador de Burp (**Proxy → Intercept → Open browser**), que ya viene con el certificado
+instalado, y entrar a `http://localhost:3000`.
+
+> **Sobre el «proyecto» de Burp:** la edición **Community no puede guardar proyectos en disco** —
+> solo permite *temporary project*, que se pierde al cerrar. Por eso en el repositorio no hay ningún
+> archivo `.burp` que abrir: al arrancar se elige «Temporary project» → «Use Burp defaults» y se
+> reproduce lo de abajo. Lo que sí es permanente son los once ataques, escritos como prueba
+> automática en `vv/security/attack-suite.mjs` — precisamente porque un hallazgo que solo vive
+> dentro de una sesión de Burp se pierde con ella.
 
 Crear una sala y abrir una segunda pestaña que se una con el código. En **Proxy → WebSockets
 history** aparece el tráfico de señalización: los `join`, los `peers`, y las `signal` con las
