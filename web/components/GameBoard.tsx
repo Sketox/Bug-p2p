@@ -585,59 +585,49 @@ function Victoria({ porAbandono, onReset }: { porAbandono: boolean; onReset?: ()
 }
 
 /**
- * Perder es una Pantalla Azul de la Muerte.
+ * Perder es una Pantalla Azul de la Muerte… en pequeño.
  *
- * No es un adorno: el BSOD **es una carta del mazo** ("Pantalla Azul de la Muerte", el comodín +4).
- * Cerrar la partida con la misma imagen que te puede tirar a la cara un rival remata la broma del
- * juego entero — y es lo que la gente recuerda del stand.
+ * El guiño es bueno —el BSOD **es una carta del mazo**— pero la primera versión ocupaba la pantalla
+ * entera y copiaba el texto de Windows demasiado bien: quien la vio creyó que el juego se había
+ * caído, no que había perdido. Un chiste que asusta al jugador no es un chiste, es un susto.
+ *
+ * Así que el BSOD se queda dentro de una tarjeta, con la mesa visible detrás —se ve que no se ha
+ * cerrado nada— y lo primero que se lee es **PERDISTE** y quién ganó. La broma del código de
+ * detención sigue ahí, pero debajo y en pequeño, que es su sitio.
  */
 function Derrota({ ganador, onReset }: { ganador: string; onReset?: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative w-full h-full bg-[#1246c8] grid place-items-center p-6 sm:p-10 overflow-hidden"
+      className="relative w-full h-full grid place-items-center bg-black/80 p-4"
     >
-      {/* El parpadeo de un monitor viejo, muy leve. Se apaga si el sistema pide menos movimiento. */}
       <motion.div
-        className="pointer-events-none absolute inset-0 bg-white/5 motion-reduce:hidden"
-        animate={{ opacity: [0, 0.06, 0] }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-        aria-hidden
-      />
-
-      <motion.div
-        initial={{ y: 14, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="relative w-full max-w-xl text-left"
+        initial={{ scale: 0.85, y: 16, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 210, damping: 20 }}
+        className="w-full max-w-md rounded-2xl border-2 border-black/60 bg-[#1246c8] p-6 sm:p-8 shadow-pixel text-center"
       >
-        <p className="font-pixel text-6xl sm:text-8xl text-white mb-6 leading-none select-none">:(</p>
+        <p className="font-pixel text-5xl sm:text-6xl text-white leading-none select-none mb-3">:(</p>
 
-        <h2 className="font-pixel text-sm sm:text-xl text-white leading-relaxed mb-5">
-          Tu partida encontró un problema
-          <br />y tuvo que cerrarse.
-        </h2>
+        <h2 className="font-pixel text-xl sm:text-3xl text-white mb-2">PERDISTE</h2>
 
-        <p className="font-pixel text-[10px] sm:text-xs text-white/80 leading-relaxed mb-6">
-          Estamos recopilando información sobre el error… <span className="text-white/50">0 %</span>
+        <p className="font-pixel text-[11px] sm:text-sm text-white/90 mb-5">
+          ganó <span className="text-white">{ganador}</span>
         </p>
 
-        <div className="font-pixel text-[9px] sm:text-[11px] text-white/70 leading-relaxed mb-8">
-          <p>
-            Código de detención: <span className="text-white">SE_QUEDO_SIN_CARTAS</span>
-          </p>
-          <p>
-            Causado por: <span className="text-white">{ganador}</span>
-          </p>
+        {/* El guiño al BSOD, en su sitio: pequeño y debajo de lo que de verdad importa. */}
+        <div className="font-pixel text-[8px] sm:text-[10px] text-white/60 leading-relaxed bg-black/20 rounded-lg p-3 mb-6">
+          <p>Código de detención: SE_QUEDO_SIN_CARTAS</p>
+          <p className="text-white/40">no es un error del sistema: es que te ganaron</p>
         </div>
 
         {onReset && (
           <button
             onClick={onReset}
-            className="font-pixel text-xs sm:text-sm px-6 py-4 rounded-lg shadow-pixel bg-white text-[#1246c8] hover:brightness-95 active:translate-y-0.5"
+            className="w-full font-pixel text-xs sm:text-sm px-5 py-4 rounded-lg shadow-pixel bg-white text-[#1246c8] hover:brightness-95 active:translate-y-0.5"
           >
-            Reiniciar
+            Volver al menú
           </button>
         )}
       </motion.div>
