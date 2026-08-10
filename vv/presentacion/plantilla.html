@@ -897,212 +897,184 @@
     <div class="split">
       <div>
         <p class="grande">
-          Nos pusimos en el papel del que <strong>quiere hacer trampas</strong>: interceptar los
-          mensajes que se mandan los jugadores, cambiarlos y reenviarlos.
+          Nos sentamos <strong>en medio de la conversación</strong> entre jugadores, cambiamos los
+          mensajes y los reenviamos. Once trampas distintas.
         </p>
-        <p style="margin-top:.7em">
-          Hace falta porque todas las pruebas anteriores usan el juego <em>como está previsto</em>, y
-          quien quiere colarse no hace eso. Con esta herramienta uno se sienta <strong>en medio de la
-          conversación</strong> y prueba a mentir: decir que eres otro jugador, repetir un mensaje
-          mil veces, mandar basura a ver qué pasa.
-        </p>
-        <p class="apagado" style="margin-top:.7em; font-size:.9em">
-          Ningún programa «descubre» un ataque solo: hay que imaginarlo primero. Por eso esta parte
-          se hace a mano — y luego se deja escrita, para que se repita siempre.
-        </p>
-        <p class="remate" style="margin-top:.7em">
-          Pero Burp es con lo que se <strong>encuentran</strong> los fallos, no con lo que se
-          <strong>vigilan</strong>. Los once quedaron escritos en un banco que corre en cada
-          construcción: lo que solo vive en la memoria de quien lo encontró vuelve en tres commits.
+        <p style="margin-top:.8em" class="apagado">
+          Hacía falta porque todo lo demás usa el juego <em>como está previsto</em>, y quien quiere
+          colarse no hace eso.
         </p>
       </div>
       <div class="tabla-scroll">
         <table>
-          <thead><tr><th>Sev.</th><th>Ataque</th><th class="num">Antes</th><th class="num">Ahora</th></tr></thead>
+          <thead><tr><th>La trampa que probamos</th><th class="num">Antes</th><th class="num">Ahora</th></tr></thead>
           <tbody>
-            <tr><td class="coral">Crítica</td><td>S3 · secuestro de plaza</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
-            <tr><td class="coral">Crítica</td><td>S8 · malformados</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
-            <tr><td>Alta</td><td>S1 · suplantación del emisor</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
-            <tr><td>Alta</td><td>S2 · inyección desde fuera</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
-            <tr><td>Media</td><td>S6 · agotar conexiones</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
-            <tr><td>Media</td><td>S7 · mensaje de 32 MB</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
-            <tr><td class="apagado">—</td><td class="apagado">S4·S5·S9·S10·S11 ya defendidos</td><td class="num verde">✓</td><td class="num verde">✓</td></tr>
+            <tr><td>Hacerse pasar por otro jugador</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
+            <tr><td>Echar a alguien de su propia partida</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
+            <tr><td>Tumbar el servidor con un mensaje raro</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
+            <tr><td>Meterse en una partida ajena</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
+            <tr><td>Saturarlo abriendo miles de conexiones</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
+            <tr><td>Mandarle un mensaje de 32 MB</td><td class="num coral">✕</td><td class="num verde">✓</td></tr>
+            <tr><td class="apagado">Otras cinco, que ya aguantaba</td><td class="num verde">✓</td><td class="num verde">✓</td></tr>
           </tbody>
         </table>
-        <p class="pie-t"><strong>11/11 bloqueados</strong> · 6 vulnerabilidades corregidas</p>
+        <p class="pie-t"><span class="coral">✕</span> se colaba &nbsp;·&nbsp; <span class="verde">✓</span> la bloquea &nbsp;·&nbsp; <strong>6 agujeros tapados</strong></p>
       </div>
     </div>
+    <p class="remate">
+      Las once quedaron <strong>escritas como prueba automática</strong>. Un agujero que solo está en
+      la cabeza de quien lo encontró vuelve a abrirse en dos semanas.
+    </p>
   </div>
   <div class="pie"><span>4.4 · Burp Suite — atacarlo a propósito</span><span class="mono">26</span></div>
 </section>
 
-<!-- ═══ S8 ═══════════════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ El agujero grave ═════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">4.4 · Burp Suite</span><span class="tema">El agujero más grave que encontramos</span></div>
   <div class="cuerpo">
     <h2>Un mensaje de dos líneas tumbaba<br>el servidor de toda la feria</h2>
-    <div class="split">
+    <div class="rejilla r3">
       <div class="tarj">
-        <span class="et">S8 · mensajes malformados</span>
-        <pre class="mono" style="margin:.4em 0 0; color:var(--azul); font-size:.9em; overflow-x:auto">{"t":"introduce","room":"AB12",
- "peerId":"x","tried":<span class="coral">7</span>}</pre>
-        <p class="pie-t">Enviado desde la consola del navegador por cualquier jugador de la sala.</p>
+        <span class="et">1 · qué mandamos</span>
+        <p style="font-size:.92em">Un mensaje normal del juego, pero con <strong>un número donde
+        tenía que ir una lista</strong>.</p>
+        <p class="pie-t">Desde la consola del navegador. Lo puede hacer cualquiera que esté jugando.</p>
       </div>
-      <div>
-        <p>
-          El servidor hacía <code>new Set([peerId, ...msg.tried])</code>. Desparramar un número lanza
-          una excepción, y una excepción dentro de un manejador de eventos de Node sube hasta
-          <code>uncaughtException</code> y <strong class="coral">mata el proceso</strong>.
-        </p>
-        <p style="margin-top:.7em" class="apagado">
-          Corregido en dos capas: se valida tipo, longitud y forma de todo lo que entra, y el
-          manejador va envuelto en un <code>try/catch</code> para el fallo que no se nos ocurrió.
-        </p>
+      <div class="tarj" style="border-color:var(--coral)">
+        <span class="et coral">2 · qué pasaba</span>
+        <p style="font-size:.92em">El servidor no sabía qué hacer con eso y <strong>se apagaba
+        entero</strong>.</p>
+        <p class="pie-t">Nadie más podía entrar a ninguna partida. En una feria, se acabó la demo.</p>
+      </div>
+      <div class="tarj" style="border-color:var(--esmeralda)">
+        <span class="et verde">3 · cómo se arregló</span>
+        <p style="font-size:.92em">Ahora <strong>revisa todo lo que le llega</strong> antes de
+        tocarlo, y lo raro lo tira a la basura.</p>
+        <p class="pie-t">Y una red de seguridad debajo, por si se nos escapa otro que no imaginamos.</p>
       </div>
     </div>
-    <p class="apagado" style="font-size:.9em">
-      El más instructivo, en cambio, es <strong>S1</strong>: el cifrado de WebRTC protege el contenido
-      del canal, <strong>no la identidad de quien lo abrió</strong>. Esa la garantiza la señalización,
-      o no la garantiza nadie.
+    <p class="remate">
+      Las partidas en curso <strong>habrían seguido jugándose igual</strong> — las cartas no pasan
+      por el servidor. Pero nadie nuevo habría podido entrar.
     </p>
   </div>
   <div class="pie"><span>4.4 · Burp Suite — atacarlo a propósito</span><span class="mono">27</span></div>
 </section>
 
-<!-- ═══ Por qué banco propio ═════════════════════════════════════════════════════════════════ -->
+<!-- ═══ El simulador ═════════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">4.5 · Validación distribuida</span><span class="tema">Un simulador para romper la red a propósito</span></div>
   <div class="cuerpo">
     <h2>Provocamos los desastres que<br>en la vida real casi nunca pasan</h2>
-    <div class="split">
-      <div>
-        <p class="grande">
-          En una partida de verdad, los desastres pasan <strong>una vez cada mil</strong> — y nunca
-          cuando estás mirando. Así que los provocamos nosotros, mil veces seguidas.
-        </p>
-        <p style="margin-top:.7em">
-          Este simulador juega partidas entre jugadores imaginarios y, a propósito, <strong>hace que
-          la red se porte mal</strong>: retrasa mensajes, los entrega dos veces, los cambia de orden
-          y tira jugadores a media partida. Luego comprueba que todos acaban viendo lo mismo.
-        </p>
-        <p class="apagado" style="margin-top:.7em; font-size:.9em">
-          Hubo que escribirlo porque ninguna herramienta que se pueda comprar sabe qué es «el turno
-          de Bug» ni cuándo dos jugadores están de acuerdo. Eso es de nuestro diseño.
-        </p>
-        <p class="remate ok" style="margin-top:.7em">
-          Y no contesta «bien» o «mal»: contesta <strong>con números</strong>.
-        </p>
-      </div>
-      <div class="tabla-scroll">
-        <table>
-          <thead><tr><th>ID</th><th>Propiedad</th><th>Medición</th></tr></thead>
-          <tbody>
-            <tr><td class="mono verde">D1</td><td>Consistencia</td><td>3/5/10 nodos · 64 duplicados → misma huella</td></tr>
-            <tr><td class="mono verde">D2</td><td>Orden causal</td><td>12 órdenes → 1 sola secuencia</td></tr>
-            <tr><td class="mono verde">D3</td><td>Exclusión mutua</td><td>200 cesiones · <strong>0 violaciones</strong></td></tr>
-            <tr><td class="mono verde">D4</td><td>Detección</td><td>2 500 ms sospechoso · 6 000 ms caído</td></tr>
-            <tr><td class="mono verde">D5</td><td>Elección (Bully)</td><td>acuerdo unánime con caída encadenada</td></tr>
-            <tr><td class="mono verde">D6</td><td>Recuperación</td><td>el corrupto <strong>no</strong> converge sin adoptar</td></tr>
-            <tr><td class="mono verde">D7</td><td>Rendimiento</td><td>240 mensajes donde un servidor usaría 360</td></tr>
-          </tbody>
-        </table>
-        <p class="pie-t"><strong>7/7 propiedades verificadas</strong></p>
-      </div>
+    <p class="grande">
+      Jugamos <strong>miles de partidas entre jugadores imaginarios</strong> y, a propósito, hacemos
+      que la red se porte mal. Después comprobamos que todos acaban viendo lo mismo.
+    </p>
+    <div class="rejilla r4">
+      <div class="tarj"><span class="et">retrasamos</span><p class="pie-t">Una jugada tarda en llegar y aparece <strong>fuera de orden</strong>.</p></div>
+      <div class="tarj"><span class="et">duplicamos</span><p class="pie-t">La misma jugada llega <strong>dos veces</strong>.</p></div>
+      <div class="tarj"><span class="et">desconectamos</span><p class="pie-t">Un jugador <strong>desaparece</strong> a media partida.</p></div>
+      <div class="tarj"><span class="et">corrompemos</span><p class="pie-t">A alguien le <strong>cambiamos las cartas</strong> a mano.</p></div>
     </div>
+    <div class="rejilla r3">
+      <div class="tarj acento"><span class="et verde">resultado</span><span class="cifra sm verde">7 de 7</span><div class="pie-t">propiedades verificadas</div></div>
+      <div class="tarj"><span class="et">200 veces</span><p class="pie-t">nos pasamos el turno de mano y <strong>ni una vez</strong> lo tuvieron dos a la vez</p></div>
+      <div class="tarj"><span class="et">el corrupto</span><p class="pie-t">se da cuenta solo, <strong>pide la partida entera</strong> y vuelve a la mesa</p></div>
+    </div>
+    <p class="apagado" style="font-size:.9em">
+      Hubo que escribirlo nosotros: ninguna herramienta que se pueda comprar sabe qué es «el turno de
+      Bug» ni cuándo dos jugadores están de acuerdo.
+    </p>
   </div>
   <div class="pie"><span>4.5 · Simulador — romper la red a mano</span><span class="mono">28</span></div>
 </section>
 
-<!-- ═══ D7 ═══════════════════════════════════════════════════════════════════════════════════ -->
+<!-- ═══ Los errores encontrados ══════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">4.5 · Validación distribuida</span><span class="tema">Cuando el que se equivoca es el examen</span></div>
+  <div class="cab"><span class="eje">III · Cómo se prueba</span><span class="tema">Los 17 errores que encontramos</span></div>
   <div class="cuerpo">
-    <h2>Una de nuestras pruebas daba<br>por malo algo que estaba bien</h2>
-    <div class="split">
-      <div>
-        <p>
-          D7 exigía que el caso realista convergiera en <strong>menos de 2 segundos de reloj de
-          pared</strong>. Con la máquina cargada, falló — <em>y las tres réplicas habían convergido
-          perfectamente</em>.
-        </p>
-        <p style="margin-top:.7em">
-          Un umbral que depende de lo que haya de fondo produce rojos sin defecto detrás. Y un rojo
-          que no significa nada <strong class="coral">enseña a ignorar los demás</strong>.
-        </p>
+    <h2>Casi ninguno salió de las pruebas<br>automáticas del principio</h2>
+    <div class="rejilla r3">
+      <div class="tarj">
+        <span class="et coral">jugando de verdad</span>
+        <h3>La sala no se creaba</h3>
+        <p class="pie-t">Pulsabas «Crear sala» y no pasaba nada. Las pruebas daban todo verde: el
+        fallo estaba en cómo el navegador monta la pantalla, no en las reglas del juego.</p>
       </div>
-      <div class="rejilla" style="gap:.7em">
-        <div class="tarj"><span class="et coral">antes · medía la máquina</span><p class="mono" style="font-size:.9em">msRealista &lt; 2000</p></div>
-        <div class="tarj acento"><span class="et verde">ahora · mide el algoritmo</span><p class="mono" style="font-size:.9em">aplicaciones por evento ≤ 30×</p><p class="pie-t">Sale idéntico en un portátil cargado y en el agente de CI. Los tiempos se siguen midiendo; ya no deciden.</p></div>
+      <div class="tarj">
+        <span class="et coral">jugando de verdad</span>
+        <h3>Un jugador se quedaba fuera</h3>
+        <p class="pie-t">Veía otra partida distinta a la de los demás y no podía tirar ninguna
+        carta. Le había faltado una jugada por el camino.</p>
+      </div>
+      <div class="tarj">
+        <span class="et coral">jugando de verdad</span>
+        <h3>No cabía en el móvil</h3>
+        <p class="pie-t">La pantalla de entrada se salía por los lados en un teléfono — que es por
+        donde entra casi todo el mundo en la feria.</p>
       </div>
     </div>
+    <div class="barras" style="margin-top:.2em">
+      <div class="fila"><span class="nom">jugando</span><div class="pista"><i style="width:52.9%; background:var(--coral)"></i></div><span class="val">9</span></div>
+      <div class="fila"><span class="nom">atacándolo</span><div class="pista"><i style="width:29.4%; background:var(--ambar)"></i></div><span class="val">5</span></div>
+      <div class="fila"><span class="nom">montando las pruebas</span><div class="pista"><i style="width:17.6%; background:var(--azul)"></i></div><span class="val">3</span></div>
+    </div>
     <p class="remate">
-      Lo primero que hay que poder creer es la medida. Encontrar esto es tan parte de la V&amp;V como
-      encontrar un bug en el producto — y llega antes.
+      Por eso no basta con probar el código por dentro: hay que <strong>abrir el juego y jugarlo</strong>,
+      con tres jugadores de verdad y en un móvil de verdad.
     </p>
   </div>
-  <div class="pie"><span>4.5 · Simulador — romper la red a mano</span><span class="mono">29</span></div>
+  <div class="pie"><span>III · Cómo se prueba</span><span class="mono">29</span></div>
 </section>
 
-<!-- ═══ De dónde salieron los defectos ═══════════════════════════════════════════════════════ -->
+<!-- ═══ Próximos pasos ═══════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
-  <div class="cab"><span class="eje">III · V&amp;V</span><span class="tema">De dónde salieron los 17 errores que encontramos</span></div>
+  <div class="cab"><span class="eje">Cierre</span><span class="tema">Lo que viene antes de la feria</span></div>
   <div class="cuerpo">
-    <h2>La mayoría no aparecieron<br>hasta que alguien jugó de verdad</h2>
-    <div class="barras">
-      <div class="fila"><span class="nom">Navegador / jugando</span><div class="pista"><i style="width:52.9%; background:var(--coral)"></i></div><span class="val">9</span></div>
-      <div class="fila"><span class="nom">Burp Suite</span><div class="pista"><i style="width:29.4%; background:var(--ambar)"></i></div><span class="val">5</span></div>
-      <div class="fila"><span class="nom">Montando la V&amp;V</span><div class="pista"><i style="width:17.6%; background:var(--azul)"></i></div><span class="val">3</span></div>
+    <h2>Lo que queda por hacer</h2>
+    <div class="rejilla r3">
+      <div class="tarj" style="border-color:var(--ambar)">
+        <span class="et ambar">lo primero</span>
+        <h3>Probarlo entre dos casas</h3>
+        <p class="pie-t">Funciona en la misma WiFi y con un túnel. Falta la prueba con dos redes
+        distintas de verdad — el código ya está preparado.</p>
+      </div>
+      <div class="tarj">
+        <span class="et">para el stand</span>
+        <h3>Diez móviles a la vez</h3>
+        <p class="pie-t">Está medido con diez jugadores simulados. Falta hacerlo con diez teléfonos
+        en la mano.</p>
+      </div>
+      <div class="tarj">
+        <span class="et">a futuro</span>
+        <h3>Probar el juego en cada cambio</h3>
+        <p class="pie-t">Las pruebas del navegador se lanzan a mano; el resto ya se lanza solo.</p>
+      </div>
     </div>
-    <div class="rejilla r3" style="margin-top:.3em">
-      <div class="tarj"><span class="et">ciclo de vida de React</span><p class="pie-t">La sala no se creaba: StrictMode monta, desmonta y vuelve a montar.</p></div>
-      <div class="tarj"><span class="et">anchura en CSS</span><p class="pie-t">El menú desbordaba a 360 px — y así entra casi todo el mundo en la feria.</p></div>
-      <div class="tarj"><span class="et">un evento a destiempo</span><p class="pie-t">Llegaba antes de existir el motor y se tiraba: divergencia permanente.</p></div>
-    </div>
-    <p class="remate">
-      No es un argumento contra las pruebas unitarias — son {{n_unit}} y sostienen el motor y los
-      algoritmos. Es un argumento contra leerlas como si fueran la V&amp;V entera.
+    <p class="remate ok">
+      Saber dónde <strong>no</strong> se ha mirado todavía es parte del trabajo. Lo que no está
+      medido, se dice.
     </p>
   </div>
-  <div class="pie"><span>III · V&amp;V</span><span class="mono">30</span></div>
-</section>
-
-<!-- ═══ Lo que no cubrimos ═══════════════════════════════════════════════════════════════════ -->
-<section class="lam">
-  <div class="cab"><span class="eje">Cierre</span><span class="tema">Riesgos abiertos</span></div>
-  <div class="cuerpo ancho">
-    <h2>Lo que este proceso <span class="coral">no</span> cubre</h2>
-    <ul class="limpia">
-      <li><span class="m x">!</span><span><strong>Partida entre redes distintas de verdad.</strong> El código lleva STUN y TURN configurable, pero la prueba necesita dos ubicaciones y no se ha hecho. Es el riesgo abierto más importante para la feria.</span></li>
-      <li><span class="m x">·</span><span><strong>Diez jugadores en móviles reales.</strong> Está medido en simulación (D1, D7), no con diez teléfonos.</span></li>
-      <li><span class="m x">·</span><span><strong>Accesibilidad completa.</strong> No es requisito del enunciado y no se ha auditado, más allá del diálogo que salió del análisis estático.</span></li>
-      <li><span class="m x">·</span><span><strong>Cypress no corre en cada commit.</strong> El agente de CI no tiene navegador; las {{n_e2e}} funcionales se lanzan a mano.</span></li>
-    </ul>
-    <p class="remate">
-      Un plan de V&amp;V que promete cubrirlo todo no es creíble. Decir dónde no se ha mirado es parte
-      del informe, no una concesión.
-    </p>
-  </div>
-  <div class="pie"><span>Cierre</span><span class="mono">31</span></div>
+  <div class="pie"><span>Cierre</span><span class="mono">30</span></div>
 </section>
 
 <!-- ═══ Remate ═══════════════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">Cierre</span><span class="tema">Bug · Sistemas Distribuidos + V&amp;V</span></div>
   <div class="cuerpo">
-    <h1>Un requisito sin prueba<br>es una intención.</h1>
-    <p class="grande apagado">
-      Y una configuración que nunca se ha ejecutado, también. El pipeline llevaba semanas escrito y no
-      arrancaba; el criterio de D7 medía la máquina en vez del algoritmo; el arnés de tres nodos
-      perdía una carrera. Nada de eso se ve leyendo el código.
-    </p>
+    <svg class="logo logo-sm" viewBox="0 0 100 66" aria-label="Bug"><use href="#c-logo" width="100" height="66"/></svg>
+    <h2>Un juego que se sostiene solo,<br>y {{n_total}} comprobaciones que lo vigilan</h2>
     <div class="rejilla r4">
-      <div class="tarj"><span class="et">SonarQube</span><span class="cifra sm verde">Passed</span><div class="pie-t">89 % cobertura · dup. 1,3 %</div></div>
-      <div class="tarj"><span class="et">Jenkins</span><span class="cifra sm verde">7/7</span><div class="pie-t">etapas, por commit</div></div>
-      <div class="tarj"><span class="et">Cypress</span><span class="cifra sm verde">{{n_e2e}}/{{n_e2e}}</span><div class="pie-t">3 nodos, WebRTC real</div></div>
-      <div class="tarj"><span class="et">Seguridad · Distribuida</span><span class="cifra sm verde">11/11 · 7/7</span><div class="pie-t">ataques · propiedades</div></div>
+      <div class="tarj"><span class="et">calidad del código</span><span class="cifra sm verde">Passed</span><div class="pie-t">0 errores · 89 % revisado</div></div>
+      <div class="tarj"><span class="et">se comprueba solo</span><span class="cifra sm verde">7/7</span><div class="pie-t">en cada cambio</div></div>
+      <div class="tarj"><span class="et">se juega solo</span><span class="cifra sm verde">{{n_e2e}}/{{n_e2e}}</span><div class="pie-t">3 jugadores a la vez</div></div>
+      <div class="tarj"><span class="et">trampas · desastres</span><span class="cifra sm verde">11 · 7</span><div class="pie-t">bloqueadas · superados</div></div>
     </div>
+    <p class="grande apagado">Gracias.</p>
   </div>
-  <div class="pie"><span>Reproducible con <code>npm run e2e</code>, <code>vv:security</code>, <code>vv:distributed</code></span><span class="mono">32</span></div>
+  <div class="pie"><span>github.com/Sketox/Bug-p2p</span><span class="mono">31</span></div>
 </section>
 
 </div><!-- /marco -->

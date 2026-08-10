@@ -328,134 +328,98 @@ Se quita el tercer nodo de golpe · los dos que quedan siguen convergiendo entre
 
 ## 26 · Burp Suite — atacar el sistema a propósito
 
-Nos pusimos en el papel del que **quiere hacer trampas**: interceptar los mensajes que se mandan los
-jugadores, cambiarlos y reenviarlos.
+Nos sentamos **en medio de la conversación** entre jugadores, cambiamos los mensajes y los
+reenviamos. Once trampas distintas.
 
-Hace falta porque todas las pruebas anteriores usan el juego *como está previsto*, y quien quiere
-colarse no hace eso. Con esta herramienta uno se sienta **en medio de la conversación** y prueba a
-mentir: decir que eres otro jugador, repetir un mensaje mil veces, mandar basura a ver qué pasa.
+Hacía falta porque todo lo demás usa el juego *como está previsto*, y quien quiere colarse no hace
+eso.
 
-Con *Repeater* se reenvía un mensaje cambiando un campo; con *Intruder* se repite veinte mil veces.
-Ninguna prueba unitaria «descubre» un ataque: hay que jugar con el protocolo a mano y ver qué se rompe.
+| La trampa que probamos | Antes | Ahora |
+|---|---|---|
+| Hacerse pasar por otro jugador | ✕ | ✓ |
+| Echar a alguien de su propia partida | ✕ | ✓ |
+| Tumbar el servidor con un mensaje raro | ✕ | ✓ |
+| Meterse en una partida ajena | ✕ | ✓ |
+| Saturarlo abriendo miles de conexiones | ✕ | ✓ |
+| Mandarle un mensaje de 32 MB | ✕ | ✓ |
+| Otras cinco, que ya aguantaba | ✓ | ✓ |
 
-> Pero Burp es con lo que se **encuentran** los fallos, no con lo que se **vigilan**. Los once
-> quedaron escritos en un banco que corre en cada construcción: lo que solo vive en la memoria de
-> quien lo encontró vuelve en tres commits.
+✕ se colaba · ✓ la bloquea · **6 agujeros tapados**
 
-| Severidad | Ataque | Antes | Ahora |
-|---|---|---|---|
-| Crítica | S3 · secuestro de plaza | ✕ | ✓ |
-| Crítica | S8 · malformados | ✕ | ✓ |
-| Alta | S1 · suplantación del emisor | ✕ | ✓ |
-| Alta | S2 · inyección desde fuera | ✕ | ✓ |
-| Media | S6 · agotar conexiones | ✕ | ✓ |
-| Media | S7 · mensaje de 32 MB | ✕ | ✓ |
-| — | S4 · S5 · S9 · S10 · S11 (ya defendidos) | ✓ | ✓ |
-
-**11/11 bloqueados · 6 vulnerabilidades corregidas.**
+> Las once quedaron **escritas como prueba automática**. Un agujero que solo está en la cabeza de
+> quien lo encontró vuelve a abrirse en dos semanas.
 
 ## 27 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
 
-```json
-{"t":"introduce","room":"AB12","peerId":"x","tried":7}
-```
+**1 · Qué mandamos.** Un mensaje normal del juego, pero con **un número donde tenía que ir una
+lista**. Desde la consola del navegador: lo puede hacer cualquiera que esté jugando.
 
-El servidor hacía `new Set([peerId, ...msg.tried])`. Desparramar un número lanza una excepción, y una
-excepción dentro de un manejador de eventos de Node sube hasta `uncaughtException` y **mata el
-proceso**. Enviado desde la consola del navegador por cualquier jugador de la sala.
+**2 · Qué pasaba.** El servidor no sabía qué hacer con eso y **se apagaba entero**. Nadie más podía
+entrar a ninguna partida. En una feria, se acabó la demo.
 
-Corregido en dos capas: se valida tipo, longitud y forma de todo lo que entra, y el manejador va
-envuelto en un `try/catch` para el fallo que no se nos ocurrió.
+**3 · Cómo se arregló.** Ahora **revisa todo lo que le llega** antes de tocarlo, y lo raro lo tira a
+la basura. Y una red de seguridad debajo, por si se nos escapa otro que no imaginamos.
 
-> El más instructivo, en cambio, es **S1**: el cifrado de WebRTC protege el contenido del canal, **no
-> la identidad de quien lo abrió**. Esa la garantiza la señalización, o no la garantiza nadie.
+> Las partidas en curso **habrían seguido jugándose igual** — las cartas no pasan por el servidor.
+> Pero nadie nuevo habría podido entrar.
 
-## 28 · Un simulador propio — para romper la red a propósito
+## 28 · Un simulador para romper la red a propósito
 
-En una partida de verdad, los desastres pasan **una vez cada mil** — y nunca cuando estás mirando.
-Así que los provocamos nosotros, mil veces seguidas.
+Jugamos **miles de partidas entre jugadores imaginarios** y, a propósito, hacemos que la red se
+porte mal. Después comprobamos que todos acaban viendo lo mismo.
 
-Hubo que escribirlo porque ninguna herramienta que se pueda comprar sabe qué es «el turno de Bug» ni
-cuándo dos jugadores están de acuerdo. Eso es de nuestro diseño.
-
-El banco monta una **red simulada con reloj virtual**: elige latencias entre 5 y 120 ms, duplica
-entregas, reordena mensajes y provoca caídas encadenadas — cosas que en una red de verdad pasan una
-vez cada mil partidas y nunca cuando estás mirando.
-
-Y no devuelve un verde: devuelve **números**. El enunciado pide medir latencia y tiempos de
-respuesta, no aprobar.
-
-| ID | Propiedad | Medición |
-|---|---|---|
-| D1 | Consistencia | 3/5/10 nodos · 64 duplicados → misma huella |
-| D2 | Orden causal | 12 órdenes de entrega → 1 sola secuencia |
-| D3 | Exclusión mutua | 200 cesiones · **0 violaciones** |
-| D4 | Detección | 2 500 ms sospechoso · 6 000 ms caído |
-| D5 | Elección (Bully) | acuerdo unánime con caída encadenada |
-| D6 | Recuperación | el corrupto **no** converge sin adoptar |
-| D7 | Rendimiento | 240 mensajes donde un servidor usaría 360 |
-
-**7/7 propiedades verificadas.**
-
-## 29 · Cuando el que se equivoca es el examen
-
-D7 exigía que el caso realista convergiera en **menos de 2 segundos de reloj de pared**. Con la
-máquina cargada, falló — *y las tres réplicas habían convergido perfectamente*.
-
-Un umbral que depende de lo que haya de fondo produce rojos sin defecto detrás. Y un rojo que no
-significa nada **enseña a ignorar los demás**.
-
-| | Criterio |
+| Lo que provocamos | |
 |---|---|
-| **Antes** · medía la máquina | `msRealista < 2000` |
-| **Ahora** · mide el algoritmo | aplicaciones del reductor por evento ≤ 30× |
+| **retrasamos** | una jugada tarda en llegar y aparece fuera de orden |
+| **duplicamos** | la misma jugada llega dos veces |
+| **desconectamos** | un jugador desaparece a media partida |
+| **corrompemos** | a alguien le cambiamos las cartas a mano |
 
-Sale idéntico en un portátil cargado y en el agente de CI. Los tiempos se siguen midiendo; ya no
-deciden.
+**Resultado: 7 de 7 propiedades verificadas.** En 200 pases de turno, **ni una vez** lo tuvieron dos
+jugadores a la vez. Y al que le cambiamos las cartas se da cuenta solo, **pide la partida entera** y
+vuelve a la mesa.
 
-> Lo primero que hay que poder creer es la medida. Encontrar esto es tan parte de la V&V como
-> encontrar un bug en el producto — y llega antes.
+Hubo que escribirlo nosotros: ninguna herramienta que se pueda comprar sabe qué es «el turno de Bug»
+ni cuándo dos jugadores están de acuerdo.
 
-## 30 · De dónde salieron los 17 errores que encontramos
+## 29 · Los 17 errores que encontramos
 
-| Origen | Nº |
+**Casi ninguno salió de las pruebas automáticas del principio.** Tres ejemplos de los que
+aparecieron jugando:
+
+- **La sala no se creaba.** Pulsabas «Crear sala» y no pasaba nada. Las pruebas daban todo verde: el
+  fallo estaba en cómo el navegador monta la pantalla, no en las reglas del juego.
+- **Un jugador se quedaba fuera.** Veía otra partida distinta a la de los demás y no podía tirar
+  ninguna carta. Le había faltado una jugada por el camino.
+- **No cabía en el móvil.** La pantalla de entrada se salía por los lados en un teléfono — que es
+  por donde entra casi todo el mundo en la feria.
+
+| De dónde salieron | Nº |
 |---|---|
-| Navegador / jugando | 9 |
-| Burp Suite | 5 |
-| Montando la V&V | 3 |
+| Jugando | 9 |
+| Atacándolo | 5 |
+| Montando las pruebas | 3 |
 
-Tres ejemplos de los que **ninguna prueba unitaria habría visto**:
+> Por eso no basta con probar el código por dentro: hay que **abrir el juego y jugarlo**, con tres
+> jugadores de verdad y en un móvil de verdad.
 
-- **Ciclo de vida de React** — la sala no se creaba: StrictMode monta, desmonta y vuelve a montar.
-- **Anchura en CSS** — el menú desbordaba a 360 px, y así entra casi todo el mundo en la feria.
-- **Un evento a destiempo** — llegaba antes de existir el motor y se tiraba: divergencia permanente.
+## 30 · Lo que queda por hacer
 
-> No es un argumento contra las pruebas unitarias — son 190 y sostienen el motor y los algoritmos. Es
-> un argumento contra leerlas como si fueran la V&V entera.
+- **Probarlo entre dos casas.** Funciona en la misma WiFi y con un túnel. Falta la prueba con dos
+  redes distintas de verdad — el código ya está preparado.
+- **Diez móviles a la vez.** Está medido con diez jugadores simulados. Falta hacerlo con diez
+  teléfonos en la mano.
+- **Probar el juego en cada cambio.** Las pruebas del navegador se lanzan a mano; el resto ya se
+  lanza solo.
 
-## 31 · Lo que este proceso **no** cubre
+> Saber dónde **no** se ha mirado todavía es parte del trabajo. Lo que no está medido, se dice.
 
-- **Partida entre redes distintas de verdad.** El código lleva STUN y TURN configurable, pero la
-  prueba necesita dos ubicaciones y no se ha hecho. Es el riesgo abierto más importante para la feria.
-- **Diez jugadores en móviles reales.** Está medido en simulación (D1, D7), no con diez teléfonos.
-- **Accesibilidad completa.** No es requisito del enunciado y no se ha auditado, más allá del diálogo
-  que salió del análisis estático.
-- **Cypress no corre en cada commit.** El agente de CI no tiene navegador; las 19 funcionales se
-  lanzan a mano.
+## 31 · Cierre
 
-> Un plan de V&V que promete cubrirlo todo no es creíble. Decir dónde no se ha mirado es parte del
-> informe, no una concesión.
+# Un juego que se sostiene solo, y 227 comprobaciones que lo vigilan
 
-## 32 · Cierre
-
-# Un requisito sin prueba es una intención.
-
-Y una configuración que nunca se ha ejecutado, también. El pipeline llevaba semanas escrito y no
-arrancaba; el criterio de D7 medía la máquina en vez del algoritmo; el arnés de tres nodos perdía una
-carrera. Nada de eso se ve leyendo el código.
-
-| SonarQube | Jenkins | Cypress | Seguridad · Distribuida |
+| Calidad del código | Se comprueba solo | Se juega solo | Trampas · desastres |
 |---|---|---|---|
-| **Passed** · 89 % cobertura · dup. 1,3 % | **7/7** etapas, por commit | **19/19** · 3 nodos, WebRTC real | **11/11 · 7/7** ataques · propiedades |
+| **Passed** · 0 errores · 89 % revisado | **7/7** en cada cambio | **19/19** con 3 jugadores a la vez | **11 · 7** bloqueadas · superados |
 
-Reproducible con `npm run e2e`, `npm run vv:security` y `npm run vv:distributed`.
+`github.com/Sketox/Bug-p2p`
