@@ -50,19 +50,25 @@ ofertas SDP.
 > llena de filas `webpack-hmr` no demuestra nada de lo que dice demostrar. La señalización se
 > reconoce porque va a **`localhost:8787/ws`**. Merece la pena filtrar por ahí.
 
-Si hace falta tráfico de señalización **a demanda** —para una captura, o para tener algo que
-interceptar sin montar dos navegadores— hay un generador:
+Si hace falta señalización **a demanda** —para una captura, o para tener algo que interceptar sin
+montar dos navegadores a mano— hay un generador:
 
 ```powershell
-node vv/security/trafico-por-burp.mjs                          # proxy 127.0.0.1:8081
-node vv/security/trafico-por-burp.mjs http://127.0.0.1:8080    # si el listener está en el 8080
+node vv/security/partida-por-burp.mjs                                  # proxy 127.0.0.1:8081
+node vv/security/partida-por-burp.mjs 127.0.0.1:8080 http://localhost:7788   # otro proxy, la imagen
 ```
 
-Levanta dos jugadores que entran a la misma sala **a través del proxy** y cruzan un handshake WebRTC
-completo (oferta, respuesta y candidato ICE), así que el historial se llena de mensajes del juego de
-verdad. Y avisa: **Burp no repinta su ventana mientras está minimizada**, así que si se va a
-capturar, hay que dejarla a la vista antes de lanzar el tráfico o la captura devolverá el fotograma
-anterior.
+Abre un Chrome **a través del proxy**, crea una sala, se une desde una segunda pestaña y empieza la
+partida. Lo dirige por el protocolo de depuración de Chrome, así que no hace falta tocar nada.
+
+> **Por qué no vale un cliente de Node, ni Cypress.** Los dos parecen la vía obvia y los dos fallan
+> por lo mismo: **`localhost` no se manda por el proxy**. Cypress lo excluye siempre, sin avisar. Un
+> cliente de Node con agente de proxy sí lo atraviesa, pero Burp no lo apunta en el historial de
+> WebSockets. Lo único que funciona es un navegador arrancado con `--proxy-bypass-list=<-loopback>`,
+> que es exactamente lo que hace el navegador que abre Burp — y lo que hace este script.
+
+Dos avisos para la captura: **Burp no repinta su ventana mientras está minimizada** (la captura
+saldría con el fotograma anterior), y el historial **no se desplaza solo** hacia las filas nuevas.
 
 > **Lo que NO se va a ver ahí, y es el resultado más importante de todo el capítulo:** las cartas.
 > Ni una jugada, ni una mano, ni el mazo. El WebSocket solo transporta el handshake; a partir del
