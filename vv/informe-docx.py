@@ -301,28 +301,37 @@ def main():
     # ---------------------------------------------------------------------------------------------
     doc.add_page_break()
     h1(doc, '5. Evidencias visuales')
+    p(doc,
+      'Las seis primeras capturas no se hicieron a mano: las toma la propia suite de Cypress mientras juega, así que se regeneran solas en cada ejecución y no pueden quedarse desfasadas respecto al sistema.',
+      negritas=['las toma la propia suite de Cypress mientras juega'])
+
 
     figura(doc, 'docs/vv/evidencias/cypress/menu.cy.ts/00-pantalla-de-entrada.png',
-           'Pantalla de entrada. Se crea sala o se entra con un código de cuatro caracteres.', Cm(11))
+           'Capturada por la prueba de Cypress «menú principal». Pantalla de entrada: se crea sala '
+           'o se entra con un código de cuatro caracteres.', Cm(11))
     figura(doc, 'docs/vv/evidencias/cypress/partida-local.cy.ts/03-mesa-repartida.png',
-           'Mesa repartida: siete cartas, mazo, pozo y turno en curso.', Cm(13))
+           'Capturada por la prueba de Cypress «partida local». Mesa repartida: siete cartas, mazo, '
+           'pozo y turno en curso.', Cm(13))
     figura(doc, 'docs/vv/evidencias/cypress/distribuido/malla.cy.ts/04-tres-nodos-convergen.png',
-           'Tres navegadores reales con WebRTC: las tres réplicas publican la misma huella de estado.')
+           'Capturada por la prueba de Cypress «malla de tres nodos». Tres navegadores reales con '
+           'WebRTC: las tres réplicas publican la misma huella de estado.')
     figura(doc, 'docs/vv/evidencias/cypress/distribuido/malla.cy.ts/05-cae-un-nodo-los-otros-siguen.png',
-           'Tolerancia a fallos: cae un nodo y los demás siguen jugando.')
+           'Capturada por la prueba de Cypress «malla de tres nodos». Tolerancia a fallos: cae un '
+           'nodo y los demás siguen jugando.')
     figura(doc, 'docs/vv/evidencias/ui/14-pantalla-maestra-panel.png',
-           'Pantalla Maestra: líder, testigo, convergencia, huella de cada nodo e historial de la '
-           'malla. Es la verificación en vivo de que todos ven la misma partida.', Cm(8))
+           'Capturada por la prueba de Cypress «malla de tres nodos». La Pantalla Maestra: líder, '
+           'testigo, convergencia, huella de cada nodo e historial de la malla.', Cm(8))
     figura(doc, 'docs/vv/evidencias/cypress/distribuido/aforo.cy.ts/09-diez-jugadores.png',
-           'Aforo: diez navegadores en la misma sala, 45 conexiones directas.')
+           'Capturada por la prueba de Cypress «aforo: diez caben, el once no». Diez navegadores en '
+           'la misma sala, 45 conexiones directas.')
     figura(doc, 'docs/vv/evidencias/laboratorio/07-sonarqube-dashboard.png',
            'SonarQube: puerta de calidad superada, 89,1 % de cobertura.')
     figura(doc, 'docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png',
            'Jenkins: las siete etapas por commit. Las cuatro primeras construcciones en rojo son el '
            'pipeline que llevaba semanas escrito sin haber arrancado nunca.')
     figura(doc, 'docs/vv/evidencias/laboratorio/11-jenkins-configuracion.png',
-           'El pipeline por dentro: se define desde el propio repositorio (Pipeline script from SCM), '
-           'así que las siete etapas viven en el `Jenkinsfile` y no en la configuración del servidor.')
+           'Jenkins — el pipeline por dentro. Se define como «Pipeline script from SCM», así que las '
+           'siete etapas viven en el Jenkinsfile del repositorio y no en la configuración del servidor.')
     figura(doc, 'docs/vv/evidencias/laboratorio/12-cypress-resultados.png',
            'Las 22 pruebas de Cypress, una a una: malla de tres nodos, aforo de diez, partida local '
            'y menú. Cero fallos.', Cm(14))
