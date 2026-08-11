@@ -40,6 +40,9 @@ const ESPERADAS = [
   ['docs/vv/evidencias/laboratorio/08-burp-websockets.png', 'capturar Burp con vv/capturar-ventana.ps1'],
   ['docs/vv/evidencias/laboratorio/11-jenkins-configuracion.png', 'capturar Jenkins → Configure → Pipeline'],
   ['docs/vv/evidencias/laboratorio/12-cypress-resultados.png', 'recortar la sección de Cypress de informe-pruebas.html'],
+  ['docs/vv/evidencias/laboratorio/13-cypress-consola-suite.png', 'capturar la consola tras cypress run'],
+  ['docs/vv/evidencias/laboratorio/14-cypress-consola-malla.png', 'capturar la consola tras correr malla.cy.ts'],
+  ['docs/vv/evidencias/laboratorio/15-distribuida-consola.png', 'capturar la consola tras npm run vv:distributed'],
 ];
 
 const faltan = ESPERADAS.filter(([ruta]) => !existsSync(join(raiz, ruta)));

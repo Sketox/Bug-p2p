@@ -332,6 +332,15 @@ def main():
     figura(doc, 'docs/vv/evidencias/laboratorio/11-jenkins-configuracion.png',
            'Jenkins — el pipeline por dentro. Se define como «Pipeline script from SCM», así que las '
            'siete etapas viven en el Jenkinsfile del repositorio y no en la configuración del servidor.')
+    figura(doc, 'docs/vv/evidencias/laboratorio/13-cypress-consola-suite.png',
+           'La suite completa ejecutándose en consola: los cuatro archivos, 22 pruebas, '
+           '22 pasadas, 0 fallos, en 5 minutos y 43 segundos.', Cm(14))
+    figura(doc, 'docs/vv/evidencias/laboratorio/14-cypress-consola-malla.png',
+           'La prueba de la malla, ejecutada sola: 5 de 5, y las tres capturas que deja escritas '
+           'como evidencia. Es la que levanta tres navegadores con WebRTC real.', Cm(14))
+    figura(doc, 'docs/vv/evidencias/laboratorio/15-distribuida-consola.png',
+           'Validación distribuida en consola: las mediciones de coste con 3, 5 y 10 nodos, y '
+           '7 de 7 propiedades verificadas.', Cm(14))
     figura(doc, 'docs/vv/evidencias/laboratorio/12-cypress-resultados.png',
            'Las 22 pruebas de Cypress, una a una: malla de tres nodos, aforo de diez, partida local '
            'y menú. Cero fallos.', Cm(14))
