@@ -378,7 +378,24 @@ eso.
 > Las once quedaron **escritas como prueba automática**. Un agujero que solo está en la cabeza de
 > quien lo encontró vuelve a abrirse en dos semanas.
 
-## 29 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
+## 29 · Evidencia — sentados en medio de la partida
+
+![Historial de WebSockets de Burp](evidencias/laboratorio/08-burp-websockets.png)
+
+Jugamos una partida entera con Burp de intermediario. Las filas `localhost:8787` son la
+**señalización**: los saludos que presentan a los jugadores. Las `webpack-hmr` son el recargador del
+servidor de desarrollo, y están a propósito — porque enseñan que ahí aparece **todo** lo que el
+proxy vio, y aun así **ni una fila es una jugada**.
+
+> **Cómo defenderla, en una frase:** «Esto es todo lo que un intermediario llega a ver de una
+> partida de Bug: los saludos. Ni una carta, ni una mano, ni el mazo — eso va cifrado de navegador a
+> navegador y no pasa por ningún servidor. Esa es la diferencia con un juego que tiene servidor de
+> partida.»
+
+Se reproduce con `node vv/security/partida-por-burp.mjs`: abre dos navegadores **a través del
+proxy** y juega. Hace falta porque todo lo demás excluye `localhost` del proxy y Burp no vería nada.
+
+## 30 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
 
 **1 · Qué mandamos.** Un mensaje normal del juego, pero con **un número donde tenía que ir una
 lista**. Desde la consola del navegador: lo puede hacer cualquiera que esté jugando.
@@ -392,7 +409,7 @@ la basura. Y una red de seguridad debajo, por si se nos escapa otro que no imagi
 > Las partidas en curso **habrían seguido jugándose igual** — las cartas no pasan por el servidor.
 > Pero nadie nuevo habría podido entrar.
 
-## 30 · Un simulador para romper la red a propósito
+## 31 · Un simulador para romper la red a propósito
 
 Jugamos **miles de partidas entre jugadores imaginarios** y, a propósito, hacemos que la red se
 porte mal. Después comprobamos que todos acaban viendo lo mismo.
@@ -411,7 +428,7 @@ vuelve a la mesa.
 Hubo que escribirlo nosotros: ninguna herramienta que se pueda comprar sabe qué es «el turno de Bug»
 ni cuándo dos jugadores están de acuerdo.
 
-## 31 · Los 17 errores que encontramos
+## 32 · Los 17 errores que encontramos
 
 **Casi ninguno salió de las pruebas automáticas del principio.** Tres ejemplos de los que
 aparecieron jugando:
@@ -432,7 +449,7 @@ aparecieron jugando:
 > Por eso no basta con probar el código por dentro: hay que **abrir el juego y jugarlo**, con tres
 > jugadores de verdad y en un móvil de verdad.
 
-## 32 · Lo que queda por hacer
+## 33 · Lo que queda por hacer
 
 - **Probarlo entre dos casas.** Funciona en la misma WiFi y con un túnel. Falta la prueba con dos
   redes distintas de verdad — el código ya está preparado.
@@ -443,7 +460,7 @@ aparecieron jugando:
 
 > Saber dónde **no** se ha mirado todavía es parte del trabajo. Lo que no está medido, se dice.
 
-## 33 · Cierre
+## 34 · Cierre
 
 # Un juego que se sostiene solo, y 230 comprobaciones que lo vigilan
 
