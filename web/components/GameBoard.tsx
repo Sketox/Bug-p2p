@@ -450,6 +450,7 @@ function GameOver({
 function Confeti() {
   const PALOS = ['#07d98c', '#a60d61', '#4227f2', '#f27eb4'];
   const piezas = Array.from({ length: 44 }, (_, i) => ({
+    id: `confeti-${i}`,
     izq: (i * 37) % 100,
     color: PALOS[i % PALOS.length]!,
     retraso: ((i * 13) % 30) / 10,
@@ -460,9 +461,9 @@ function Confeti() {
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
-      {piezas.map((p, i) => (
+      {piezas.map((p) => (
         <motion.div
-          key={i}
+          key={p.id}
           initial={{ y: '-12vh', rotate: 0, opacity: 1 }}
           animate={{ y: '112vh', rotate: p.giro, opacity: [1, 1, 0.9] }}
           transition={{ duration: p.duracion, delay: p.retraso, repeat: Infinity, ease: 'linear' }}
@@ -529,7 +530,11 @@ const BICHO = [
 const TINTA_BICHO: Record<string, string> = { o: '#FF7F50', x: '#ffffff' };
 
 /** Dibuja un mapa de caracteres como píxeles. Lo usan la copa y el bicho. */
-function Pixeles({ mapa, tinta, clase }: { mapa: string[]; tinta: Record<string, string>; clase: string }) {
+function Pixeles({
+  mapa,
+  tinta,
+  clase,
+}: Readonly<{ mapa: string[]; tinta: Record<string, string>; clase: string }>) {
   const ancho = mapa[0]!.length;
   return (
     <motion.svg
@@ -555,8 +560,8 @@ function CopaPixel() {
   return <Pixeles mapa={COPA} tinta={TINTA_COPA} clase="w-32 sm:w-40" />;
 }
 
-/** Ganar es compilar sin errores: la pantalla que todo programador quiere ver. */
-function Victoria({ porAbandono, onReset }: { porAbandono: boolean; onReset?: () => void }) {
+/** Ganar es compilar sin errores: la pantalla que cualquier programador quiere ver. */
+function Victoria({ porAbandono, onReset }: Readonly<{ porAbandono: boolean; onReset?: () => void }>) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -599,6 +604,7 @@ function Victoria({ porAbandono, onReset }: { porAbandono: boolean; onReset?: ()
 
         {onReset && (
           <button
+            type="button"
             onClick={onReset}
             className="w-full font-pixel text-xs sm:text-sm px-5 py-4 rounded-lg shadow-pixel bg-[#07d98c] text-[#04241a] hover:brightness-110 active:translate-y-0.5"
           >
@@ -618,7 +624,7 @@ function Victoria({ porAbandono, onReset }: { porAbandono: boolean; onReset?: ()
  * la Pantalla Azul que había aquí antes chocaba con la carta del mismo nombre: la misma imagen para
  * «alguien jugó una carta» y para «se acabó la partida» hacía pensar que el juego se había roto.
  */
-function Derrota({ ganador, onReset }: { ganador: string; onReset?: () => void }) {
+function Derrota({ ganador, onReset }: Readonly<{ ganador: string; onReset?: () => void }>) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -656,6 +662,7 @@ function Derrota({ ganador, onReset }: { ganador: string; onReset?: () => void }
 
         {onReset && (
           <button
+            type="button"
             onClick={onReset}
             className="w-full font-pixel text-xs sm:text-sm px-5 py-4 rounded-lg shadow-pixel bg-[#FF7F50] text-[#2b0a02] hover:brightness-110 active:translate-y-0.5"
           >

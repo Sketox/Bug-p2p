@@ -51,7 +51,7 @@ describe('aforo: diez caben, el once no', () => {
       for (let i = 2; i <= AFORO; i++) cy.montarNodo(i, `J${String(i).padStart(2, '0')}`, sala);
       cy.enNodo(1).contains(`${AFORO}/${AFORO}`, { timeout: 60_000 }).should('exist');
 
-      cy.enNodo(1).contains('button', '¡Empezar!').click({ force: true });
+      cy.enNodo(1).contains('button', '¡Empezar!').click();
 
       // La afirmación es la de siempre y la única que vale: las diez réplicas con la misma huella.
       // Con diez nodos hay más margen de reparto, así que se espera más.
@@ -86,8 +86,8 @@ describe('aforo: diez caben, el once no', () => {
         const doc = ($marco[0] as HTMLIFrameElement).contentDocument;
         expect(doc?.querySelectorAll('input').length ?? 0, 'menú del nodo 11').to.be.greaterThan(0);
       });
-      cy.enNodo(11).find('input').first().type('J11', { force: true });
-      cy.enNodo(11).contains('button', 'Entrar a la sala').click({ force: true });
+      cy.enNodo(11).find('input').first().type('J11');
+      cy.enNodo(11).contains('button', 'Entrar a la sala').click();
 
       // Y lo que importa: se le dice. No una pantalla en blanco ni un «reconectando…» eterno.
       cy.enNodo(11).contains('SALA LLENA', { timeout: 30_000 }).should('exist');
