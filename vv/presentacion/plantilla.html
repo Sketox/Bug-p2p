@@ -212,6 +212,31 @@
   td.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
   .tabla-scroll { overflow-x: auto; }
 
+  /* --- Diagramas y burbujas (acto II) -------------------------------------------------------- */
+  .diagrama { width: 100%; height: auto; max-height: 46vh; display: block; margin: 0 auto; }
+  .diagrama text { font-family: var(--mono); fill: var(--tinta); }
+  .diagrama .rotulo { font-size: 15px; fill: var(--suave); }
+
+  /* Mecanismos: lo grande es la frase, lo pequeño el nombre técnico. */
+  .mecanismo { border: 1px solid var(--linea); border-radius: 12px; background: var(--superficie); padding: .8em .95em; }
+  .mecanismo .cabeza { font-family: var(--mono); font-size: .72em; letter-spacing: .08em; color: var(--esmeralda); text-transform: uppercase; }
+  .mecanismo p { font-size: 1.02em; margin-top: .3em; }
+  .mecanismo .termino {
+    display: inline-block; margin-top: .5em; font-family: var(--mono); font-size: .68em;
+    color: var(--suave); border: 1px dashed var(--linea); border-radius: 999px; padding: .15em .7em;
+  }
+
+  /* Una captura con burbujas encima, cada una con su línea al sitio exacto. */
+  .anotada { position: relative; width: 100%; max-width: 100%; margin: 0 auto; }
+  .anotada img { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--linea); }
+  .anotada svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .globo {
+    position: absolute; max-width: 27ch; font-size: .74em; line-height: 1.35;
+    background: rgba(7, 20, 16, .93); border: 1px solid var(--esmeralda); border-radius: 10px;
+    padding: .45em .65em; box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+  }
+  .globo b { color: var(--esmeralda); font-family: var(--mono); font-size: .9em; letter-spacing: .05em; }
+
   /* --- Remate -------------------------------------------------------------------------------- */
   .remate { border-left: 3px solid var(--coral); padding-left: 1em; font-size: 1.02em; }
   .remate.ok { border-left-color: var(--esmeralda); }
@@ -509,6 +534,58 @@
   </div>
 </section>
 
+<!-- === Que es P2P =========================================================================== -->
+<section class="lam">
+  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">Qué significa que sea P2P</span></div>
+  <div class="cuerpo">
+    <h2>Cada navegador es jugador<br>y servidor a la vez</h2>
+    <div class="split">
+      <div>
+        <p class="grande">
+          En un juego normal hay <strong>un ordenador central</strong> con la partida dentro: los
+          demás le preguntan y él contesta. <strong>Aquí no existe ese ordenador.</strong>
+        </p>
+        <ul class="limpia pasos" style="margin-top:.9em">
+          <li><span class="m">1</span><span>Cada navegador tiene <strong>el juego entero</strong>: las reglas, el mazo y su propia copia de la partida.</span></li>
+          <li><span class="m">2</span><span>Las jugadas viajan <strong>directas de un navegador a otro</strong>. No hacen escala en ningún sitio.</span></li>
+          <li><span class="m">3</span><span>Todos llegan al mismo resultado <strong>sin que nadie mande</strong>. Cómo lo consiguen es la lámina de los mecanismos.</span></li>
+        </ul>
+      </div>
+      <svg class="diagrama" viewBox="0 0 420 300" role="img" aria-label="Cuatro navegadores conectados todos con todos">
+        <g stroke="#50C878" stroke-width="2" opacity=".55">
+          <line x1="110" y1="80" x2="310" y2="80"/>
+          <line x1="110" y1="220" x2="310" y2="220"/>
+          <line x1="110" y1="80" x2="110" y2="220"/>
+          <line x1="310" y1="80" x2="310" y2="220"/>
+          <line x1="110" y1="80" x2="310" y2="220"/>
+          <line x1="310" y1="80" x2="110" y2="220"/>
+        </g>
+        <g fill="#0f1f19" stroke="#50C878" stroke-width="2">
+          <rect x="62" y="52" width="96" height="56" rx="10"/>
+          <rect x="262" y="52" width="96" height="56" rx="10"/>
+          <rect x="62" y="192" width="96" height="56" rx="10"/>
+          <rect x="262" y="192" width="96" height="56" rx="10"/>
+        </g>
+        <g text-anchor="middle" font-size="18">
+          <text x="110" y="84">🖥</text><text x="310" y="84">📱</text>
+          <text x="110" y="224">💻</text><text x="310" y="224">📱</text>
+        </g>
+        <g class="rotulo" text-anchor="middle">
+          <text x="110" y="101">Ana</text><text x="310" y="101">Beto</text>
+          <text x="110" y="241">Dina</text><text x="310" y="241">Caro</text>
+          <text x="210" y="283" fill="#50C878" font-size="16">6 conexiones directas</text>
+          <text x="210" y="299">con 10 jugadores, 45</text>
+        </g>
+      </svg>
+    </div>
+    <p class="remate ok">
+      La prueba está en la mesa: <strong>apaga el ordenador del que organizó la partida</strong> y los
+      demás siguen jugando. No había nada suyo en juego.
+    </p>
+  </div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
+</section>
+
 <!-- ═══ La pregunta incómoda ═════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">La pregunta que siempre cae</span></div>
@@ -516,17 +593,34 @@
     <h2>«Si hay un contenedor encendido,<br>¿esto no es cliente-servidor?»</h2>
     <div class="split">
       <div>
-        <p class="grande">
-          El contenedor <strong>reparte el programa y presenta a los jugadores</strong>.
-          El juego <strong>corre entero dentro de cada navegador</strong>.
-        </p>
-        <p style="margin-top:.8em" class="apagado">
-          Cuando alguien abre el enlace, su navegador <em>se descarga una copia del programa</em> —
-          como bajarse un PDF. Esa copia se ejecuta en su máquina, con el motor de reglas completo y
-          su propia réplica del estado. El contenedor solo los presenta; a partir de ahí, se aparta.
-        </p>
-        <p class="remate ok" style="margin-top:.8em">
-          <strong>Es el portero del edificio, no el árbitro de la partida.</strong>
+        <svg class="diagrama" viewBox="0 0 430 250" role="img"
+             aria-label="El servidor presenta a los dos navegadores; las cartas van directas entre ellos">
+          <rect x="145" y="14" width="140" height="46" rx="10" fill="#0f1f19" stroke="#6BB7FF" stroke-width="2"/>
+          <text x="215" y="35" text-anchor="middle" font-size="14" fill="#6BB7FF">el servidor</text>
+          <text x="215" y="51" text-anchor="middle" font-size="12" class="rotulo">(un contenedor)</text>
+
+          <g stroke="#6BB7FF" stroke-width="2" stroke-dasharray="6 5" opacity=".8">
+            <line x1="150" y1="60" x2="80" y2="140"/>
+            <line x1="280" y1="60" x2="350" y2="140"/>
+          </g>
+          <text x="60" y="100" font-size="12" class="rotulo" text-anchor="middle">«te presento</text>
+          <text x="60" y="114" font-size="12" class="rotulo" text-anchor="middle">a Beto»</text>
+
+          <g fill="#0f1f19" stroke="#50C878" stroke-width="2">
+            <rect x="20" y="140" width="120" height="58" rx="10"/>
+            <rect x="290" y="140" width="120" height="58" rx="10"/>
+          </g>
+          <text x="80" y="172" text-anchor="middle" font-size="14">Ana</text>
+          <text x="350" y="172" text-anchor="middle" font-size="14">Beto</text>
+          <text x="80" y="190" text-anchor="middle" font-size="11" class="rotulo">navegador</text>
+          <text x="350" y="190" text-anchor="middle" font-size="11" class="rotulo">navegador</text>
+
+          <line x1="140" y1="169" x2="290" y2="169" stroke="#50C878" stroke-width="4"/>
+          <text x="215" y="222" text-anchor="middle" font-size="14" fill="#50C878">las cartas van por aquí</text>
+          <text x="215" y="240" text-anchor="middle" font-size="12" class="rotulo">directas, cifradas, sin escalas</text>
+        </svg>
+        <p class="remate ok" style="margin-top:.4em">
+          <strong>Es el portero del edificio, no el árbitro de la partida.</strong> Presenta, y se aparta.
         </p>
       </div>
       <div class="tabla-scroll">
@@ -550,75 +644,90 @@
   <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
 </section>
 
-<!-- ═══ La malla ═════════════════════════════════════════════════════════════════════════════ -->
+<!-- === Por que asi ========================================================================== -->
 <section class="lam">
-  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">Dos transportes, dos trabajos</span></div>
+  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">Por qué se eligió así</span></div>
   <div class="cuerpo">
-    <h2>El WebSocket presenta.<br>El juego va por WebRTC.</h2>
-    <div class="rejilla r2">
-      <div class="tarj">
-        <span class="et azul">arranque · WebSocket</span>
-        <h3>Encontrarse</h3>
-        <p style="font-size:.92em">
-          Dos navegadores <strong>no pueden encontrarse solos</strong>: no tienen IP pública ni
-          escuchan conexiones entrantes. Alguien tiene que presentarlos. Eso —y solo eso— hace el
-          servidor.
-        </p>
-        <p class="pie-t">Y hace menos de lo que parece: presenta al que llega con <strong>UN</strong>
-        jugador de la sala. Los demás apretones de manos viajan por la propia malla, dando saltos.</p>
-      </div>
+    <h2>Tres razones para quitar<br>el servidor de en medio</h2>
+    <div class="rejilla r3">
       <div class="tarj acento">
-        <span class="et verde">partida · WebRTC DataChannels</span>
-        <h3>Jugar</h3>
-        <p style="font-size:.92em">
-          Cada nodo abre un canal con cada otro: <strong>malla completa</strong>. Las jugadas viajan
-          directas de navegador a navegador, cifradas con DTLS.
+        <span class="et verde">1 · lo pedía el trabajo</span>
+        <p style="font-size:.95em">
+          Es un proyecto de <strong>Sistemas Distribuidos</strong>. Poner un servidor que lo decida
+          todo habría sido esquivar justo lo que hay que demostrar: que varios ordenadores se ponen
+          de acuerdo <strong>sin que nadie mande</strong>.
         </p>
-        <p class="pie-t">Interceptando el WebSocket con un proxy <strong>no se ve ni una carta</strong>:
-        el juego no pasa por ahí.</p>
+      </div>
+      <div class="tarj">
+        <span class="et">2 · privacidad</span>
+        <p style="font-size:.95em">
+          Las cartas <strong>no pasan por ningún intermediario</strong>, así que no hay dónde
+          espiarlas. No es una promesa: nos sentamos en medio con un proxy y
+          <strong>no se ve ni una jugada</strong>.
+        </p>
+        <p class="pie-t">Se enseña en la lámina de Burp.</p>
+      </div>
+      <div class="tarj">
+        <span class="et">3 · aguanta más</span>
+        <p style="font-size:.95em">
+          No hay servidor que pagar ni que se caiga. <strong>Si se apaga a mitad de partida, la
+          partida sigue</strong> — solo dejan de poder entrar jugadores nuevos.
+        </p>
+        <p class="pie-t">Probado apagando Docker en vivo.</p>
       </div>
     </div>
-    <p class="apagado" style="font-size:.9em">
-      El bootstrap centralizado es irreducible y lo tienen todos: BitTorrent sus <em>trackers</em>,
-      Bitcoin sus <em>DNS seeds</em>, IPFS sus nodos de arranque. Lo que se puede elegir es qué pasa
-      después — y aquí, después, el servidor sobra.
+    <p class="apagado" style="font-size:.9em; margin-top:.7em">
+      <strong>¿Y por qué queda un servidor, entonces?</strong> Porque dos navegadores no pueden
+      encontrarse solos: alguien tiene que presentarlos. Eso le pasa a <em>todos</em> los sistemas de
+      este tipo — BitTorrent tiene sus <em>trackers</em>, Bitcoin sus semillas, IPFS sus nodos de
+      arranque. Lo que sí se puede elegir es qué pasa <em>después</em>; y aquí, después, sobra.
+    </p>
+    <p class="remate">
+      <strong>El precio:</strong> todo lo que un servidor te daba gratis —el orden de las jugadas,
+      de quién es el turno, qué hacer si alguien desaparece— hay que resolverlo entre iguales. De eso
+      va la lámina siguiente.
     </p>
   </div>
   <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
 </section>
 
-<!-- ═══ Los cuatro ejes ══════════════════════════════════════════════════════════════════════ -->
+<!-- === Los mecanismos ======================================================================= -->
 <section class="lam">
-  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">Qué mantiene la partida en pie</span></div>
+  <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">Qué sustituye al árbitro</span></div>
   <div class="cuerpo">
-    <h2>Cuatro mecanismos, ningún árbitro</h2>
-    <div class="rejilla r4">
-      <div class="tarj">
-        <span class="et">Eje 2 · orden</span><h3>Relojes de Lamport</h3>
-        <p class="pie-t">Cada jugada lleva su sello lógico. Los eventos concurrentes se desempatan
-        por <code>peerId</code>: el mismo orden total en todos, llegue lo que llegue cuando llegue.</p>
+    <h2>Cuatro acuerdos, y ningún jefe</h2>
+    <div class="rejilla r2">
+      <div class="mecanismo">
+        <span class="cabeza">El turno</span>
+        <p>Solo juega <strong>quien tiene el testigo</strong>. Al terminar, se lo pasa al siguiente.
+        Así nadie juega dos veces ni dos a la vez.</p>
+        <span class="termino">exclusión mutua · paso de testigo</span>
       </div>
-      <div class="tarj">
-        <span class="et">Eje 3 · exclusión mutua</span><h3>Testigo de turno</h3>
-        <p class="pie-t">El turno es el recurso crítico. Circula como un testigo con número de
-        secuencia: los anuncios rezagados se descartan solos y nadie puede ceder lo que no tiene.</p>
+      <div class="mecanismo">
+        <span class="cabeza">El orden</span>
+        <p>Cada jugada lleva <strong>un número que va creciendo</strong>. Si dos llegan cruzadas por
+        la red, todos las ordenan igual: por el número, y si empatan, por el nombre del jugador.</p>
+        <span class="termino">relojes de Lamport</span>
       </div>
-      <div class="tarj">
-        <span class="et">Eje 3 · consistencia</span><h3>Réplica + huella</h3>
-        <p class="pie-t">Mismo estado inicial (una semilla) + mismo log = mismo estado. Cada nodo
-        publica el <strong>hash</strong> de su estado en cada latido: la convergencia es verificable
-        a simple vista.</p>
+      <div class="mecanismo">
+        <span class="cabeza">La copia</span>
+        <p>Todos barajan <strong>el mismo mazo</strong> a partir de un número inicial compartido, y
+        cada uno publica <strong>una huella</strong> de su partida. Si las huellas coinciden, están
+        viendo lo mismo. Si una se sale, se nota al instante.</p>
+        <span class="termino">estado replicado · huella (hash)</span>
       </div>
-      <div class="tarj">
-        <span class="et">Eje 4 · tolerancia</span><h3>Latidos + Bully</h3>
-        <p class="pie-t">Silencio de 2,5 s → sospechoso; 6 s → caído. Si cae el coordinador se elige
-        otro con el algoritmo del matón, sin que la mesa se pare.</p>
+      <div class="mecanismo">
+        <span class="cabeza">Las caídas</span>
+        <p>Cada jugador dice <strong>«sigo aquí»</strong> cada poco. Si calla 2,5 s se sospecha; a
+        los 6 s se le da por caído, su turno se salta y, si era el que coordinaba,
+        <strong>se elige otro</strong> sin parar la mesa.</p>
+        <span class="termino">latidos · elección de líder (Bully)</span>
       </div>
     </div>
-    <p class="remate">
-      Y si un nodo <strong>diverge</strong> —le faltó un evento, o le sobra— lo detecta comparando su
-      huella con la del líder, pide la partida entera y <strong>la adopta</strong>. Se repara solo,
-      en vivo, sin que nadie toque nada.
+    <p class="remate ok">
+      ¿Y si a alguien se le pierde una jugada por el camino? Lo descubre él solo, porque
+      <strong>su huella deja de coincidir</strong> con la de los demás: pide la partida entera y la
+      adopta. Se arregla en vivo, sin que nadie toque nada.
     </p>
   </div>
   <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
@@ -627,11 +736,47 @@
 <!-- ═══ Pantalla Maestra ═════════════════════════════════════════════════════════════════════ -->
 <section class="lam">
   <div class="cab"><span class="eje">II · Arquitectura</span><span class="tema">El sistema por dentro, en vivo</span></div>
-  <div class="marco-img">
-    <figure>
-      <img src="{{img:docs/vv/evidencias/cypress/distribuido/malla.cy.ts/06-pantalla-maestra.png}}" alt="La Pantalla Maestra mostrando los nodos, el líder, el testigo y la convergencia">
-      <figcaption>Tecla <kbd>M</kbd> · quién vive, quién es líder 👑, dónde está el testigo 🎫 y la huella de cada nodo — la columna que decide si hay partida</figcaption>
-    </figure>
+  <div class="cuerpo" style="gap:.5em">
+    <h2 style="font-size:1.5em">Qué dice cada cosa de la malla</h2>
+    <div class="marco-img">
+      <div class="anotada" style="max-width:min(100%, 62vw)">
+        <img src="{{img:docs/vv/evidencias/cypress/distribuido/malla.cy.ts/06-pantalla-maestra.png}}" alt="La Pantalla Maestra mostrando los nodos, el líder, el testigo y la convergencia">
+        <svg viewBox="0 0 1280 820" preserveAspectRatio="none" aria-hidden>
+          <g stroke="#50C878" stroke-width="2.5" fill="none" opacity=".9">
+            <path d="M150 62 L505 46"/>
+            <path d="M150 108 L505 205"/>
+            <path d="M300 205 L560 390"/>
+            <path d="M330 302 L640 590"/>
+            <path d="M70 372 L505 790"/>
+          </g>
+          <g fill="#50C878">
+            <circle cx="150" cy="62" r="5"/><circle cx="150" cy="108" r="5"/>
+            <circle cx="300" cy="205" r="5"/><circle cx="330" cy="302" r="5"/>
+            <circle cx="70" cy="372" r="5"/>
+          </g>
+        </svg>
+
+        <div class="globo" style="left:40%; top:0%">
+          <b>LÍDER</b><br>Quien coordina ahora mismo. No manda en el juego: solo desempata si alguien se cae.
+        </div>
+        <div class="globo" style="left:40%; top:21%">
+          <b>TESTIGO</b><br>Quién puede jugar <em>en este instante</em>. Va pasando de mano en mano.
+        </div>
+        <div class="globo" style="left:45%; top:42%">
+          <b>CONVERGENCIA</b><br>¿Están todos viendo la misma partida? Si pone <em>OK</em>, sí.
+        </div>
+        <div class="globo" style="left:51%; top:64%">
+          <b>LA HUELLA</b><br>Un resumen de la partida de cada uno. <strong>Las tres iguales = los tres de acuerdo.</strong>
+        </div>
+        <div class="globo" style="left:40%; top:88%">
+          <b>SUCESOS</b><br>Quién se cayó, quién tomó el mando, qué se reparó.
+        </div>
+      </div>
+    </div>
+    <p class="apagado" style="font-size:.86em; text-align:center">
+      Se abre con la tecla <kbd>M</kbd> durante la partida. Es la lámina para la feria: enseña
+      <strong>por dentro</strong> lo que el tablero esconde.
+    </p>
   </div>
   <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
 </section>

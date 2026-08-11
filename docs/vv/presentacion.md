@@ -132,69 +132,94 @@ imagen: al verla se entendía que el juego se había roto.
 
 *Dónde corre el juego de verdad, y qué lo mantiene de acuerdo sin un árbitro.*
 
-## 11 · «Si hay un contenedor encendido, ¿esto no es cliente-servidor?»
+## 11 · Cada navegador es jugador y servidor a la vez
 
-El contenedor **reparte el programa y presenta a los jugadores**. El juego **corre entero dentro de
-cada navegador**.
+**Abre tú el acto con esta.** Es la idea de la que cuelga todo lo demás.
 
-Cuando alguien abre el enlace, su navegador *se descarga una copia del programa* — como bajarse un
-PDF. Esa copia se ejecuta en su máquina, con el motor de reglas completo y su propia réplica del
-estado. El contenedor solo los presenta; a partir de ahí, se aparta.
+> «En un juego normal hay un ordenador central con la partida dentro, y los demás le preguntan. Aquí
+> ese ordenador **no existe**. Cada navegador tiene el juego entero —las reglas, el mazo y su propia
+> copia de la partida— y las jugadas van directas de uno a otro.»
 
-| | El contenedor | Tu navegador |
-|---|---|---|
-| ¿Tiene el motor de reglas? | No | **Sí, entero** |
-| ¿Guarda el estado? | No | **Su propia réplica** |
-| ¿Ve las cartas? | **Nunca** | Las suyas |
-| ¿Decide el turno? | No | El testigo, entre navegadores |
-| ¿Sale en la Pantalla Maestra? | **No aparece** | Sí, como nodo |
+El dibujo: cuatro navegadores unidos todos con todos. **6 conexiones** entre cuatro; con diez
+jugadores, **45**. No hace falta explicar la fórmula, basta con enseñar que crece.
 
-> **Es el portero del edificio, no el árbitro de la partida.**
+**El remate, que es el que se recuerda:** *apaga el ordenador del que organizó la partida y los demás
+siguen jugando.* Si alguien duda de que sea P2P, esa frase lo zanja.
 
-**La demo que lo demuestra:** empezar una partida entre tres y apagar Docker a la mitad. La partida
-sigue. Solo dejan de poder entrar los nuevos.
+## 12 · «Si hay un contenedor encendido, ¿esto no es cliente-servidor?»
 
-## 12 · El WebSocket presenta. El juego va por WebRTC.
+**Esta pregunta cae siempre.** Por eso está puesta como titular: la haces tú antes de que la hagan.
 
-**Arranque · WebSocket.** Dos navegadores **no pueden encontrarse solos**: no tienen IP pública ni
-escuchan conexiones entrantes. Alguien tiene que presentarlos. Eso —y solo eso— hace el servidor. Y
-hace menos de lo que parece: presenta al que llega con **UN** jugador de la sala; los demás
-apretones de manos viajan por la propia malla, dando saltos.
+El dibujo lo dice todo y puedes recorrerlo con el dedo:
 
-**Partida · WebRTC DataChannels.** Cada nodo abre un canal con cada otro: **malla completa**. Las
-jugadas viajan directas de navegador a navegador, cifradas con DTLS. Interceptando el WebSocket con
-un proxy **no se ve ni una carta**: el juego no pasa por ahí.
+1. Arriba, el servidor. Dos flechas **de puntos** bajando: *«te presento a Beto»*.
+2. Abajo, los dos navegadores unidos por una línea **gruesa y continua**: por ahí van las cartas.
+3. Las puntitas son el saludo; la línea gorda es la partida. **El servidor no toca la línea gorda.**
 
-> El bootstrap centralizado es irreducible y lo tienen todos: BitTorrent sus *trackers*, Bitcoin sus
-> *DNS seeds*, IPFS sus nodos de arranque. Lo que se puede elegir es qué pasa después — y aquí,
-> después, el servidor sobra.
+> «Es el portero del edificio, no el árbitro de la partida. Presenta, y se aparta.»
 
-## 13 · Cuatro mecanismos, ningún árbitro
+La tabla de la derecha está para que la leas de una en una si preguntan: el contenedor no tiene el
+motor de reglas, no guarda el estado, no ve las cartas, no decide el turno y **ni siquiera aparece**
+en la Pantalla Maestra, porque no es un nodo.
 
-| Eje | Mecanismo | Qué garantiza |
-|---|---|---|
-| 2 · orden | **Relojes de Lamport** | Cada jugada lleva su sello lógico; los eventos concurrentes se desempatan por `peerId`. Mismo orden total en todos, llegue lo que llegue cuando llegue |
-| 3 · exclusión mutua | **Testigo de turno** | El turno es el recurso crítico. Circula con número de secuencia: los anuncios rezagados se descartan solos y nadie puede ceder lo que no tiene |
-| 3 · consistencia | **Réplica + huella** | Mismo estado inicial (una semilla) + mismo log = mismo estado. Cada nodo publica el *hash* de su estado en cada latido |
-| 4 · tolerancia | **Latidos + Bully** | Silencio de 2,5 s → sospechoso; 6 s → caído. Si cae el coordinador se elige otro, sin que la mesa se pare |
+**Si te aprietan:** empezamos una partida entre tres y apagamos Docker a la mitad. La partida sigue.
+Lo único que deja de funcionar es que entren jugadores nuevos.
 
-> Y si un nodo **diverge** —le faltó un evento, o le sobra— lo detecta comparando su huella con la
-> del líder, pide la partida entera y **la adopta**. Se repara solo, en vivo, sin que nadie toque nada.
+## 13 · Tres razones para quitar el servidor de en medio
 
-## 14 · La Pantalla Maestra: el sistema por dentro, en vivo
+La justificación, en tres tarjetas. Una frase por tarjeta y ya está:
 
-![Pantalla Maestra](evidencias/cypress/distribuido/malla.cy.ts/06-pantalla-maestra.png)
+1. **Lo pedía el trabajo.** Es un proyecto de Sistemas Distribuidos: poner un servidor que lo decida
+   todo habría sido esquivar justo lo que hay que demostrar.
+2. **Privacidad.** Las cartas no pasan por ningún intermediario, así que no hay dónde espiarlas —y
+   no es una promesa: nos sentamos en medio con un proxy y no se ve ni una jugada (lámina de Burp).
+3. **Aguanta más.** No hay servidor que pagar ni que se caiga.
 
-Tecla <kbd>M</kbd> · quién vive, quién es líder 👑, dónde está el testigo 🎫 y la huella de cada nodo
-— la columna que decide si hay partida.
+**La pregunta que viene detrás —«¿y entonces por qué hay un servidor?»— también está contestada en
+la lámina:** porque dos navegadores no pueden encontrarse solos, alguien tiene que presentarlos, y
+eso le pasa a *todos* los sistemas de este tipo (BitTorrent, Bitcoin, IPFS). Lo que se elige es qué
+pasa **después**; y aquí, después, sobra.
 
----
+Cierra con el precio, que enlaza con la siguiente: *todo lo que un servidor te daba gratis hay que
+resolverlo entre iguales*.
+
+## 14 · Cuatro acuerdos, y ningún jefe
+
+**No hace falta que te sepas la teoría.** Cada tarjeta se lee sola, y el nombre técnico va en
+pequeño debajo por si preguntan. Léelas en este orden:
+
+| Lo que dices | Si preguntan el término |
+|---|---|
+| **El turno.** Solo juega quien tiene el testigo; al terminar se lo pasa al siguiente. Así nadie juega dos veces ni dos a la vez | exclusión mutua · paso de testigo |
+| **El orden.** Cada jugada lleva un número que crece. Si dos llegan cruzadas, todos las ordenan igual: por el número, y si empatan, por el nombre | relojes de Lamport |
+| **La copia.** Todos barajan el mismo mazo desde un número inicial compartido, y cada uno publica una huella de su partida. Huellas iguales = están viendo lo mismo | estado replicado · *hash* |
+| **Las caídas.** Cada jugador dice «sigo aquí» cada poco. Si calla 2,5 s se sospecha; a los 6 s se le da por caído y, si era el que coordinaba, se elige otro | latidos · elección de líder (Bully) |
+
+**El remate es lo mejor de la lámina:** si a alguien se le pierde una jugada, lo descubre **él solo**
+porque su huella deja de coincidir; pide la partida entera y la adopta. Se arregla en vivo.
+
+> Truco por si te preguntan algo que no sepas: todo esto se **ve** en la lámina siguiente. «Te lo
+> enseño» es una respuesta perfectamente válida.
+
+## 15 · Qué dice cada cosa de la malla
+
+La Pantalla Maestra con **una burbuja por cada cosa**, y una línea a su sitio exacto. No tienes que
+señalar con el dedo ni recordar el orden: se lee sola.
+
+- **Líder** — quien coordina ahora mismo. Ojo, *no manda en el juego*: solo desempata si alguien se cae.
+- **Testigo** — quién puede jugar en este instante.
+- **Convergencia** — ¿están todos viendo la misma partida?
+- **La huella** — el resumen de la partida de cada uno. **Las tres iguales = los tres de acuerdo.**
+- **Sucesos** — quién se cayó, quién tomó el mando, qué se reparó.
+
+Se abre con la tecla <kbd>M</kbd> **durante la partida**, así que en la feria puedes enseñarla en
+vivo mientras alguien juega. Es la lámina que convierte «esto es distribuido» en algo que se ve.
 
 # Acto III — Cómo se prueba
 
 *Qué herramienta para qué pregunta — y qué encontró cada una.*
 
-## 16 · ¿Cómo compruebas quién tiene razón si nadie manda?
+## 17 · ¿Cómo compruebas quién tiene razón si nadie manda?
 
 En una aplicación con backend, comprobar el estado es fácil: se le pregunta a la base de datos. Aquí
 **no hay a quién preguntar**. Hay tres réplicas y ninguna manda.
@@ -209,7 +234,7 @@ Y dos agravantes:
 - **Lo que no se repite.** Un evento que llega tarde, un nodo que cae a media elección, dos jugadas
   en el mismo milisegundo. No se reproducen a mano: hay que **provocarlos**.
 
-## 17 · Cinco formas de probar, cada una para algo distinto
+## 18 · Cinco formas de probar, cada una para algo distinto
 
 | Capa | Nº |
 |---|---|
@@ -223,7 +248,7 @@ La pirámide es ancha por abajo —190 unitarias sostienen el motor y los algori
 **ancha por arriba**, y eso no es doctrina: es lo que dijeron los defectos. De los 17 encontrados,
 **11 eran invisibles para una prueba unitaria**.
 
-## 18 · SonarQube — el corrector ortográfico del código
+## 19 · SonarQube — el corrector ortográfico del código
 
 Es **el corrector ortográfico del código**: lo lee entero y señala lo que está mal escrito, sin
 necesidad de ejecutar nada.
@@ -244,11 +269,11 @@ juntos, así que la duplicación entre `engine` y `net` es duplicación de verda
 | Duplicación | **1,3 %** (umbral < 3 %) |
 | engine · net · signaling | 93,1 % · 98,1 % · 83,0 % |
 
-## 19 · Evidencia: el panel de SonarQube
+## 20 · Evidencia: el panel de SonarQube
 
 ![Panel de SonarQube](evidencias/laboratorio/07-sonarqube-dashboard.png)
 
-## 20 · Encontró 23 avisos. Los miramos uno a uno.
+## 21 · Encontró 23 avisos. Los miramos uno a uno.
 
 **1 bug · accesibilidad.** El fondo del diálogo de jugada cerraba con ratón y **no con teclado**. Los
 dos parches evidentes fallaron: un `onKeyDown` en un `div` sin foco no se dispara nunca, y
@@ -288,7 +313,7 @@ la razón escrita en `sonar-project.properties` — en el repositorio, no en un 
 > as you code*) y está en verde; **Overall Code** acumula el repositorio entero, pruebas y
 > utilidades de V&V incluidas.
 
-## 21 · Jenkins — un ayudante que lo comprueba todo, solo
+## 22 · Jenkins — un ayudante que lo comprueba todo, solo
 
 Cada vez que alguien toca una línea, este ayudante **vuelve a pasar las 230 comprobaciones** por su
 cuenta. Nadie se lo pide.
@@ -305,14 +330,14 @@ nuestro**.
 Ordenadas por **lo que falla más barato primero**. Resultado: **SUCCESS**, 7,2 min, disparo por
 commit, configuración como código.
 
-## 22 · Evidencia: la construcción en verde
+## 23 · Evidencia: la construcción en verde
 
 ![Jenkins en verde](evidencias/laboratorio/06-jenkins-pipeline.png)
 
 El historial cuenta la verdad: **#1 a #4 en rojo** son el laboratorio que no arrancaba; **#5 es el
 primer verde**, y lo disparó un commit — no una persona.
 
-## 23 · Estaba escrito desde hacía semanas. No había arrancado ni una vez.
+## 24 · Estaba escrito desde hacía semanas. No había arrancado ni una vez.
 
 1. **Jenkins no arrancaba.** El Job DSL dinámico (`scmGit { remotes }`) ya no existe en las versiones
    de hoy: se llevaba por delante a Configuration-as-Code y el contenedor moría en `Exited (5)`.
@@ -326,7 +351,7 @@ primer verde**, y lo disparó un commit — no una persona.
 > habría saltado el análisis en cada build **con el mismo amarillo que si el laboratorio estuviera
 > apagado**. Un fallo disfrazado de comportamiento tolerado no lo investiga nadie.
 
-## 24 · Cypress — un jugador de mentira que juega solo
+## 25 · Cypress — un jugador de mentira que juega solo
 
 Un robot que **juega como jugaría una persona**: escribe su nombre, pulsa «crear sala», mira sus
 cartas y tira una. Y hace algo que una persona no puede: abrir **tres jugadores a la vez** y
@@ -350,20 +375,20 @@ página.
 | `distribuido/malla.cy.ts` | **5** | **tres nodos con WebRTC real**: lobby, convergencia, jugada compartida, Pantalla Maestra y caída |
 | `distribuido/aforo.cy.ts` | **3** | **diez nodos**: los diez se ven, la partida arranca con diez, y al once se le dice que no cabe |
 
-## 25 · Evidencia: tres réplicas de acuerdo
+## 26 · Evidencia: tres réplicas de acuerdo
 
 ![Tres nodos convergen](evidencias/cypress/distribuido/malla.cy.ts/04-tres-nodos-convergen.png)
 
 Ana, Beto y Dina · tres contextos de navegación con su propia `RTCPeerConnection` · la prueba compara
 sus tres huellas de estado.
 
-## 26 · Evidencia: se cae un nodo y la mesa sigue
+## 27 · Evidencia: se cae un nodo y la mesa sigue
 
 ![Cae un nodo](evidencias/cypress/distribuido/malla.cy.ts/05-cae-un-nodo-los-otros-siguen.png)
 
 Se quita el tercer nodo de golpe · los dos que quedan siguen convergiendo entre ellos.
 
-## 27 · La mesa llena: diez jugadores y cuarenta y cinco conexiones
+## 28 · La mesa llena: diez jugadores y cuarenta y cinco conexiones
 
 ![Diez jugadores](evidencias/cypress/distribuido/aforo.cy.ts/09-diez-jugadores.png)
 
@@ -379,7 +404,7 @@ Diez navegadores, cada uno viéndose a sí mismo como «(tú)» y a los otros nu
 > Diez jugadores no son diez conexiones: cada uno abre un canal con cada otro, así que son **45**.
 > Es el escenario que se va a dar en la feria si el stand se llena.
 
-## 28 · Burp Suite — atacar el sistema a propósito
+## 29 · Burp Suite — atacar el sistema a propósito
 
 Nos sentamos **en medio de la conversación** entre jugadores, cambiamos los mensajes y los
 reenviamos. Once trampas distintas.
@@ -402,7 +427,7 @@ eso.
 > Las once quedaron **escritas como prueba automática**. Un agujero que solo está en la cabeza de
 > quien lo encontró vuelve a abrirse en dos semanas.
 
-## 29 · Evidencia — sentados en medio de la partida
+## 30 · Evidencia — sentados en medio de la partida
 
 ![Historial de WebSockets de Burp](evidencias/laboratorio/08-burp-websockets.png)
 
@@ -419,7 +444,7 @@ proxy vio, y aun así **ni una fila es una jugada**.
 Se reproduce con `node vv/security/partida-por-burp.mjs`: abre dos navegadores **a través del
 proxy** y juega. Hace falta porque todo lo demás excluye `localhost` del proxy y Burp no vería nada.
 
-## 30 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
+## 31 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
 
 **1 · Qué mandamos.** Un mensaje normal del juego, pero con **un número donde tenía que ir una
 lista**. Desde la consola del navegador: lo puede hacer cualquiera que esté jugando.
@@ -433,7 +458,7 @@ la basura. Y una red de seguridad debajo, por si se nos escapa otro que no imagi
 > Las partidas en curso **habrían seguido jugándose igual** — las cartas no pasan por el servidor.
 > Pero nadie nuevo habría podido entrar.
 
-## 31 · Un simulador para romper la red a propósito
+## 32 · Un simulador para romper la red a propósito
 
 Jugamos **miles de partidas entre jugadores imaginarios** y, a propósito, hacemos que la red se
 porte mal. Después comprobamos que todos acaban viendo lo mismo.
@@ -452,7 +477,7 @@ vuelve a la mesa.
 Hubo que escribirlo nosotros: ninguna herramienta que se pueda comprar sabe qué es «el turno de Bug»
 ni cuándo dos jugadores están de acuerdo.
 
-## 32 · Los 17 errores que encontramos
+## 33 · Los 17 errores que encontramos
 
 **Casi ninguno salió de las pruebas automáticas del principio.** Tres ejemplos de los que
 aparecieron jugando:
@@ -473,7 +498,7 @@ aparecieron jugando:
 > Por eso no basta con probar el código por dentro: hay que **abrir el juego y jugarlo**, con tres
 > jugadores de verdad y en un móvil de verdad.
 
-## 33 · Lo que queda por hacer
+## 34 · Lo que queda por hacer
 
 - **Probarlo entre dos casas.** Funciona en la misma WiFi y con un túnel. Falta la prueba con dos
   redes distintas de verdad — el código ya está preparado.
@@ -484,7 +509,7 @@ aparecieron jugando:
 
 > Saber dónde **no** se ha mirado todavía es parte del trabajo. Lo que no está medido, se dice.
 
-## 34 · Cierre
+## 35 · Cierre
 
 # Un juego que se sostiene solo, y 230 comprobaciones que lo vigilan
 
