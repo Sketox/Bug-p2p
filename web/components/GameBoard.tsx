@@ -169,6 +169,7 @@ export function GameBoard(props: Props) {
 
       {/* Consultar las reglas sin abandonar la mesa: la carta rara aparece a mitad de partida. */}
       <button
+        type="button"
         onClick={() => setRules(true)}
         title="Cómo se juega"
         className="fixed top-3 right-3 z-40 font-pixel text-[9px] px-3 py-2 rounded-lg
@@ -184,6 +185,7 @@ export function GameBoard(props: Props) {
           algún día esa pantalla fallara, nadie debería quedarse encerrado en una mesa muerta. */}
       {onLeave && (
         <button
+          type="button"
           onClick={onLeave}
           className="fixed bottom-3 left-3 z-40 font-pixel text-[9px] px-3 py-2 rounded-lg
                      bg-black/60 text-white/50 hover:text-white/90 border-2 border-black/60 shadow-pixel"
@@ -220,6 +222,7 @@ export function GameBoard(props: Props) {
               {/* A un ausente no se le acusa: ya no tiene cartas ni turno. */}
               {!gone && p.handCount === 1 && !p.saidBug && (
                 <button
+                  type="button"
                   onClick={() => onCallBug(p.id)}
                   className="font-pixel text-[8px] px-2 py-1 rounded bg-red-500/80 text-white"
                 >
@@ -243,6 +246,7 @@ export function GameBoard(props: Props) {
           >
             <CardView faceDown size="lg" onClick={onDraw} playable={canAct} />
             <button
+              type="button"
               onClick={onDraw}
               disabled={!canAct}
               className={`font-pixel text-[9px] sm:text-[10px] px-3 py-2 rounded border disabled:opacity-40 ${
@@ -320,6 +324,7 @@ export function GameBoard(props: Props) {
           <div className="flex gap-2 shrink-0">
             {myHand.length === 1 && (
               <button
+                type="button"
                 onClick={onShoutBug}
                 className={`font-pixel text-[9px] sm:text-[10px] px-3 py-2 rounded ${
                   me?.saidBug ? 'bg-green-600/60' : 'bg-yellow-400 text-black animate-pulse'
@@ -330,6 +335,7 @@ export function GameBoard(props: Props) {
             )}
             {/* Pasar solo se desbloquea si ya robaste: no se pasa de gratis. */}
             <button
+              type="button"
               onClick={onPass}
               disabled={!puedePasar}
               title={canAct && !puedePasar ? 'tienes que robar antes de pasar' : undefined}

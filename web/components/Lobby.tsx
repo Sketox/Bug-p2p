@@ -96,12 +96,14 @@ export function Lobby({ roomId, isHost, players, myId, status, onStart, onLeave 
             <RoomQR url={invite} />
             <div className="flex justify-center gap-3">
               <button
+                type="button"
                 onClick={() => copy(invite)}
                 className="font-pixel text-[9px] text-white/60 hover:text-white/90 px-2 py-1"
               >
                 {copied ? '✓ copiado' : 'copiar enlace 🔗'}
               </button>
               <button
+                type="button"
                 onClick={() => copy(roomId)}
                 className="font-pixel text-[9px] text-white/60 hover:text-white/90 px-2 py-1"
               >
@@ -150,6 +152,7 @@ export function Lobby({ roomId, isHost, players, myId, status, onStart, onLeave 
 
         {isHost ? (
           <button
+            type="button"
             onClick={onStart}
             disabled={players.length < 2}
             className="w-full font-pixel text-xs sm:text-sm py-3 rounded-lg bg-[#50C878] text-[#08130c] shadow-pixel disabled:opacity-40 mb-2"
@@ -163,6 +166,7 @@ export function Lobby({ roomId, isHost, players, myId, status, onStart, onLeave 
         )}
 
         <button
+          type="button"
           onClick={onLeave}
           className="w-full font-pixel text-[10px] py-2 rounded text-white/50 hover:text-white/80"
         >

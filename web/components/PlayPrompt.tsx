@@ -76,6 +76,7 @@ function Trojan({ card, hand, rivals, onConfirm, onCancel }: Omit<Props, never>)
         <div className="grid gap-2">
           {victims.map((p) => (
             <button
+              type="button"
               key={p.id}
               onClick={() => setTarget(p.id)}
               className="font-pixel text-[10px] sm:text-xs py-3 px-4 rounded-lg bg-black/40 border-2 border-[#4227f2]/60 text-white hover:bg-[#4227f2]/20 shadow-pixel"
@@ -107,6 +108,7 @@ function Trojan({ card, hand, rivals, onConfirm, onCancel }: Omit<Props, never>)
         </div>
         {gift.length > 0 && (
           <button
+            type="button"
             onClick={() => setGift([])}
             className="w-full font-pixel text-[9px] py-2 mt-3 text-white/50 hover:text-white/80"
           >
@@ -125,6 +127,7 @@ function Trojan({ card, hand, rivals, onConfirm, onCancel }: Omit<Props, never>)
         sigue en {card.color ? SUIT[card.color].label : ''}
       </p>
       <button
+        type="button"
         onClick={() => onConfirm({ target, giveCardIds: gift })}
         className="w-full font-pixel text-[10px] sm:text-xs py-4 px-4 rounded-lg bg-black/40 border-2 border-[#4227f2]/60 text-white hover:bg-[#4227f2]/20 shadow-pixel"
       >
@@ -171,6 +174,7 @@ function Reboot({ card, hand, onConfirm, onCancel }: Omit<Props, 'rivals'>) {
     <Shell title="🔌 Apagar y volver a prender" onCancel={onCancel}>
       <div className="grid gap-3">
         <button
+          type="button"
           onClick={() => onConfirm({})}
           className="font-pixel text-[10px] sm:text-xs py-4 px-4 rounded-lg bg-black/40 border-2 border-white/20 text-white hover:bg-white/10 shadow-pixel"
         >
@@ -180,6 +184,7 @@ function Reboot({ card, hand, onConfirm, onCancel }: Omit<Props, 'rivals'>) {
           </span>
         </button>
         <button
+          type="button"
           onClick={() => setMode('base')}
           disabled={bases.length === 0}
           title={bases.length === 0 ? 'no tienes ninguna carta de color para poner de base' : undefined}
@@ -245,6 +250,7 @@ function Shell({
         <h2 className="font-pixel text-[11px] sm:text-sm text-center mb-4 text-white">{title}</h2>
         {children}
         <button
+          type="button"
           onClick={onCancel}
           className="w-full font-pixel text-[9px] py-2 mt-4 text-white/40 hover:text-white/70"
         >
@@ -260,6 +266,7 @@ function Colors({ onPick }: { onPick: (color: Color) => void }) {
     <div className="grid grid-cols-2 gap-3">
       {COLOR_OPTIONS.map((opt) => (
         <button
+          type="button"
           key={opt.color}
           data-testid="color-option"
           data-color={opt.color}

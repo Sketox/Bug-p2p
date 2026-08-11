@@ -59,7 +59,11 @@ export function MasterScreen({ mesh, journal, onClose }: Props) {
     >
       <header className="flex items-center justify-between">
         <h2 className="font-pixel text-xs text-[#FF7F50]">🖥 Pantalla Maestra</h2>
-        <button onClick={onClose} className="font-pixel text-[10px] text-white/50 hover:text-white">
+        <button
+          type="button"
+          onClick={onClose}
+          className="font-pixel text-[10px] text-white/50 hover:text-white"
+        >
           cerrar ✕
         </button>
       </header>

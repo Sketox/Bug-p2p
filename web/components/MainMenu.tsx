@@ -55,6 +55,7 @@ export function MainMenu({ onHost, onJoin, onLocal, invitedTo }: Props) {
               <span className="text-[#FF7F50] tracking-widest">{invitedTo}</span>
             </p>
             <button
+              type="button"
               onClick={() => onJoin(name.trim(), invitedTo)}
               disabled={!nameOk}
               className="w-full font-pixel text-xs sm:text-sm py-3 rounded-lg bg-[#1E90FF] text-[#04121f] shadow-pixel hover:brightness-110 active:translate-y-0.5 disabled:opacity-40 mb-3"
@@ -65,6 +66,7 @@ export function MainMenu({ onHost, onJoin, onLocal, invitedTo }: Props) {
         ) : (
           <>
             <button
+              type="button"
               onClick={() => onHost(name.trim())}
               disabled={!nameOk}
               className="w-full font-pixel text-xs sm:text-sm py-3 rounded-lg bg-[#50C878] text-[#08130c] shadow-pixel hover:brightness-110 active:translate-y-0.5 disabled:opacity-40 mb-3"
@@ -81,6 +83,7 @@ export function MainMenu({ onHost, onJoin, onLocal, invitedTo }: Props) {
                 className="flex-1 min-w-0 bg-black/40 border border-white/20 rounded px-3 py-3 text-sm outline-none focus:border-[#1E90FF] font-pixel tracking-widest text-center"
               />
               <button
+                type="button"
                 onClick={() => onJoin(name.trim(), code)}
                 disabled={!nameOk || code.trim().length === 0}
                 className="font-pixel text-[10px] sm:text-xs px-4 rounded-lg bg-[#1E90FF] text-[#04121f] shadow-pixel disabled:opacity-40"
@@ -94,6 +97,7 @@ export function MainMenu({ onHost, onJoin, onLocal, invitedTo }: Props) {
         {/* Reglas: en la feria la gente llega, escanea el QR y no ha visto una carta de Bug en su
             vida. Tiene que poder enterarse sin que nadie se lo explique. */}
         <button
+          type="button"
           onClick={() => setRules(true)}
           className="w-full font-pixel text-[10px] sm:text-xs py-3 rounded-lg bg-black/40 border-2 border-[#f27eb4]/50 text-[#f27eb4] hover:bg-[#f27eb4]/10 shadow-pixel mb-3"
         >
@@ -101,6 +105,7 @@ export function MainMenu({ onHost, onJoin, onLocal, invitedTo }: Props) {
         </button>
 
         <button
+          type="button"
           onClick={onLocal}
           className="w-full font-pixel text-[10px] py-2 rounded text-white/60 hover:text-white/90"
         >

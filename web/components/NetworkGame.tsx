@@ -90,6 +90,7 @@ export function NetworkGame({ mode, name, code, onExit }: Props) {
 
   const masterToggle = (
     <button
+      type="button"
       onClick={() => setMaster((v) => !v)}
       title="Pantalla Maestra (tecla M): estado de la malla, líder, testigo y convergencia"
       className={`fixed bottom-3 right-3 z-50 font-pixel text-[9px] px-3 py-2 rounded-lg

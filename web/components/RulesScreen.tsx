@@ -119,6 +119,7 @@ export function RulesScreen({ onClose }: { onClose: () => void }) {
         <header className="flex items-center justify-between mb-6 sticky top-0 bg-[#081712]/95 py-3 -mx-2 px-2 z-10">
           <h2 className="font-pixel text-sm sm:text-lg text-[#07d98c]">Cómo se juega</h2>
           <button
+            type="button"
             onClick={onClose}
             className="font-pixel text-[10px] px-4 py-2 rounded-lg bg-black/50 border-2 border-black/60 text-white/70 hover:text-white shadow-pixel"
           >
@@ -210,6 +211,7 @@ export function RulesScreen({ onClose }: { onClose: () => void }) {
         </Section>
 
         <button
+          type="button"
           onClick={onClose}
           className="w-full font-pixel text-xs sm:text-sm py-4 rounded-lg bg-[#07d98c] text-[#04241a] shadow-pixel hover:brightness-110"
         >

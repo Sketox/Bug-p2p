@@ -71,6 +71,7 @@ export function RoomFull({ max, roomId, onExit }: Props) {
         </p>
 
         <button
+          type="button"
           onClick={onExit}
           className="w-full font-pixel text-xs sm:text-sm py-3 rounded-lg bg-[#50C878] text-[#08130c] shadow-pixel"
         >

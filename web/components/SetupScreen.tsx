@@ -54,6 +54,7 @@ export function SetupScreen({ onStart }: { onStart: (players: { id: string; name
         </div>
 
         <button
+          type="button"
           onClick={start}
           className="w-full font-pixel text-sm py-3 rounded-lg bg-[#50C878] text-[#08130c] shadow-pixel hover:brightness-110 active:translate-y-0.5"
         >
