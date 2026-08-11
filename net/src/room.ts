@@ -114,6 +114,21 @@ const INTRODUCER_TIMEOUT = 5000;
 /** Cuántos `id` de relay se recuerdan para descartar duplicados de la inundación. */
 const SEEN_LIMIT = 400;
 
+/**
+ * Marca de esta carga de página, para que los `id` de relay no choquen con los de antes de un F5.
+ *
+ * No es un secreto —viaja en claro por la malla— pero se saca del generador seguro igualmente: es
+ * lo que hay, cuesta lo mismo, y evita tener que explicar cada vez por qué un `Math.random` de aquí
+ * sí vale y el del código de sala no.
+ */
+function etiquetaDeCarga(): string {
+  const c = globalThis.crypto;
+  if (typeof c?.getRandomValues === 'function') {
+    return [...c.getRandomValues(new Uint8Array(4))].map((n) => n.toString(16).padStart(2, '0')).join('');
+  }
+  return Date.now().toString(36).slice(-8);
+}
+
 export class Room {
   private ws?: WebSocket;
   private readonly conns = new Map<string, Conn>();
@@ -145,7 +160,7 @@ export class Room {
    * duplicado y su respuesta no llegaba a ninguna parte. Volvía a la mesa conectado con su
    * introductor y con nadie más, sin un solo error por ningún lado.
    */
-  private readonly relayTag = Math.random().toString(36).slice(2, 10);
+  private readonly relayTag = etiquetaDeCarga();
   /** Contador para que mis relays lleven un `id` único (`peerId:carga:n`). */
   private relaySeq = 0;
 

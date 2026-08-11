@@ -799,6 +799,10 @@
       tipo—, más 21 componentes que no marcaban sus datos como de solo lectura. Corregidos los 49.
       Una regla se apagó, con la razón escrita en el repositorio: la que busca comentarios
       <code>TODO</code> daba 13 avisos y <strong>los 13 eran la palabra castellana «todo»</strong>.
+      Y dos avisos que parecían cosméticos acabaron en código más duro: el <strong>código de sala</strong>
+      y la semilla ya no salen de <code>Math.random</code> —que publica pistas de su propio estado— sino
+      de <code>crypto</code>, con cuatro pruebas nuevas; y el túnel ya no busca su ejecutable por
+      <code>PATH</code>.
     </p>
   </div>
   <div class="pie"><span>4.1 · SonarQube — revisar el código</span><span class="mono num"></span></div>

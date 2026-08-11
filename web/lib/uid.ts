@@ -30,6 +30,35 @@
  * a 2011) tampoco tiene `RTCPeerConnection`, así que no llega a entrar en una sala. Se deja como
  * último recurso para que la página no muera con una excepción, que es lo que hacía antes.
  */
+/**
+ * Un entero de 32 bits **impredecible**, con el mismo respaldo escalonado que `uid()`.
+ *
+ * Hace falta porque `Math.random()` no es solo «poco aleatorio»: en V8 es un *xorshift128+*, y su
+ * estado interno se puede reconstruir observando unas pocas salidas. Quien viera dos o tres códigos
+ * de sala podría **predecir los siguientes** — y el código de sala es exactamente lo que hace falta
+ * para colarse en una partida ajena (ataque S2).
+ */
+export function azar32(): number {
+  const c = globalThis.crypto;
+  if (typeof c?.getRandomValues === 'function') return c.getRandomValues(new Uint32Array(1))[0]!;
+  return (Math.random() * 0x1_0000_0000) >>> 0; // mismo último recurso que `uid()`
+}
+
+/** Una cadena de `n` caracteres de `0-9A-Z`, sacada de `azar32()`. */
+export function azarCodigo(n: number): string {
+  const ALFABETO = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let salida = '';
+  while (salida.length < n) {
+    // Se descarta el resto que no cabe en un múltiplo exacto del alfabeto: si no, los primeros
+    // caracteres saldrían más veces que los últimos.
+    const v = azar32();
+    const limite = Math.floor(0x1_0000_0000 / ALFABETO.length) * ALFABETO.length;
+    if (v >= limite) continue;
+    salida += ALFABETO[v % ALFABETO.length];
+  }
+  return salida;
+}
+
 export function uid(): string {
   const c = globalThis.crypto;
   if (typeof c?.randomUUID === 'function') return c.randomUUID();

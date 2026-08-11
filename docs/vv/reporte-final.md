@@ -132,11 +132,36 @@ número que no se mira no significa nada:
 | Dónde | Nº | Para qué | Veredicto |
 |---|---|---|---|
 | `web/lib/pixiEffects.ts` | 16 | Posición y velocidad de las partículas de los efectos | Decorativo. Sin efecto sobre el juego |
-| `web/lib/useBugRoom.ts` | 2 | Código de sala (4 letras) y semilla de la partida | **Públicos por diseño**: el código se enseña en pantalla y la semilla la conocen los tres nodos — es lo que hace que todos calculen la misma partida |
-| `net/src/room.ts` | 1 | Etiqueta para deduplicar los relays de la malla | No es seguridad: solo tiene que no repetirse |
-| `web/lib/useBugGame.ts` | 1 | Semilla de la partida local (hot-seat) | Sin red de por medio |
-| `web/lib/uid.ts` | 2 | **Último recurso** de `uid()`, que genera identidades **y el `secret` de reconexión** | El único que importaba (§5, S3). Analizado abajo |
-| `docker/gateway.mjs` | 1 (menor) | Aviso sobre `PATH` en el arranque del contenedor | Ruta fija del contenedor |
+| `web/lib/useBugRoom.ts` | 2 | Código de sala (4 letras) y semilla de la partida | Públicos por diseño —el código se enseña en pantalla y la semilla la conocen todos los nodos—, pero **corregidos igualmente**: ver abajo |
+| `net/src/room.ts` | 1 | Etiqueta para deduplicar los relays de la malla | No es seguridad, pero **corregido** por coherencia |
+| `web/lib/useBugGame.ts` | 1 | Semilla de la partida local (hot-seat) | Sin red de por medio. **Corregido** con el mismo generador |
+| `web/lib/uid.ts` | 2 | **Último recurso** de `uid()`, que genera identidades **y el `secret` de reconexión** | El único que merecía dudar (§5, S3). Analizado abajo |
+| `docker/gateway.mjs` | 1 (menor) | `spawn('cloudflared')` resuelto por `PATH` | **Corregido**: ruta absoluta |
+
+### 2.4 bis · Lo que se endureció después, y con qué argumento
+
+Ni el código de sala ni la semilla son secretos: se enseñan. Pero **publican salidas del mismo
+generador que los produce**, y el de V8 es un *xorshift128+*, cuyo estado interno se reconstruye
+observando unas pocas. Llevado al extremo, un jugador de tu sala podría predecir el código de la
+**siguiente** que crearas. Es un riesgo **bajo** —hace falta estar dentro y el anfitrión genera muy
+pocas salidas— y por eso la primera revisión lo dio por aceptable con razón.
+
+Se corrigió igualmente porque el coste era ridículo comparado con el de tener que volver a explicar
+este párrafo: `azar32()` y `azarCodigo()` en `web/lib/uid.ts` salen de `crypto.getRandomValues`, con
+el mismo respaldo escalonado que `uid()` y **muestreo sin sesgo** (se descarta el resto que no cabe
+en un múltiplo exacto del alfabeto, para que los primeros caracteres no salgan más veces que los
+últimos). Cuatro pruebas nuevas en `web/test/uid.test.ts`: formato, unicidad sobre 2000 códigos,
+reparto sin sesgo y funcionamiento sin `crypto`.
+
+El aviso de `gateway.mjs` también se corrigió: `spawn('cloudflared', …)` resolvía el ejecutable por
+`PATH`, y quien pudiera escribir en cualquier directorio del `PATH` colocaría el suyo delante. Ahora
+es la ruta absoluta que fija el propio `Dockerfile`.
+
+Quedan **17 avisos de esa regla sin corregir, y a propósito**: los 15 de las partículas de efectos
+—`Math.random` decide dónde nace una chispa; no hay nada que proteger— y los 2 de la rama de
+respaldo de `uid()`, que **es** el camino sin criptografía por definición. Los diecisiete están
+excluidos en `sonar-project.properties` **con su justificación escrita al lado**, versionada en el
+repositorio y no en un clic del panel, que se pierde al recrear el proyecto.
 
 El caso de `uid.ts` es el único que merecía dudar, y por eso se persiguió hasta el final: desde la
 corrección de S3, esa función genera el secreto que impide echar a un jugador de su propia partida.

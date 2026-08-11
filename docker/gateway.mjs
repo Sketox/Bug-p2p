@@ -122,9 +122,14 @@ const announce = (url) => {
 // invitaciones a una puerta cerrada: el invitado recibía un Error 1033 y el anfitrión no se enteraba,
 // porque de toda la cháchara de cloudflared aquí solo se pescaba la URL y el resto iba a la basura.
 // Así que ahora se espera a que él mismo diga que el túnel está en pie, y si no lo dice, se habla.
+// Ruta absoluta a propósito, no `'cloudflared'` a secas: resolver un ejecutable por `PATH` deja que
+// quien pueda escribir en cualquier directorio del `PATH` ponga el suyo delante. Aquí no hay excusa
+// para no ser explícito — el binario lo coloca nuestro propio Dockerfile, y siempre ahí.
+const CLOUDFLARED = process.env.CLOUDFLARED_BIN ?? '/usr/local/bin/cloudflared';
+
 const startTunnel = (intento = 0) => {
   const p = spawn(
-    'cloudflared',
+    CLOUDFLARED,
     ['tunnel', '--no-autoupdate', '--protocol', PROTOCOL, '--url', `http://127.0.0.1:${PORT}`],
     { stdio: ['ignore', 'pipe', 'pipe'] },
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { azar32 } from './uid';
 import {
   apply,
   createGame,
@@ -36,7 +37,7 @@ export function useBugGame() {
   }, []);
 
   const start = useCallback((players: { id: string; name: string }[]) => {
-    const seed = (Date.now() ^ (Math.random() * 0xffffffff)) >>> 0;
+    const seed = azar32();
     setError(null);
     setState(createGame(seed, players));
   }, []);

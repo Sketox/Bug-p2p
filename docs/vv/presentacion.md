@@ -272,6 +272,18 @@ busca comentarios `TODO` daba 13 avisos y **los 13 eran la palabra castellana «
 estado se deriva de una semilla», «la imagen todo-en-uno»). Una regla que en este código no puede
 acertar nunca no protege de nada: solo enseña a mirar el panel por encima.
 
+**Y dos avisos que parecían cosméticos acabaron en código más duro.** El código de sala y la
+semilla salían de `Math.random`. No son secretos —el código se enseña en pantalla—, pero **publican
+salidas del mismo generador que los produce**, y el de V8 es un *xorshift128+*: su estado se
+reconstruye viendo unas pocas. Llevado al extremo, alguien de tu sala podría predecir el código de
+la siguiente que crearas. Riesgo **bajo**, coste de arreglarlo **ridículo**: ahora salen de
+`crypto`, con muestreo sin sesgo y cuatro pruebas. Y el túnel del contenedor buscaba su ejecutable
+por `PATH`; ahora usa la ruta absoluta que fija el propio Dockerfile.
+
+Si te preguntan por qué quedan 17 avisos de esa misma regla sin tocar: 15 colocan partículas de un
+efecto visual y 2 **son** la rama de respaldo para navegadores sin criptografía. Están excluidos con
+la razón escrita en `sonar-project.properties` — en el repositorio, no en un clic del panel.
+
 > Conviene tener claro qué mide cada pestaña: el **quality gate** juzga el **código nuevo** (*clean
 > as you code*) y está en verde; **Overall Code** acumula el repositorio entero, pruebas y
 > utilidades de V&V incluidas.

@@ -28,7 +28,7 @@ import {
 import type { GameSetup, Heartbeat, LobbyPlayer, NetMessage, RoomSnapshot } from './netProtocol';
 import { loadIceServers } from './ice';
 import { signalUrl } from './signal';
-import { uid } from './uid';
+import { azar32, azarCodigo, uid } from './uid';
 
 // Nodo de la malla. Cada navegador es cliente Y servidor: tiene el motor completo, replica el
 // estado aplicando el log de eventos, y coordina con los demás mediante:
@@ -149,7 +149,7 @@ const EMPTY_MESH: MeshView = {
 };
 
 function newRoomCode(): string {
-  return Math.random().toString(36).slice(2, 6).toUpperCase();
+  return azarCodigo(4);
 }
 
 /**
@@ -1043,7 +1043,7 @@ export function useBugRoom() {
       return;
     }
 
-    const seed = (Date.now() ^ (Math.random() * 0xffffffff)) >>> 0;
+    const seed = azar32();
     const setup: GameSetup = { seed, players };
 
     // El testigo arranca en quien abre la partida según el motor (mismo cálculo en todos).

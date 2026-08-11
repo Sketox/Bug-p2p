@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { uid } from '@/lib/uid';
+import { azar32, azarCodigo, uid } from '@/lib/uid';
 
 // El bug que este archivo impide que vuelva:
 //
@@ -44,5 +44,36 @@ describe('identificadores únicos', () => {
     const vistos = new Set(Array.from({ length: 200 }, () => uid()));
     expect(vistos.size).toBe(200);
     expect(uid().length).toBeGreaterThan(8);
+  });
+});
+
+// El código de sala se sacaba de `Math.random`, que en V8 es un xorshift128+: viendo unas pocas
+// salidas se reconstruye su estado y se predicen las siguientes. Y con el código de sala en la mano
+// se puede interferir en una partida ajena (ataque S2). Ahora sale de `crypto`.
+describe('azar para el código de sala', () => {
+  it('da la longitud pedida y solo caracteres tecleables', () => {
+    for (let i = 0; i < 200; i++) expect(azarCodigo(4)).toMatch(/^[0-9A-Z]{4}$/);
+  });
+
+  it('no repite: 2000 códigos dan casi 2000 distintos', () => {
+    const vistos = new Set(Array.from({ length: 2000 }, () => azarCodigo(4)));
+    // Con 36^4 = 1 679 616 posibles, el cumpleaños dice ~1,2 colisiones esperadas. Se deja holgura.
+    expect(vistos.size).toBeGreaterThan(1990);
+  });
+
+  it('reparte sin sesgo: ningún carácter se lleva más del doble de lo que le toca', () => {
+    const cuenta = new Map<string, number>();
+    for (const c of azarCodigo(36 * 200)) cuenta.set(c, (cuenta.get(c) ?? 0) + 1);
+    const esperado = 200;
+    for (const n of cuenta.values()) expect(n).toBeLessThan(esperado * 2);
+    expect(cuenta.size).toBe(36);
+  });
+
+  it('sigue dando números sin `getRandomValues` (navegador prehistórico)', () => {
+    vi.stubGlobal('crypto', {});
+    const v = azar32();
+    expect(Number.isInteger(v)).toBe(true);
+    expect(v).toBeGreaterThanOrEqual(0);
+    expect(v).toBeLessThan(0x1_0000_0000);
   });
 });
