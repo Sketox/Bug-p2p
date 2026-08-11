@@ -25,7 +25,7 @@ const STATUS_LABEL: Record<RoomStatus, string> = {
   closed: 'sin conexión',
 };
 
-export function Lobby({ roomId, isHost, players, myId, status, onStart, onLeave }: Props) {
+export function Lobby({ roomId, isHost, players, myId, status, onStart, onLeave }: Readonly<Props>) {
   const [invite, setInvite] = useState<string | null>(null);
   const [localOnly, setLocalOnly] = useState(false);
   const [copied, setCopied] = useState(false);

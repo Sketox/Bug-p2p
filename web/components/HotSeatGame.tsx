@@ -8,7 +8,7 @@ import { SetupScreen } from './SetupScreen';
 import { GameBoard } from './GameBoard';
 import { PlayPrompt, type PlayChoice } from './PlayPrompt';
 
-export function HotSeatGame({ onExit }: { onExit: () => void }) {
+export function HotSeatGame({ onExit }: Readonly<{ onExit: () => void }>) {
   const game = useBugGame();
   const { state } = game;
   /** Carta jugada que aún tiene decisiones pendientes (color, víctima, regalo, base del pozo). */

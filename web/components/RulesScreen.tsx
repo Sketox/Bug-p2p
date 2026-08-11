@@ -96,7 +96,7 @@ const CAOS: Rule[] = [
   },
 ];
 
-export function RulesScreen({ onClose }: { onClose: () => void }) {
+export function RulesScreen({ onClose }: Readonly<{ onClose: () => void }>) {
   // Cerrar con Escape: quien abre esto en mitad de una feria quiere volver rápido.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -222,7 +222,7 @@ export function RulesScreen({ onClose }: { onClose: () => void }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: Readonly<{ title: string; children: React.ReactNode }>) {
   return (
     <section className="mb-8 bg-black/30 border-2 border-black/50 rounded-2xl p-4 sm:p-5">
       <h3 className="font-pixel text-[11px] sm:text-xs text-[#f27eb4] mb-3">{title}</h3>
@@ -231,7 +231,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Cards({ rules }: { rules: Rule[] }) {
+function Cards({ rules }: Readonly<{ rules: Rule[] }>) {
   return (
     <ul className="space-y-4">
       {rules.map((r) => (

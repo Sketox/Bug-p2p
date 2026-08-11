@@ -5,7 +5,9 @@ import { motion } from 'framer-motion';
 
 const DEFAULT_NAMES = ['Ana', 'Beto', 'Dina', 'Eze', 'Fabi'];
 
-export function SetupScreen({ onStart }: { onStart: (players: { id: string; name: string }[]) => void }) {
+export function SetupScreen({
+  onStart,
+}: Readonly<{ onStart: (players: { id: string; name: string }[]) => void }>) {
   const [count, setCount] = useState(3);
   const [names, setNames] = useState<string[]>(DEFAULT_NAMES);
 

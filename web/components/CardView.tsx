@@ -154,7 +154,7 @@ export const CardView = forwardRef<HTMLElement, Props>(function CardView(
  * carta "apagada" —como estaba en la mano, sin color asignado— y la de delante, la misma carta ya
  * marcada. Media vuelta, y el pozo cuenta lo que pasó.
  */
-function Flip({ color, name, symbol }: { color: string; name: string; symbol: string }) {
+function Flip({ color, name, symbol }: Readonly<{ color: string; name: string; symbol: string }>) {
   const card = (
     <svg viewBox={CARD_VIEWBOX} className="w-full h-full pixelated" aria-label={name}>
       <use href={`#${symbol}`} width={CARD_BOX.w} height={CARD_BOX.h} />

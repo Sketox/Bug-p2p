@@ -17,7 +17,7 @@ export interface EffectCue {
   id: number;
 }
 
-export default function EffectsLayer({ cue }: { cue: EffectCue | null }) {
+export default function EffectsLayer({ cue }: Readonly<{ cue: EffectCue | null }>) {
   const hostRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<EffectStage | null>(null);
   const loadingRef = useRef(false);

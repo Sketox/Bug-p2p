@@ -12,7 +12,7 @@ interface Props {
   invitedTo?: string | null;
 }
 
-export function MainMenu({ onHost, onJoin, onLocal, invitedTo }: Props) {
+export function MainMenu({ onHost, onJoin, onLocal, invitedTo }: Readonly<Props>) {
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [rules, setRules] = useState(false);

@@ -43,7 +43,7 @@ const KIND_ICON: Record<JournalKind, string> = {
 const time = (at: number) =>
   new Date(at).toLocaleTimeString('es-EC', { hour12: false, minute: '2-digit', second: '2-digit' });
 
-export function MasterScreen({ mesh, journal, onClose }: Props) {
+export function MasterScreen({ mesh, journal, onClose }: Readonly<Props>) {
   const converged = mesh.nodes
     .filter((n) => n.health !== 'down' && n.hash != null)
     .every((n) => n.converged);
@@ -168,7 +168,11 @@ export function MasterScreen({ mesh, journal, onClose }: Props) {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: 'ok' | 'warn' | 'bad' }) {
+function Stat({
+  label,
+  value,
+  tone,
+}: Readonly<{ label: string; value: string; tone?: 'ok' | 'warn' | 'bad' }>) {
   const color =
     tone === 'bad' ? 'text-red-400' : tone === 'warn' ? 'text-yellow-400' : 'text-white/90';
   return (

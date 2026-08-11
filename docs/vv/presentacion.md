@@ -264,6 +264,18 @@ explotables.**
 > herramienta**: el analizador cree que un `<dialog>` no es interactivo. Gestionar hallazgos incluye
 > decidir cuáles no son defectos — lo que no se puede es dejarlos sin mirar.
 
+**Y el panel del repositorio entero.** Marcaba una D en fiabilidad, así que fuimos a ver de qué
+estaba hecha: **28 de sus 37 avisos eran una sola regla** —botones sin declarar `type`, que por
+defecto es `submit`—, más 21 componentes que no marcaban sus props como `Readonly`. Corregidos los
+49. Una sola regla se apagó, con la justificación escrita en `sonar-project.properties`: la que
+busca comentarios `TODO` daba 13 avisos y **los 13 eran la palabra castellana «todo»** («todo el
+estado se deriva de una semilla», «la imagen todo-en-uno»). Una regla que en este código no puede
+acertar nunca no protege de nada: solo enseña a mirar el panel por encima.
+
+> Conviene tener claro qué mide cada pestaña: el **quality gate** juzga el **código nuevo** (*clean
+> as you code*) y está en verde; **Overall Code** acumula el repositorio entero, pruebas y
+> utilidades de V&V incluidas.
+
 ## 21 · Jenkins — un ayudante que lo comprueba todo, solo
 
 Cada vez que alguien toca una línea, este ayudante **vuelve a pasar las 230 comprobaciones** por su

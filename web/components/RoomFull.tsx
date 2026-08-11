@@ -19,7 +19,7 @@ interface Props {
  * Así que el rebote es ahora una pantalla, y llega ANTES de entrar. Que a nadie le toque descubrir
  * que estaba de más cuando ya se había ilusionado.
  */
-export function RoomFull({ max, roomId, onExit }: Props) {
+export function RoomFull({ max, roomId, onExit }: Readonly<Props>) {
   return (
     <div className="min-h-[100dvh] flex items-center justify-center p-4 sm:p-6">
       <motion.div

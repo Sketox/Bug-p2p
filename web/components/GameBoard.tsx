@@ -47,7 +47,7 @@ interface Props {
  * verdad que se acabó el tiempo es el líder, con un evento que el motor valida. Esto solo lo
  * enseña.
  */
-function TurnClock({ startedAt, total }: { startedAt: number; total: number }) {
+function TurnClock({ startedAt, total }: Readonly<{ startedAt: number; total: number }>) {
   const [left, setLeft] = useState(total);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ function useCardEffect(view: PublicView): EffectCue | null {
   return cue;
 }
 
-export function GameBoard(props: Props) {
+export function GameBoard(props: Readonly<Props>) {
   const { view, myId, error, onPlay, onDraw, onPass, onShoutBug, onCallBug, onReset, onLeave } = props;
   const me = view.players.find((p) => p.id === myId);
   const myHand = view.yourHand ?? [];

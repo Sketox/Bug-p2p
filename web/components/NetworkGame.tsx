@@ -19,7 +19,7 @@ interface Props {
   onExit: () => void;
 }
 
-export function NetworkGame({ mode, name, code, onExit }: Props) {
+export function NetworkGame({ mode, name, code, onExit }: Readonly<Props>) {
   const room = useBugRoom();
   /** Carta jugada que aún tiene decisiones pendientes (color, víctima, regalo, base del pozo). */
   const [pending, setPending] = useState<Card | null>(null);

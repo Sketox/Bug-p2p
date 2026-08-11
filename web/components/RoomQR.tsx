@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 // La librería del QR se carga bajo demanda, igual que PixiJS: solo la necesita el anfitrión, y
 // solo mientras espera en el lobby.
 
-export function RoomQR({ url }: { url: string }) {
+export function RoomQR({ url }: Readonly<{ url: string }>) {
   const [png, setPng] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
 

@@ -35,7 +35,7 @@ interface Props {
 
 const MAX_GIFT = 2; // el motor solo acepta 2: `giveCardIds.slice(0, 2)`
 
-export function PlayPrompt({ card, hand, rivals, onConfirm, onCancel }: Props) {
+export function PlayPrompt({ card, hand, rivals, onConfirm, onCancel }: Readonly<Props>) {
   if (card.kind === 'trojan') {
     return <Trojan card={card} hand={hand} rivals={rivals} onConfirm={onConfirm} onCancel={onCancel} />;
   }
@@ -57,7 +57,7 @@ export function PlayPrompt({ card, hand, rivals, onConfirm, onCancel }: Props) {
  * encubierto. Lo demás lo revalida el motor: la víctima tiene que estar en la mesa y no ser tú, y
  * las cartas, estar de verdad en tu mano.
  */
-function Trojan({ card, hand, rivals, onConfirm, onCancel }: Omit<Props, never>) {
+function Trojan({ card, hand, rivals, onConfirm, onCancel }: Readonly<Omit<Props, never>>) {
   const [target, setTarget] = useState<string | null>(null);
   const [gift, setGift] = useState<string[]>([]);
 
@@ -145,7 +145,7 @@ function Trojan({ card, hand, rivals, onConfirm, onCancel }: Omit<Props, never>)
  * carta de Caos (sería soltarla sin que su efecto se dispare). El motor lo rechaza; aquí solo se
  * ofrecen las que valen.
  */
-function Reboot({ card, hand, onConfirm, onCancel }: Omit<Props, 'rivals'>) {
+function Reboot({ card, hand, onConfirm, onCancel }: Readonly<Omit<Props, 'rivals'>>) {
   const [mode, setMode] = useState<'ask' | 'base'>('ask');
   const bases = hand.filter((c) => c.id !== card.id && c.color != null && !CHAOS_KINDS.includes(c.kind));
 
@@ -261,7 +261,7 @@ function Shell({
   );
 }
 
-function Colors({ onPick }: { onPick: (color: Color) => void }) {
+function Colors({ onPick }: Readonly<{ onPick: (color: Color) => void }>) {
   return (
     <div className="grid grid-cols-2 gap-3">
       {COLOR_OPTIONS.map((opt) => (
