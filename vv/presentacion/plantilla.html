@@ -184,6 +184,7 @@
      la cadena lleva `min-height: 0` porque un hijo de grid no encoge por debajo de su contenido si
      no se le dice: sin eso, una imagen grande empuja la lámina y se come el pie. */
   .lam { overflow-x: hidden; }
+  .cuerpo > .marco-img { flex: 1 1 0; min-height: 0; }
   .lam .marco-img { min-height: 0; display: grid; place-items: center; overflow: hidden; padding: clamp(8px, 1.2vw, 18px) 0; }
   figure {
     margin: 0; min-height: 0; height: 100%; width: 100%;
@@ -227,15 +228,25 @@
   }
 
   /* Una captura con burbujas encima, cada una con su línea al sitio exacto. */
-  .anotada { position: relative; width: 100%; max-width: 100%; margin: 0 auto; }
-  .anotada img { width: 100%; height: auto; display: block; border-radius: 12px; border: 1px solid var(--linea); }
+  /* La captura anotada se dimensiona por su PROPORCIÓN, no por el ancho: en una ventana baja, el
+     alto mandaba y el marco recortaba la parte de abajo (con la burbuja de Sucesos dentro). Con
+     `aspect-ratio` + `max-height`, encoge entera y las burbujas —que van en %— siguen en su sitio. */
+  .anotada {
+    position: relative; margin: 0 auto;
+    aspect-ratio: 1000 / 500; height: 56vh; width: auto; max-width: 100%;
+  }
+  .anotada img {
+    position: absolute; left: 0; top: 0; height: 100%; width: auto;
+    border-radius: 10px; border: 1px solid var(--linea);
+  }
   .anotada svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
   .globo {
-    position: absolute; max-width: 27ch; font-size: .74em; line-height: 1.35;
-    background: rgba(7, 20, 16, .93); border: 1px solid var(--esmeralda); border-radius: 10px;
-    padding: .45em .65em; box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+    position: absolute; width: 46%;
+    font-size: clamp(9px, .95vw, 15px); line-height: 1.35;
+    background: rgba(7, 20, 16, .95); border: 1px solid var(--esmeralda); border-radius: 10px;
+    padding: .5em .7em; box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
   }
-  .globo b { color: var(--esmeralda); font-family: var(--mono); font-size: .9em; letter-spacing: .05em; }
+  .globo b { color: var(--esmeralda); font-family: var(--mono); font-size: .88em; letter-spacing: .05em; }
 
   /* --- Remate -------------------------------------------------------------------------------- */
   .remate { border-left: 3px solid var(--coral); padding-left: 1em; font-size: 1.02em; }
@@ -739,37 +750,36 @@
   <div class="cuerpo" style="gap:.5em">
     <h2 style="font-size:1.5em">Qué dice cada cosa de la malla</h2>
     <div class="marco-img">
-      <div class="anotada" style="max-width:min(100%, 62vw)">
-        <img src="{{img:docs/vv/evidencias/cypress/distribuido/malla.cy.ts/06-pantalla-maestra.png}}" alt="La Pantalla Maestra mostrando los nodos, el líder, el testigo y la convergencia">
-        <svg viewBox="0 0 1280 820" preserveAspectRatio="none" aria-hidden>
+      <div class="anotada">
+        <img src="{{img:docs/vv/evidencias/ui/14-pantalla-maestra-panel.png}}" alt="El panel de la Pantalla Maestra: líder, testigo, convergencia, nodos y sucesos">
+        <svg viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden>
           <g stroke="#50C878" stroke-width="2.5" fill="none" opacity=".9">
-            <path d="M150 62 L505 46"/>
-            <path d="M150 108 L505 205"/>
-            <path d="M300 205 L560 390"/>
-            <path d="M330 302 L640 590"/>
-            <path d="M70 372 L505 790"/>
+            <path d="M205 85 L515 45"/>
+            <path d="M205 141 L515 145"/>
+            <path d="M370 253 L515 245"/>
+            <path d="M407 373 L515 345"/>
+            <path d="M86 459 L515 445"/>
           </g>
           <g fill="#50C878">
-            <circle cx="150" cy="62" r="5"/><circle cx="150" cy="108" r="5"/>
-            <circle cx="300" cy="205" r="5"/><circle cx="330" cy="302" r="5"/>
-            <circle cx="70" cy="372" r="5"/>
+            <circle cx="205" cy="85" r="6"/><circle cx="205" cy="141" r="6"/>
+            <circle cx="370" cy="253" r="6"/><circle cx="407" cy="373" r="6"/>
+            <circle cx="86" cy="459" r="6"/>
           </g>
         </svg>
-
-        <div class="globo" style="left:40%; top:0%">
+        <div class="globo" style="left:52%; top:0%">
           <b>LÍDER</b><br>Quien coordina ahora mismo. No manda en el juego: solo desempata si alguien se cae.
         </div>
-        <div class="globo" style="left:40%; top:21%">
+        <div class="globo" style="left:52%; top:21%">
           <b>TESTIGO</b><br>Quién puede jugar <em>en este instante</em>. Va pasando de mano en mano.
         </div>
-        <div class="globo" style="left:45%; top:42%">
+        <div class="globo" style="left:52%; top:42%">
           <b>CONVERGENCIA</b><br>¿Están todos viendo la misma partida? Si pone <em>OK</em>, sí.
         </div>
-        <div class="globo" style="left:51%; top:64%">
+        <div class="globo" style="left:52%; top:62%">
           <b>LA HUELLA</b><br>Un resumen de la partida de cada uno. <strong>Las tres iguales = los tres de acuerdo.</strong>
         </div>
-        <div class="globo" style="left:40%; top:88%">
-          <b>SUCESOS</b><br>Quién se cayó, quién tomó el mando, qué se reparó.
+        <div class="globo" style="left:52%; top:84%">
+          <b>SUCESOS</b><br>El historial de la malla: quién se cayó, quién tomó el mando, qué se reparó.
         </div>
       </div>
     </div>
