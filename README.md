@@ -278,6 +278,14 @@ Ni el informe ni la presentación se escriben a mano: salen de los artefactos de
 —los JUnit, el `lcov` y los JSON de los bancos—, así que **no pueden decir que pasó algo que no
 pasó**.
 
+```bash
+npm run vv:evidencias      # ¿están las 15 capturas? Si falta alguna, dice cuál y cómo se saca
+```
+
+Merece la pena antes de commitear: Cypress **vacía** `docs/vv/evidencias/cypress/` al empezar cada
+ejecución, así que correr un solo *spec* deja únicamente las suyas — y un `git add -A` después borra
+las demás del repositorio sin que se note.
+
 ### Resultados de la última ejecución
 
 | | |

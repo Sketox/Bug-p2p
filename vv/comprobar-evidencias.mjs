@@ -32,6 +32,8 @@ const ESPERADAS = [
   ['docs/vv/evidencias/cypress/distribuido/malla.cy.ts/06-pantalla-maestra.png', 'npm run e2e'],
   ['docs/vv/evidencias/cypress/distribuido/aforo.cy.ts/09-diez-jugadores.png', 'npm run e2e'],
   ['docs/vv/evidencias/cypress/distribuido/aforo.cy.ts/10-sala-llena.png', 'npm run e2e'],
+  ['docs/vv/evidencias/ui/11-ganaste.png', 'capturar la pantalla de victoria del navegador'],
+  ['docs/vv/evidencias/ui/12-perdiste.png', 'capturar la pantalla de derrota del navegador'],
   ['docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png', 'capturar el panel de Jenkins a mano'],
   ['docs/vv/evidencias/laboratorio/07-sonarqube-dashboard.png', 'capturar el panel de SonarQube a mano'],
   ['docs/vv/evidencias/laboratorio/08-burp-websockets.png', 'capturar Burp con vv/capturar-ventana.ps1'],

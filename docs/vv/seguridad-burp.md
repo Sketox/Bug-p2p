@@ -44,6 +44,26 @@ Crear una sala y abrir una segunda pestaña que se una con el código. En **Prox
 history** aparece el tráfico de señalización: los `join`, los `peers`, y las `signal` con las
 ofertas SDP.
 
+> ⚠️ **Mira la columna URL antes de dar la captura por buena.** En desarrollo, lo primero que llena
+> ese historial es `localhost:3000/_next/webpack-hmr`: el recargador automático de Next.js, que
+> también es un WebSocket. Es tráfico del servidor de desarrollo, **no del juego** — y una captura
+> llena de filas `webpack-hmr` no demuestra nada de lo que dice demostrar. La señalización se
+> reconoce porque va a **`localhost:8787/ws`**. Merece la pena filtrar por ahí.
+
+Si hace falta tráfico de señalización **a demanda** —para una captura, o para tener algo que
+interceptar sin montar dos navegadores— hay un generador:
+
+```powershell
+node vv/security/trafico-por-burp.mjs                          # proxy 127.0.0.1:8081
+node vv/security/trafico-por-burp.mjs http://127.0.0.1:8080    # si el listener está en el 8080
+```
+
+Levanta dos jugadores que entran a la misma sala **a través del proxy** y cruzan un handshake WebRTC
+completo (oferta, respuesta y candidato ICE), así que el historial se llena de mensajes del juego de
+verdad. Y avisa: **Burp no repinta su ventana mientras está minimizada**, así que si se va a
+capturar, hay que dejarla a la vista antes de lanzar el tráfico o la captura devolverá el fotograma
+anterior.
+
 > **Lo que NO se va a ver ahí, y es el resultado más importante de todo el capítulo:** las cartas.
 > Ni una jugada, ni una mano, ni el mazo. El WebSocket solo transporta el handshake; a partir del
 > primer contacto la partida entera viaja por los DataChannels de WebRTC, cifrados con DTLS entre

@@ -114,13 +114,25 @@ alguien se le cae la conexión le guardan el sitio y le saltan el turno.
 | ![Mesa repartida](evidencias/cypress/partida-local.cy.ts/03-mesa-repartida.png) | ![Móvil de 360 px](evidencias/cypress/menu.cy.ts/01-menu-en-movil-360px.png) |
 | Mesa repartida: siete cartas, mazo, pozo y de quién es el turno | 360 px: la anchura desde la que llega casi todo el mundo en la feria |
 
+## 9 · Cómo se acaba
+
+| | |
+|---|---|
+| ![Pantalla de victoria](evidencias/ui/11-ganaste.png) | ![Pantalla de derrota](evidencias/ui/12-perdiste.png) |
+| Ganar es compilar sin errores: copa, confeti y `✓ 0 errores` | Perder es que falle la compilación: el bicho, y `✗ build failed` |
+
+Las dos pantallas usan **la misma metáfora leída al derecho y al revés**, y por eso se entienden sin
+explicarlas. Antes perder mostraba una pantalla azul — la misma cara que la **carta** «Pantalla Azul
+de la Muerte», que tiene su propio efecto al jugarse. Dos mensajes muy distintos con la misma
+imagen: al verla se entendía que el juego se había roto.
+
 ---
 
 # Acto II — Cómo está hecho
 
 *Dónde corre el juego de verdad, y qué lo mantiene de acuerdo sin un árbitro.*
 
-## 10 · «Si hay un contenedor encendido, ¿esto no es cliente-servidor?»
+## 11 · «Si hay un contenedor encendido, ¿esto no es cliente-servidor?»
 
 El contenedor **reparte el programa y presenta a los jugadores**. El juego **corre entero dentro de
 cada navegador**.
@@ -142,7 +154,7 @@ estado. El contenedor solo los presenta; a partir de ahí, se aparta.
 **La demo que lo demuestra:** empezar una partida entre tres y apagar Docker a la mitad. La partida
 sigue. Solo dejan de poder entrar los nuevos.
 
-## 11 · El WebSocket presenta. El juego va por WebRTC.
+## 12 · El WebSocket presenta. El juego va por WebRTC.
 
 **Arranque · WebSocket.** Dos navegadores **no pueden encontrarse solos**: no tienen IP pública ni
 escuchan conexiones entrantes. Alguien tiene que presentarlos. Eso —y solo eso— hace el servidor. Y
@@ -157,7 +169,7 @@ un proxy **no se ve ni una carta**: el juego no pasa por ahí.
 > *DNS seeds*, IPFS sus nodos de arranque. Lo que se puede elegir es qué pasa después — y aquí,
 > después, el servidor sobra.
 
-## 12 · Cuatro mecanismos, ningún árbitro
+## 13 · Cuatro mecanismos, ningún árbitro
 
 | Eje | Mecanismo | Qué garantiza |
 |---|---|---|
@@ -169,7 +181,7 @@ un proxy **no se ve ni una carta**: el juego no pasa por ahí.
 > Y si un nodo **diverge** —le faltó un evento, o le sobra— lo detecta comparando su huella con la
 > del líder, pide la partida entera y **la adopta**. Se repara solo, en vivo, sin que nadie toque nada.
 
-## 13 · La Pantalla Maestra: el sistema por dentro, en vivo
+## 14 · La Pantalla Maestra: el sistema por dentro, en vivo
 
 ![Pantalla Maestra](evidencias/cypress/distribuido/malla.cy.ts/06-pantalla-maestra.png)
 
@@ -182,7 +194,7 @@ Tecla <kbd>M</kbd> · quién vive, quién es líder 👑, dónde está el testig
 
 *Qué herramienta para qué pregunta — y qué encontró cada una.*
 
-## 15 · ¿Cómo compruebas quién tiene razón si nadie manda?
+## 16 · ¿Cómo compruebas quién tiene razón si nadie manda?
 
 En una aplicación con backend, comprobar el estado es fácil: se le pregunta a la base de datos. Aquí
 **no hay a quién preguntar**. Hay tres réplicas y ninguna manda.
@@ -197,7 +209,7 @@ Y dos agravantes:
 - **Lo que no se repite.** Un evento que llega tarde, un nodo que cae a media elección, dos jugadas
   en el mismo milisegundo. No se reproducen a mano: hay que **provocarlos**.
 
-## 16 · Cinco formas de probar, cada una para algo distinto
+## 17 · Cinco formas de probar, cada una para algo distinto
 
 | Capa | Nº |
 |---|---|
@@ -211,7 +223,7 @@ La pirámide es ancha por abajo —190 unitarias sostienen el motor y los algori
 **ancha por arriba**, y eso no es doctrina: es lo que dijeron los defectos. De los 17 encontrados,
 **11 eran invisibles para una prueba unitaria**.
 
-## 17 · SonarQube — el corrector ortográfico del código
+## 18 · SonarQube — el corrector ortográfico del código
 
 Es **el corrector ortográfico del código**: lo lee entero y señala lo que está mal escrito, sin
 necesidad de ejecutar nada.
@@ -232,11 +244,11 @@ juntos, así que la duplicación entre `engine` y `net` es duplicación de verda
 | Duplicación | **1,3 %** (umbral < 3 %) |
 | engine · net · signaling | 93,1 % · 98,1 % · 83,0 % |
 
-## 18 · Evidencia: el panel de SonarQube
+## 19 · Evidencia: el panel de SonarQube
 
 ![Panel de SonarQube](evidencias/laboratorio/07-sonarqube-dashboard.png)
 
-## 19 · Encontró 23 avisos. Los miramos uno a uno.
+## 20 · Encontró 23 avisos. Los miramos uno a uno.
 
 **1 bug · accesibilidad.** El fondo del diálogo de jugada cerraba con ratón y **no con teclado**. Los
 dos parches evidentes fallaron: un `onKeyDown` en un `div` sin foco no se dispara nunca, y
@@ -252,7 +264,7 @@ explotables.**
 > herramienta**: el analizador cree que un `<dialog>` no es interactivo. Gestionar hallazgos incluye
 > decidir cuáles no son defectos — lo que no se puede es dejarlos sin mirar.
 
-## 20 · Jenkins — un ayudante que lo comprueba todo, solo
+## 21 · Jenkins — un ayudante que lo comprueba todo, solo
 
 Cada vez que alguien toca una línea, este ayudante **vuelve a pasar las 230 comprobaciones** por su
 cuenta. Nadie se lo pide.
@@ -269,14 +281,14 @@ nuestro**.
 Ordenadas por **lo que falla más barato primero**. Resultado: **SUCCESS**, 7,2 min, disparo por
 commit, configuración como código.
 
-## 21 · Evidencia: la construcción en verde
+## 22 · Evidencia: la construcción en verde
 
 ![Jenkins en verde](evidencias/laboratorio/06-jenkins-pipeline.png)
 
 El historial cuenta la verdad: **#1 a #4 en rojo** son el laboratorio que no arrancaba; **#5 es el
 primer verde**, y lo disparó un commit — no una persona.
 
-## 22 · Estaba escrito desde hacía semanas. No había arrancado ni una vez.
+## 23 · Estaba escrito desde hacía semanas. No había arrancado ni una vez.
 
 1. **Jenkins no arrancaba.** El Job DSL dinámico (`scmGit { remotes }`) ya no existe en las versiones
    de hoy: se llevaba por delante a Configuration-as-Code y el contenedor moría en `Exited (5)`.
@@ -290,7 +302,7 @@ primer verde**, y lo disparó un commit — no una persona.
 > habría saltado el análisis en cada build **con el mismo amarillo que si el laboratorio estuviera
 > apagado**. Un fallo disfrazado de comportamiento tolerado no lo investiga nadie.
 
-## 23 · Cypress — un jugador de mentira que juega solo
+## 24 · Cypress — un jugador de mentira que juega solo
 
 Un robot que **juega como jugaría una persona**: escribe su nombre, pulsa «crear sala», mira sus
 cartas y tira una. Y hace algo que una persona no puede: abrir **tres jugadores a la vez** y
@@ -314,20 +326,20 @@ página.
 | `distribuido/malla.cy.ts` | **5** | **tres nodos con WebRTC real**: lobby, convergencia, jugada compartida, Pantalla Maestra y caída |
 | `distribuido/aforo.cy.ts` | **3** | **diez nodos**: los diez se ven, la partida arranca con diez, y al once se le dice que no cabe |
 
-## 24 · Evidencia: tres réplicas de acuerdo
+## 25 · Evidencia: tres réplicas de acuerdo
 
 ![Tres nodos convergen](evidencias/cypress/distribuido/malla.cy.ts/04-tres-nodos-convergen.png)
 
 Ana, Beto y Dina · tres contextos de navegación con su propia `RTCPeerConnection` · la prueba compara
 sus tres huellas de estado.
 
-## 25 · Evidencia: se cae un nodo y la mesa sigue
+## 26 · Evidencia: se cae un nodo y la mesa sigue
 
 ![Cae un nodo](evidencias/cypress/distribuido/malla.cy.ts/05-cae-un-nodo-los-otros-siguen.png)
 
 Se quita el tercer nodo de golpe · los dos que quedan siguen convergiendo entre ellos.
 
-## 26 · La mesa llena: diez jugadores y cuarenta y cinco conexiones
+## 27 · La mesa llena: diez jugadores y cuarenta y cinco conexiones
 
 ![Diez jugadores](evidencias/cypress/distribuido/aforo.cy.ts/09-diez-jugadores.png)
 
@@ -343,7 +355,7 @@ Diez navegadores, cada uno viéndose a sí mismo como «(tú)» y a los otros nu
 > Diez jugadores no son diez conexiones: cada uno abre un canal con cada otro, así que son **45**.
 > Es el escenario que se va a dar en la feria si el stand se llena.
 
-## 27 · Burp Suite — atacar el sistema a propósito
+## 28 · Burp Suite — atacar el sistema a propósito
 
 Nos sentamos **en medio de la conversación** entre jugadores, cambiamos los mensajes y los
 reenviamos. Once trampas distintas.
@@ -366,7 +378,7 @@ eso.
 > Las once quedaron **escritas como prueba automática**. Un agujero que solo está en la cabeza de
 > quien lo encontró vuelve a abrirse en dos semanas.
 
-## 28 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
+## 29 · Un mensaje de dos líneas tumbaba el servidor de toda la feria
 
 **1 · Qué mandamos.** Un mensaje normal del juego, pero con **un número donde tenía que ir una
 lista**. Desde la consola del navegador: lo puede hacer cualquiera que esté jugando.
@@ -380,7 +392,7 @@ la basura. Y una red de seguridad debajo, por si se nos escapa otro que no imagi
 > Las partidas en curso **habrían seguido jugándose igual** — las cartas no pasan por el servidor.
 > Pero nadie nuevo habría podido entrar.
 
-## 29 · Un simulador para romper la red a propósito
+## 30 · Un simulador para romper la red a propósito
 
 Jugamos **miles de partidas entre jugadores imaginarios** y, a propósito, hacemos que la red se
 porte mal. Después comprobamos que todos acaban viendo lo mismo.
@@ -399,7 +411,7 @@ vuelve a la mesa.
 Hubo que escribirlo nosotros: ninguna herramienta que se pueda comprar sabe qué es «el turno de Bug»
 ni cuándo dos jugadores están de acuerdo.
 
-## 30 · Los 17 errores que encontramos
+## 31 · Los 17 errores que encontramos
 
 **Casi ninguno salió de las pruebas automáticas del principio.** Tres ejemplos de los que
 aparecieron jugando:
@@ -420,7 +432,7 @@ aparecieron jugando:
 > Por eso no basta con probar el código por dentro: hay que **abrir el juego y jugarlo**, con tres
 > jugadores de verdad y en un móvil de verdad.
 
-## 31 · Lo que queda por hacer
+## 32 · Lo que queda por hacer
 
 - **Probarlo entre dos casas.** Funciona en la misma WiFi y con un túnel. Falta la prueba con dos
   redes distintas de verdad — el código ya está preparado.
@@ -431,7 +443,7 @@ aparecieron jugando:
 
 > Saber dónde **no** se ha mirado todavía es parte del trabajo. Lo que no está medido, se dice.
 
-## 32 · Cierre
+## 33 · Cierre
 
 # Un juego que se sostiene solo, y 230 comprobaciones que lo vigilan
 

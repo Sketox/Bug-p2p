@@ -209,6 +209,13 @@
   .remate.ok { border-left-color: var(--esmeralda); }
 
   /* --- Pie y navegación ---------------------------------------------------------------------- */
+  /* El número de lámina lo lleva un contador de CSS, no la mano.
+     Escrito a mano se desincronizaba en cuanto se insertaba una lámina en medio: la de los diez
+     jugadores y la de Burp llegaron a compartir el 26. Ahora insertar una lámina no cuesta nada. */
+  body { counter-reset: lam; }
+  .lam { counter-increment: lam; }
+  .pie .num::before { content: counter(lam); }
+
   .pie { display: flex; justify-content: space-between; align-items: center; color: var(--suave); font-family: var(--mono); font-size: .7em; letter-spacing: .06em; }
   .avance { position: fixed; top: 0; left: 0; height: 3px; background: var(--esmeralda); transition: width .3s ease; z-index: 10; }
   .nav { position: fixed; right: 18px; bottom: 14px; display: flex; gap: 8px; align-items: center; z-index: 10; }
@@ -343,7 +350,7 @@
       primer fotograma.
     </p>
   </div>
-  <div class="pie"><span>I · El juego</span><span class="mono">3</span></div>
+  <div class="pie"><span>I · El juego</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Las cartas ═══════════════════════════════════════════════════════════════════════════ -->
@@ -364,7 +371,7 @@
       la tiró.
     </p>
   </div>
-  <div class="pie"><span>I · El juego</span><span class="mono">4</span></div>
+  <div class="pie"><span>I · El juego</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Cartas de Caos ═══════════════════════════════════════════════════════════════════════ -->
@@ -393,7 +400,7 @@
       en las tres pantallas.
     </p>
   </div>
-  <div class="pie"><span>I · El juego</span><span class="mono">5</span></div>
+  <div class="pie"><span>I · El juego</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Cómo se entra ════════════════════════════════════════════════════════════════════════ -->
@@ -430,7 +437,7 @@
       </div>
     </div>
   </div>
-  <div class="pie"><span>I · El juego</span><span class="mono">6</span></div>
+  <div class="pie"><span>I · El juego</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Evidencia: entrada y reglas ══════════════════════════════════════════════════════════ -->
@@ -448,7 +455,7 @@
       </figure>
     </div>
   </div>
-  <div class="pie"><span>I · El juego</span><span class="mono">7</span></div>
+  <div class="pie"><span>I · El juego</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Evidencia: mesa y móvil ══════════════════════════════════════════════════════════════ -->
@@ -466,7 +473,25 @@
       </figure>
     </div>
   </div>
-  <div class="pie"><span>I · El juego</span><span class="mono">8</span></div>
+  <div class="pie"><span>I · El juego</span><span class="mono num"></span></div>
+</section>
+
+<!-- ═══ Evidencia: cómo se acaba ════════════════════════════════════════════════════════════ -->
+<section class="lam">
+  <div class="cab"><span class="eje">I · El juego</span><span class="tema">Cómo se acaba</span></div>
+  <div class="marco-img">
+    <div class="dupla">
+      <figure>
+        <img src="{{img:docs/vv/evidencias/ui/11-ganaste.png}}" alt="Pantalla de victoria: una copa de pixel art, el rotulo GANASTE y una consola que dice cero errores">
+        <figcaption>Ganar es compilar sin errores: copa, confeti y <span class="mono">✓ 0 errores</span></figcaption>
+      </figure>
+      <figure>
+        <img src="{{img:docs/vv/evidencias/ui/12-perdiste.png}}" alt="Pantalla de derrota: el bicho del juego en pixel art, el rotulo PERDISTE y una consola que dice build failed">
+        <figcaption>Perder es que falle la compilación: el bicho, y <span class="mono">✗ build failed</span></figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="pie"><span>I · El juego</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ ACTO II ══════════════════════════════════════════════════════════════════════════════ -->
@@ -516,7 +541,7 @@
       mitad. La partida sigue. Solo dejan de poder entrar los nuevos.
     </p>
   </div>
-  <div class="pie"><span>II · Arquitectura</span><span class="mono">10</span></div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ La malla ═════════════════════════════════════════════════════════════════════════════ -->
@@ -553,7 +578,7 @@
       después — y aquí, después, el servidor sobra.
     </p>
   </div>
-  <div class="pie"><span>II · Arquitectura</span><span class="mono">11</span></div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Los cuatro ejes ══════════════════════════════════════════════════════════════════════ -->
@@ -590,7 +615,7 @@
       en vivo, sin que nadie toque nada.
     </p>
   </div>
-  <div class="pie"><span>II · Arquitectura</span><span class="mono">12</span></div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Pantalla Maestra ═════════════════════════════════════════════════════════════════════ -->
@@ -602,7 +627,7 @@
       <figcaption>Tecla <kbd>M</kbd> · quién vive, quién es líder 👑, dónde está el testigo 🎫 y la huella de cada nodo — la columna que decide si hay partida</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>II · Arquitectura</span><span class="mono">13</span></div>
+  <div class="pie"><span>II · Arquitectura</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ ACTO III ═════════════════════════════════════════════════════════════════════════════ -->
@@ -647,7 +672,7 @@
       </div>
     </div>
   </div>
-  <div class="pie"><span>III · V&amp;V</span><span class="mono">15</span></div>
+  <div class="pie"><span>III · V&amp;V</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Estrategia ═══════════════════════════════════════════════════════════════════════════ -->
@@ -683,7 +708,7 @@
       estático, que mira incluso el código que nadie llega a ejecutar.
     </p>
   </div>
-  <div class="pie"><span>III · V&amp;V</span><span class="mono">16</span></div>
+  <div class="pie"><span>III · V&amp;V</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Por qué SonarQube ════════════════════════════════════════════════════════════════════ -->
@@ -721,7 +746,7 @@
       <div class="fila"><span class="nom">signaling</span><div class="pista"><i style="width:83.0%"></i></div><span class="val">83,0 %</span></div>
     </div>
   </div>
-  <div class="pie"><span>4.1 · SonarQube — revisar el código</span><span class="mono">17</span></div>
+  <div class="pie"><span>4.1 · SonarQube — revisar el código</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Evidencia Sonar ══════════════════════════════════════════════════════════════════════ -->
@@ -733,7 +758,7 @@
       <figcaption>SonarQube Community Build 26.8 · 5 406 líneas · análisis lanzado desde el pipeline</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>4.1 · SonarQube — revisar el código</span><span class="mono">18</span></div>
+  <div class="pie"><span>4.1 · SonarQube — revisar el código</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Qué encontró Sonar ═══════════════════════════════════════════════════════════════════ -->
@@ -769,7 +794,7 @@
       dejarlos sin mirar.
     </p>
   </div>
-  <div class="pie"><span>4.1 · SonarQube — revisar el código</span><span class="mono">19</span></div>
+  <div class="pie"><span>4.1 · SonarQube — revisar el código</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Por qué Jenkins ══════════════════════════════════════════════════════════════════════ -->
@@ -815,7 +840,7 @@
       segundos.
     </p>
   </div>
-  <div class="pie"><span>4.2 · Jenkins — comprobarlo todo en cada cambio</span><span class="mono">20</span></div>
+  <div class="pie"><span>4.2 · Jenkins — comprobarlo todo en cada cambio</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Evidencia Jenkins ════════════════════════════════════════════════════════════════════ -->
@@ -827,7 +852,7 @@
       <figcaption>El historial cuenta la verdad: #1 a #4 en rojo son el laboratorio que no arrancaba; #5 es el primer verde, disparado por un commit — 190 pruebas sin fallos y los artefactos archivados</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>4.2 · Jenkins — comprobarlo todo en cada cambio</span><span class="mono">21</span></div>
+  <div class="pie"><span>4.2 · Jenkins — comprobarlo todo en cada cambio</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ El laboratorio que no arrancaba ══════════════════════════════════════════════════════ -->
@@ -847,7 +872,7 @@
       estuviera apagado</strong>. Un fallo disfrazado de comportamiento tolerado no lo investiga nadie.
     </p>
   </div>
-  <div class="pie"><span>4.2 · Jenkins — comprobarlo todo en cada cambio</span><span class="mono">22</span></div>
+  <div class="pie"><span>4.2 · Jenkins — comprobarlo todo en cada cambio</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Por qué Cypress ══════════════════════════════════════════════════════════════════════ -->
@@ -878,7 +903,7 @@
       </div>
     </div>
   </div>
-  <div class="pie"><span>4.3 · Cypress — jugar el juego solo</span><span class="mono">23</span></div>
+  <div class="pie"><span>4.3 · Cypress — jugar el juego solo</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Evidencia convergencia ═══════════════════════════════════════════════════════════════ -->
@@ -890,7 +915,7 @@
       <figcaption>Ana, Beto y Dina · tres contextos de navegación con su propia RTCPeerConnection · la prueba compara sus tres huellas de estado</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>4.3 · Cypress — jugar el juego solo</span><span class="mono">24</span></div>
+  <div class="pie"><span>4.3 · Cypress — jugar el juego solo</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Evidencia caída ══════════════════════════════════════════════════════════════════════ -->
@@ -902,7 +927,7 @@
       <figcaption>Se quita el tercer nodo de golpe · los dos que quedan siguen convergiendo entre ellos</figcaption>
     </figure>
   </div>
-  <div class="pie"><span>4.3 · Cypress — jugar el juego solo</span><span class="mono">25</span></div>
+  <div class="pie"><span>4.3 · Cypress — jugar el juego solo</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Diez jugadores ════════════════════════════════════════════════════════════════════════ -->
@@ -941,7 +966,7 @@
       <strong>45</strong>. Es el escenario que se va a dar en la feria si el stand se llena.
     </p>
   </div>
-  <div class="pie"><span>4.3 · Cypress — jugar el juego solo</span><span class="mono">26</span></div>
+  <div class="pie"><span>4.3 · Cypress — jugar el juego solo</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Por qué Burp ═════════════════════════════════════════════════════════════════════════ -->
@@ -981,7 +1006,7 @@
       la cabeza de quien lo encontró vuelve a abrirse en dos semanas.
     </p>
   </div>
-  <div class="pie"><span>4.4 · Burp Suite — atacarlo a propósito</span><span class="mono">26</span></div>
+  <div class="pie"><span>4.4 · Burp Suite — atacarlo a propósito</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ El agujero grave ═════════════════════════════════════════════════════════════════════ -->
@@ -1014,7 +1039,7 @@
       por el servidor. Pero nadie nuevo habría podido entrar.
     </p>
   </div>
-  <div class="pie"><span>4.4 · Burp Suite — atacarlo a propósito</span><span class="mono">27</span></div>
+  <div class="pie"><span>4.4 · Burp Suite — atacarlo a propósito</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ El simulador ═════════════════════════════════════════════════════════════════════════ -->
@@ -1042,7 +1067,7 @@
       Bug» ni cuándo dos jugadores están de acuerdo.
     </p>
   </div>
-  <div class="pie"><span>4.5 · Simulador — romper la red a mano</span><span class="mono">28</span></div>
+  <div class="pie"><span>4.5 · Simulador — romper la red a mano</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Los errores encontrados ══════════════════════════════════════════════════════════════ -->
@@ -1080,7 +1105,7 @@
       con tres jugadores de verdad y en un móvil de verdad.
     </p>
   </div>
-  <div class="pie"><span>III · Cómo se prueba</span><span class="mono">29</span></div>
+  <div class="pie"><span>III · Cómo se prueba</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Próximos pasos ═══════════════════════════════════════════════════════════════════════ -->
@@ -1112,7 +1137,7 @@
       medido, se dice.
     </p>
   </div>
-  <div class="pie"><span>Cierre</span><span class="mono">30</span></div>
+  <div class="pie"><span>Cierre</span><span class="mono num"></span></div>
 </section>
 
 <!-- ═══ Remate ═══════════════════════════════════════════════════════════════════════════════ -->
@@ -1129,7 +1154,7 @@
     </div>
     <p class="grande apagado">Gracias.</p>
   </div>
-  <div class="pie"><span>github.com/Sketox/Bug-p2p</span><span class="mono">31</span></div>
+  <div class="pie"><span>github.com/Sketox/Bug-p2p</span><span class="mono num"></span></div>
 </section>
 
 </div><!-- /marco -->
