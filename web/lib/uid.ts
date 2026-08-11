@@ -17,6 +17,39 @@
 // sirve para criptografía, pero esto no es una clave — es un nombre que solo tiene que no repetirse.
 
 /**
+ * Un entero de 32 bits **impredecible**, con el mismo respaldo escalonado que `uid()`.
+ *
+ * Hace falta porque `Math.random()` no es solo «poco aleatorio»: en V8 es un *xorshift128+*, y su
+ * estado interno se reconstruye observando unas pocas salidas. El código de sala y la semilla no son
+ * secretos —se enseñan—, pero **son salidas de ese mismo generador**, así que quien esté en tu sala
+ * podría, en teoría, predecir el código de la siguiente que crees.
+ *
+ * El riesgo real es **bajo**: hacen falta salidas del generador del anfitrión, y este produce muy
+ * pocas. Se cambia igual porque cuesta dos líneas y ahorra tener que rehacer este razonamiento cada
+ * vez que alguien pregunte.
+ */
+export function azar32(): number {
+  const c = globalThis.crypto;
+  if (typeof c?.getRandomValues === 'function') return c.getRandomValues(new Uint32Array(1))[0]!;
+  return (Math.random() * 2 ** 32) >>> 0; // mismo último recurso que `uid()`
+}
+
+/** Una cadena de `n` caracteres de `0-9A-Z`, sacada de `azar32()`. */
+export function azarCodigo(n: number): string {
+  const ALFABETO = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let salida = '';
+  while (salida.length < n) {
+    // Se descarta el resto que no cabe en un múltiplo exacto del alfabeto: si no, los primeros
+    // caracteres saldrían más veces que los últimos.
+    const v = azar32();
+    const limite = Math.floor(2 ** 32 / ALFABETO.length) * ALFABETO.length;
+    if (v >= limite) continue;
+    salida += ALFABETO[v % ALFABETO.length];
+  }
+  return salida;
+}
+
+/**
  * Un UUID v4. Usa `crypto.randomUUID` si existe, y si no lo construye con `getRandomValues`.
  *
  * Identifica jugadores y cargas de página —que viajan en claro por la señalización, así que de
@@ -30,35 +63,6 @@
  * a 2011) tampoco tiene `RTCPeerConnection`, así que no llega a entrar en una sala. Se deja como
  * último recurso para que la página no muera con una excepción, que es lo que hacía antes.
  */
-/**
- * Un entero de 32 bits **impredecible**, con el mismo respaldo escalonado que `uid()`.
- *
- * Hace falta porque `Math.random()` no es solo «poco aleatorio»: en V8 es un *xorshift128+*, y su
- * estado interno se puede reconstruir observando unas pocas salidas. Quien viera dos o tres códigos
- * de sala podría **predecir los siguientes** — y el código de sala es exactamente lo que hace falta
- * para colarse en una partida ajena (ataque S2).
- */
-export function azar32(): number {
-  const c = globalThis.crypto;
-  if (typeof c?.getRandomValues === 'function') return c.getRandomValues(new Uint32Array(1))[0]!;
-  return (Math.random() * 0x1_0000_0000) >>> 0; // mismo último recurso que `uid()`
-}
-
-/** Una cadena de `n` caracteres de `0-9A-Z`, sacada de `azar32()`. */
-export function azarCodigo(n: number): string {
-  const ALFABETO = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let salida = '';
-  while (salida.length < n) {
-    // Se descarta el resto que no cabe en un múltiplo exacto del alfabeto: si no, los primeros
-    // caracteres saldrían más veces que los últimos.
-    const v = azar32();
-    const limite = Math.floor(0x1_0000_0000 / ALFABETO.length) * ALFABETO.length;
-    if (v >= limite) continue;
-    salida += ALFABETO[v % ALFABETO.length];
-  }
-  return salida;
-}
-
 export function uid(): string {
   const c = globalThis.crypto;
   if (typeof c?.randomUUID === 'function') return c.randomUUID();

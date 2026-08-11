@@ -74,6 +74,6 @@ describe('azar para el código de sala', () => {
     const v = azar32();
     expect(Number.isInteger(v)).toBe(true);
     expect(v).toBeGreaterThanOrEqual(0);
-    expect(v).toBeLessThan(0x1_0000_0000);
+    expect(v).toBeLessThan(2 ** 32);
   });
 });

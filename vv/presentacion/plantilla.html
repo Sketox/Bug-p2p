@@ -183,10 +183,18 @@
   /* La captura tiene que caber en el hueco entre cabecera y pie, sea cual sea su proporción. Toda
      la cadena lleva `min-height: 0` porque un hijo de grid no encoge por debajo de su contenido si
      no se le dice: sin eso, una imagen grande empuja la lámina y se come el pie. */
+  .lam { overflow-x: hidden; }
   .lam .marco-img { min-height: 0; display: grid; place-items: center; overflow: hidden; padding: clamp(8px, 1.2vw, 18px) 0; }
   figure {
     margin: 0; min-height: 0; height: 100%; width: 100%;
     display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: .55em; justify-items: center;
+  }
+  /* Cinturón: una imagen suelta dentro del marco (sin `figure`) se salía a su tamaño natural,
+     empujaba el pie fuera de la lámina y con él el número. Que no dependa de acordarse. */
+  .marco-img > img {
+    min-height: 0; max-height: 100%; width: auto; max-width: 100%;
+    object-fit: contain; display: block;
+    border: 1px solid var(--linea); border-radius: 12px; background: var(--superficie);
   }
   figure img {
     min-height: 0; height: 100%; width: auto; max-width: 100%;
@@ -209,12 +217,10 @@
   .remate.ok { border-left-color: var(--esmeralda); }
 
   /* --- Pie y navegación ---------------------------------------------------------------------- */
-  /* El número de lámina lo lleva un contador de CSS, no la mano.
-     Escrito a mano se desincronizaba en cuanto se insertaba una lámina en medio: la de los diez
-     jugadores y la de Burp llegaron a compartir el 26. Ahora insertar una lámina no cuesta nada. */
-  body { counter-reset: lam; }
-  .lam { counter-increment: lam; }
-  .pie .num::before { content: counter(lam); }
+  /* El número de lámina lo pone el script al arrancar, no la mano: escrito a mano se
+     desincronizaba en cuanto se insertaba una lámina en medio (la de los diez jugadores y la de
+     Burp llegaron a compartir el 26). Con un contador de CSS tampoco valía: `counter-increment`
+     **no corre en las láminas ocultas**, y como el pase enseña una sola, todas decían «1». */
 
   .pie { display: flex; justify-content: space-between; align-items: center; color: var(--suave); font-family: var(--mono); font-size: .7em; letter-spacing: .06em; }
   .avance { position: fixed; top: 0; left: 0; height: 3px; background: var(--esmeralda); transition: width .3s ease; z-index: 10; }
@@ -1195,6 +1201,12 @@
 
 <script>
   const laminas = [...document.querySelectorAll('.lam')];
+
+  // Numeración: una sola fuente de verdad, la posición real en el documento.
+  laminas.forEach((l, k) => {
+    const hueco = l.querySelector('.pie .num');
+    if (hueco) hueco.textContent = String(k + 1);
+  });
   const avance = document.getElementById('avance');
   let i = 0;
 
