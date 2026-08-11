@@ -108,6 +108,47 @@ function useCardEffect(view: PublicView): EffectCue | null {
   return cue;
 }
 
+/**
+ * La única línea de aviso de la mesa, y qué gana a qué.
+ *
+ * El orden no es estético: es el de urgencia. Un error del motor tapa cualquier otra cosa; poder
+ * CORTAR es una oportunidad que caduca en segundos; tener que robar es obligatorio. Lo de a quién
+ * le toca solo se dice cuando no hay nada más que decir.
+ */
+function Aviso({
+  error,
+  puedeCortarYa,
+  debeRobar,
+  esMiTurno,
+  deQuienEsElTurno,
+}: Readonly<{
+  error: string | null;
+  puedeCortarYa: boolean;
+  debeRobar: boolean;
+  esMiTurno: boolean;
+  deQuienEsElTurno: string;
+}>) {
+  const base = 'font-pixel text-[9px] sm:text-[10px]';
+  if (error) return <span className={`${base} text-red-400`}>⚠ {error}</span>;
+  if (puedeCortarYa) {
+    return (
+      <span className={`${base} text-[#f27eb4] animate-pulse`}>
+        📋 puedes CORTAR la ronda con Copiar y Pegar
+      </span>
+    );
+  }
+  if (debeRobar) {
+    return (
+      <span className={`${base} text-yellow-300 animate-pulse`}>no tienes jugada: ROBA una carta</span>
+    );
+  }
+  return (
+    <span className={`${base} text-white/50`}>
+      {esMiTurno ? '¡Es tu turno!' : `Turno de ${deQuienEsElTurno}`}
+    </span>
+  );
+}
+
 export function GameBoard(props: Readonly<Props>) {
   const { view, myId, error, onPlay, onDraw, onPass, onShoutBug, onCallBug, onReset, onLeave } = props;
   const me = view.players.find((p) => p.id === myId);
@@ -292,21 +333,13 @@ export function GameBoard(props: Readonly<Props>) {
         data-turn-name={turnPlayer?.name ?? ''}
         className="flex flex-col items-center gap-2 min-h-[3.5rem]"
       >
-        {error ? (
-          <span className="font-pixel text-[9px] sm:text-[10px] text-red-400">⚠ {error}</span>
-        ) : canInterrupt && myHand.some((c) => puedeCortar(c)) ? (
-          <span className="font-pixel text-[9px] sm:text-[10px] text-[#f27eb4] animate-pulse">
-            📋 puedes CORTAR la ronda con Copiar y Pegar
-          </span>
-        ) : debeRobar ? (
-          <span className="font-pixel text-[9px] sm:text-[10px] text-yellow-300 animate-pulse">
-            no tienes jugada: ROBA una carta
-          </span>
-        ) : (
-          <span className="font-pixel text-[9px] sm:text-[10px] text-white/50">
-            {isMyTurn ? '¡Es tu turno!' : `Turno de ${turnPlayer?.name ?? '—'}`}
-          </span>
-        )}
+        <Aviso
+          error={error}
+          puedeCortarYa={canInterrupt && myHand.some((c) => puedeCortar(c))}
+          debeRobar={debeRobar}
+          esMiTurno={isMyTurn}
+          deQuienEsElTurno={turnPlayer?.name ?? '—'}
+        />
 
         {/* El reloj corre para todos, no solo para ti: así se ve por qué el de enfrente va a robar
             dos cartas dentro de nada. */}

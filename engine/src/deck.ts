@@ -39,17 +39,14 @@ export function buildDeck(): Card[] {
     deck.push(card('number', { color, value: 0, n: n++ }));
     // Dos de cada 1-9.
     for (let value = 1; value <= 9; value++) {
-      deck.push(card('number', { color, value, n: n++ }));
-      deck.push(card('number', { color, value, n: n++ }));
+      deck.push(card('number', { color, value, n: n++ }), card('number', { color, value, n: n++ }));
     }
     // Dos de cada acción clásica.
     for (const kind of ['skip', 'reverse'] as const) {
-      deck.push(card(kind, { color, n: n++ }));
-      deck.push(card(kind, { color, n: n++ }));
+      deck.push(card(kind, { color, n: n++ }), card(kind, { color, n: n++ }));
     }
     // Los dos Updates de Windows: el que roba 2 y el que roba 4.
-    deck.push(card('draw2', { color, n: n++ }));
-    deck.push(card('draw4', { color, n: n++ }));
+    deck.push(card('draw2', { color, n: n++ }), card('draw4', { color, n: n++ }));
     // Una de cada Carta de Caos, en cada color.
     for (const kind of ['copy_paste', 'reboot', 'coffee_spill', 'trojan'] as const) {
       deck.push(card(kind, { color, n: n++ }));

@@ -117,20 +117,10 @@ export function MasterScreen({ mesh, journal, onClose }: Readonly<Props>) {
                   {n.isLeader && <span title="líder"> 👑</span>}
                   {n.hasToken && <span title="tiene el testigo de turno"> 🎫</span>}
                 </span>
-                <span className={`${h.text} w-14 text-right`}>
-                  {n.left
-                    ? 'se fue'
-                    : n.health === 'alive'
-                      ? 'vivo'
-                      : n.health === 'suspect'
-                        ? `${(n.silence / 1000) | 0}s…`
-                        : 'caído'}
-                </span>
+                <span className={`${h.text} w-14 text-right`}>{etiquetaSalud(n)}</span>
                 {/* Huella del estado replicado: si no coincide con la mía, ese nodo se desvió. */}
                 <span
-                  className={`w-16 text-right ${
-                    n.hash == null ? 'text-white/25' : n.converged ? 'text-[#50C878]' : 'text-red-400'
-                  }`}
+                  className={`w-16 text-right ${colorHuella(n)}`}
                   title="huella del estado replicado (stateHash)"
                 >
                   {n.hash ?? '········'}
@@ -168,13 +158,39 @@ export function MasterScreen({ mesh, journal, onClose }: Readonly<Props>) {
   );
 }
 
+/**
+ * Cómo se lee cada nodo en la Pantalla Maestra.
+ *
+ * Irse y caerse NO son lo mismo, y la pantalla tiene que distinguirlo: quien se despide libera su
+ * sitio al instante; a quien se le cae la conexión se le guarda. Por eso «se fue» gana a cualquier
+ * otro estado.
+ */
+function etiquetaSalud(n: { left?: boolean; health: string; silence: number }): string {
+  if (n.left) return 'se fue';
+  if (n.health === 'alive') return 'vivo';
+  if (n.health === 'suspect') return `${Math.trunc(n.silence / 1000)}s…`;
+  return 'caído';
+}
+
+/** Sin huella todavía (gris), la misma que la mía (verde) o desviada (rojo). */
+function colorHuella(n: { hash?: string | null; converged?: boolean }): string {
+  if (n.hash == null) return 'text-white/25';
+  return n.converged ? 'text-[#50C878]' : 'text-red-400';
+}
+
+/** El color de cada tono, en una tabla: leer una fila es más fácil que seguir una cascada. */
+const COLOR_TONO: Record<'ok' | 'warn' | 'bad', string> = {
+  ok: 'text-white/90',
+  warn: 'text-yellow-400',
+  bad: 'text-red-400',
+};
+
 function Stat({
   label,
   value,
   tone,
 }: Readonly<{ label: string; value: string; tone?: 'ok' | 'warn' | 'bad' }>) {
-  const color =
-    tone === 'bad' ? 'text-red-400' : tone === 'warn' ? 'text-yellow-400' : 'text-white/90';
+  const color = COLOR_TONO[tone ?? 'ok'];
   return (
     <div className="bg-black/40 rounded px-2 py-1.5">
       <div className="text-white/40 text-[8px] uppercase tracking-wider">{label}</div>

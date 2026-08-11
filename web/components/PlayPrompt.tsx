@@ -66,9 +66,10 @@ function Trojan({ card, hand, rivals, onConfirm, onCancel }: Readonly<Omit<Props
   const maxGift = Math.min(MAX_GIFT, giftable.length);
 
   const toggle = (id: string) =>
-    setGift((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < maxGift ? [...prev, id] : prev,
-    );
+    setGift((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      return prev.length < maxGift ? [...prev, id] : prev;
+    });
 
   if (!target) {
     return (
@@ -178,7 +179,7 @@ function Reboot({ card, hand, onConfirm, onCancel }: Readonly<Omit<Props, 'rival
           onClick={() => onConfirm({})}
           className="font-pixel text-[10px] sm:text-xs py-4 px-4 rounded-lg bg-black/40 border-2 border-white/20 text-white hover:bg-white/10 shadow-pixel"
         >
-          Jugarla y ya
+          <span>Jugarla y ya</span>
           <span className="block text-[8px] text-white/50 mt-1 font-pixel">
             la partida sigue en {card.color ? SUIT[card.color].label : ''}
           </span>
@@ -190,7 +191,7 @@ function Reboot({ card, hand, onConfirm, onCancel }: Readonly<Omit<Props, 'rival
           title={bases.length === 0 ? 'no tienes ninguna carta de color para poner de base' : undefined}
           className="font-pixel text-[10px] sm:text-xs py-4 px-4 rounded-lg bg-black/40 border-2 border-[#07d98c]/60 text-[#07d98c] hover:bg-[#07d98c]/10 shadow-pixel disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Reiniciar el pozo con una carta mía
+          <span>Reiniciar el pozo con una carta mía</span>
           <span className="block text-[8px] text-white/50 mt-1 font-pixel">
             {bases.length === 0 ? 'no te queda ninguna de color' : 'sueltas otra carta: una menos'}
           </span>

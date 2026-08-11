@@ -121,10 +121,10 @@ Cypress.Commands.add('montarNodo', (indice: number, nombre: string, sala: string
         expect(doc?.querySelectorAll('input').length ?? 0, 'menú del nodo pintado').to.be.greaterThan(0);
       })
       .then(() => {
-        cy.enNodo(indice).find('input').first().type(nombre, { force: true });
+        cy.enNodo(indice).find('input').first().type(nombre);
 
         if (sala === null) {
-          cy.enNodo(indice).contains('button', 'Crear sala').click({ force: true });
+          cy.enNodo(indice).contains('button', 'Crear sala').click();
           // El código lo inventa la app: se lee del lobby y se devuelve para los demás nodos.
           return cy
             .enNodo(indice)
@@ -134,7 +134,7 @@ Cypress.Commands.add('montarNodo', (indice: number, nombre: string, sala: string
         }
 
         // Llega invitado (`?r=`): la sala ya la sabe, solo pone su nombre. No hay campo de código.
-        cy.enNodo(indice).contains('button', 'Entrar a la sala').click({ force: true });
+        cy.enNodo(indice).contains('button', 'Entrar a la sala').click();
         cy.enNodo(indice).find('[data-testid="room-code"]', { timeout: 20_000 }).should('exist');
         return cy.wrap(sala);
       });

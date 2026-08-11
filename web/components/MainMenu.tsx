@@ -37,8 +37,11 @@ export function MainMenu({ onHost, onJoin, onLocal, invitedTo }: Readonly<Props>
           juego de cartas P2P
         </p>
 
-        <label className="block text-[10px] sm:text-xs font-pixel mb-2">Tu nombre</label>
+        <label htmlFor="nombre" className="block text-[10px] sm:text-xs font-pixel mb-2">
+          Tu nombre
+        </label>
         <input
+          id="nombre"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="¿Cómo te llamas?"

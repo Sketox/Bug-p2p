@@ -139,7 +139,7 @@ const startTunnel = (intento = 0) => {
     bitacora.push(texto);
     if (bitacora.length > 40) bitacora.shift();
 
-    url ??= texto.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/)?.[0] ?? null;
+    url ??= /https:\/\/[a-z0-9-]+\.trycloudflare\.com/.exec(texto)?.[0] ?? null;
 
     // "Registered tunnel connection" es cloudflared diciendo que el otro extremo ya existe. Hasta
     // que lo dice, la URL no lleva a ninguna parte y no hay nada que anunciar.

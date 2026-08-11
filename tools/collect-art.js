@@ -15,8 +15,8 @@
 // el Ctrl+Z hay un dibujo viejo escondido debajo del actual, y si se reordenan los paths, lo
 // enterrado sale a flote.
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const I = [1, 0, 0, 1, 0, 0];
 const mul = (m, n) => [
@@ -193,11 +193,11 @@ function walk(file) {
   // Se empieza donde acaba el <defs>: de ahí no se dibuja nada (viven los clips) y sus paths
   // ensuciarían las cajas. Buscar en su lugar la capa por `id="layer1"` es frágil — Inkscape ordena
   // los atributos como le apetece y basta con que cambie para quedarnos sin cartas.
-  const defs = svg.match(/<defs\b[^>]*\/>|<defs\b[\s\S]*?<\/defs>/);
+  const defs = /<defs\b[^>]*\/>|<defs\b[\s\S]*?<\/defs>/.exec(svg);
   const body = svg.slice(defs ? defs.index + defs[0].length : svg.indexOf('<g'));
   // El translate del layer1 solo encuadra la ventana del archivo; se ignora para trabajar siempre
   // en coordenadas del lienzo completo.
-  const frame = body.match(/transform="(translate\([-\d.,]+\))"/)?.[1] ?? '';
+  const frame = /transform="(translate\([-\d.,]+\))"/.exec(body)?.[1] ?? '';
 
   const items = [];
   const stack = [{ m: I, groups: [], fill: '#000000' }];
@@ -216,7 +216,7 @@ function walk(file) {
    * Y si no dice nada, el color lo pone el grupo: el relleno se hereda.
    */
   const fillOf = (tk, heredado) => {
-    const style = tk.match(/style="([^"]*)"/)?.[1];
+    const style = /style="([^"]*)"/.exec(tk)?.[1];
     const enStyle = style?.match(/(?:^|;)\s*fill:\s*(#[0-9a-fA-F]{6}|none)/)?.[1];
     const attr = tk.match(/\sfill="([^"]+)"/)?.[1];
     return (enStyle ?? attr ?? heredado).toLowerCase();
@@ -227,11 +227,11 @@ function walk(file) {
       if (stack.length > 1) stack.pop();
       continue;
     }
-    const tr = tk.match(/transform="([^"]+)"/);
+    const tr = /transform="([^"]+)"/.exec(tk);
     if (tk.startsWith('<g')) {
       if (tk.endsWith('/>')) continue; // un <g/> vacío no abre nivel
       const top = stack[stack.length - 1];
-      const label = tk.match(/inkscape:label="([^"]+)"/)?.[1];
+      const label = /inkscape:label="([^"]+)"/.exec(tk)?.[1];
       stack.push({
         m: tr && tr[1] !== frame ? mul(top.m, parseTransform(tr[1])) : top.m,
         groups: label ? [...top.groups, { uid: uid++, label }] : top.groups,
@@ -248,7 +248,7 @@ function walk(file) {
 
     let d;
     if (tk.startsWith('<path')) {
-      d = tk.match(/\sd="([^"]+)"/)?.[1];
+      d = /\sd="([^"]+)"/.exec(tk)?.[1];
     } else {
       const [x, y, w, h] = [num(tk, 'x'), num(tk, 'y'), num(tk, 'width'), num(tk, 'height')];
       if (w > 0 && h > 0) d = `M ${x},${y} H ${x + w} V ${y + h} H ${x} Z`;

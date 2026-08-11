@@ -43,9 +43,9 @@ export class Replica<S, E> {
   private readonly initial: S;
   private readonly reduce: (state: S, event: E) => S;
   private log: Stamped<E>[] = [];
-  private seen = new Set<string>();
+  private readonly seen = new Set<string>();
   /** Eventos que el reductor rechazó en la posición que ocupan hoy (p. ej. jugada ilegal). */
-  private rejected = new Map<string, string>();
+  private readonly rejected = new Map<string, string>();
   private current: S;
 
   constructor(options: ReplicaOptions<S, E>) {

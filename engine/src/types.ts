@@ -90,7 +90,7 @@ export interface GameState {
 
 /** Carta tope del pozo (la que hay que igualar). */
 export function topCard(state: GameState): Card {
-  const top = state.discardPile[state.discardPile.length - 1];
+  const top = state.discardPile.at(-1);
   if (!top) throw new Error('El pozo de descarte está vacío');
   return top;
 }

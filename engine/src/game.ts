@@ -86,7 +86,7 @@ export function canPlayOn(top: Card, currentColor: Color, card: Card): boolean {
 
 /** ¿La carta puede jugarse sobre el tope actual del pozo? */
 export function canPlay(state: GameState, card: Card): boolean {
-  const top = state.discardPile[state.discardPile.length - 1]!;
+  const top = state.discardPile.at(-1)!;
   return canPlayOn(top, state.currentColor, card);
 }
 

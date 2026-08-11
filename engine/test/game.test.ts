@@ -11,7 +11,7 @@ describe('createGame', () => {
 
   it('reparte 7 cartas a cada jugador', () => {
     const g = createGame(123, players);
-    for (const p of g.players) expect(p.hand.length).toBe(7);
+    for (const p of g.players) expect(p.hand).toHaveLength(7);
   });
 
   it('inicia el pozo con una carta numérica y fija el color', () => {
@@ -86,7 +86,7 @@ describe('jugar cartas (PLAY)', () => {
     const next = apply(s, { type: 'PLAY', playerId: 'a', cardId: card.id });
     expect(next.turn).toBe(1);
     expect(next.discardPile[next.discardPile.length - 1]!.id).toBe(card.id);
-    expect(next.players[0]!.hand.length).toBe(1);
+    expect(next.players[0]!.hand).toHaveLength(1);
   });
 
   it('no muta el estado previo (pureza)', () => {
@@ -158,7 +158,7 @@ describe('efectos de especiales', () => {
       top: c('draw2', 'code'),
     });
     const next = apply(s, { type: 'PLAY', playerId: 'a', cardId: card.id });
-    expect(next.players[1]!.hand.length).toBe(2);
+    expect(next.players[1]!.hand).toHaveLength(2);
     expect(next.turn).toBe(2); // 'b' castigado, juega 'd'
   });
 
@@ -186,7 +186,7 @@ describe('efectos de especiales', () => {
       ],
     });
     const next = apply(s, { type: 'PLAY', playerId: 'a', cardId: card.id, chosenColor: 'code' });
-    expect(next.players[1]!.hand.length).toBe(4);
+    expect(next.players[1]!.hand).toHaveLength(4);
     expect(next.turn).toBe(2);
   });
 });
@@ -199,7 +199,7 @@ describe('robar y pasar', () => {
       drawPile: [c('number', 'hardware', 8)], // no coincide con color code ni valor 5
     });
     const next = apply(s, { type: 'DRAW', playerId: 'a' });
-    expect(next.players[0]!.hand.length).toBe(2);
+    expect(next.players[0]!.hand).toHaveLength(2);
     expect(next.turn).toBe(1);
   });
 
@@ -246,7 +246,7 @@ describe('regla ¡Bug!', () => {
     });
     // 'a' tiene 1 carta y no gritó Bug → penalización
     const next = apply(s, { type: 'CALL_BUG', accuserId: 'b', accusedId: 'a' });
-    expect(next.players[0]!.hand.length).toBe(3);
+    expect(next.players[0]!.hand).toHaveLength(3);
   });
 
   it('si gritó Bug, no hay penalización', () => {
@@ -257,7 +257,7 @@ describe('regla ¡Bug!', () => {
     s = apply(s, { type: 'SHOUT_BUG', playerId: 'a' });
     expect(s.players[0]!.saidBug).toBe(true);
     const next = apply(s, { type: 'CALL_BUG', accuserId: 'b', accusedId: 'a' });
-    expect(next.players[0]!.hand.length).toBe(1);
+    expect(next.players[0]!.hand).toHaveLength(1);
   });
 });
 
@@ -282,7 +282,7 @@ describe('Update de Windows +4 (con color)', () => {
 
     const next = apply(s, { type: 'PLAY', playerId: 'a', cardId: update.id });
 
-    expect(next.players[1]!.hand.length).toBe(1 + 4); // 'b' paga la actualización
+    expect(next.players[1]!.hand).toHaveLength(1 + 4); // 'b' paga la actualización
     expect(next.players[next.turn]!.id).toBe('d'); // y se queda sin turno
   });
 
@@ -325,8 +325,8 @@ describe('cartas de caos', () => {
       target: 'd',
       giveCardIds: [g1.id, g2.id],
     });
-    expect(next.players[2]!.hand.length).toBe(2); // 'd' recibió 2
-    expect(next.players[0]!.hand.length).toBe(0); // 'a' se quedó sin cartas... pero no ganó por trojan
+    expect(next.players[2]!.hand).toHaveLength(2); // 'd' recibió 2
+    expect(next.players[0]!.hand).toHaveLength(0); // 'a' se quedó sin cartas... pero no ganó por trojan
     expect(next.turn).toBe(1);
   });
 
@@ -341,9 +341,9 @@ describe('cartas de caos', () => {
     });
     const next = apply(s, { type: 'PLAY', playerId: 'a', cardId: spill.id });
     // 'a' jugó el spill (le queda 1 carta), que pasa a 'b'; 'b'→'d'; 'd'→'a'
-    expect(next.players[1]!.hand.length).toBe(1); // recibió la mano de 'a' (1 carta)
-    expect(next.players[2]!.hand.length).toBe(2); // recibió la de 'b'
-    expect(next.players[0]!.hand.length).toBe(1); // recibió la de 'd'
+    expect(next.players[1]!.hand).toHaveLength(1); // recibió la mano de 'a' (1 carta)
+    expect(next.players[2]!.hand).toHaveLength(2); // recibió la de 'b'
+    expect(next.players[0]!.hand).toHaveLength(1); // recibió la de 'd'
   });
 
   it('reboot con carta base coloca un nuevo tope y color', () => {
@@ -361,6 +361,6 @@ describe('cartas de caos', () => {
     });
     expect(next.currentColor).toBe('internet');
     expect(next.discardPile[next.discardPile.length - 1]!.id).toBe(base.id);
-    expect(next.players[0]!.hand.length).toBe(1);
+    expect(next.players[0]!.hand).toHaveLength(1);
   });
 });

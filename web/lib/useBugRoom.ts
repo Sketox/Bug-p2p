@@ -470,7 +470,7 @@ export function useBugRoom() {
   const passTokenIfNeeded = useCallback(() => {
     const replica = replicaRef.current;
     const token = tokenRef.current;
-    if (!replica || !token || !token.held()) return;
+    if (!replica || !token?.held()) return;
 
     const state = replica.state;
     if (state.finished) return;

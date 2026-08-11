@@ -38,7 +38,7 @@ describe('malla de tres nodos', () => {
       cy.montarNodo(3, 'Dina', sala);
       cy.enNodo(1).contains('Dina', { timeout: 25_000 }).should('exist');
 
-      cy.enNodo(1).contains('button', '¡Empezar!').click({ force: true });
+      cy.enNodo(1).contains('button', '¡Empezar!').click();
 
       // La huella del estado replicado es la misma que compara la Pantalla Maestra. Si coincide en
       // los tres, es que los tres calcularon la misma partida a partir de la misma semilla y el
@@ -71,7 +71,7 @@ describe('malla de tres nodos', () => {
       cy.montarNodo(2, 'Beto', sala);
       cy.montarNodo(3, 'Dina', sala);
       cy.enNodo(1).contains('Dina', { timeout: 25_000 }).should('exist');
-      cy.enNodo(1).contains('button', '¡Empezar!').click({ force: true });
+      cy.enNodo(1).contains('button', '¡Empezar!').click();
       cy.esperarConvergencia([1, 2, 3]);
 
       cy.estadoDe(1).then((antes) => {
@@ -135,7 +135,7 @@ describe('malla de tres nodos', () => {
       cy.montarNodo(2, 'Beto', sala);
       cy.montarNodo(3, 'Dina', sala);
       cy.enNodo(1).contains('Dina', { timeout: 25_000 }).should('exist');
-      cy.enNodo(1).contains('button', '¡Empezar!').click({ force: true });
+      cy.enNodo(1).contains('button', '¡Empezar!').click();
       cy.esperarConvergencia([1, 2, 3]);
 
       // Dina cierra la pestaña: se quita el iframe entero, que es lo más parecido a cerrarla.
@@ -159,7 +159,7 @@ function jugarElQueTengaElTurno(): void {
     cy.enNodo(i).then(($cuerpo) => {
       const jugables = $cuerpo.find('[data-testid="hand-card"][data-playable="true"]');
       if (jugables.length === 0) return;
-      cy.wrap(jugables.first()).click({ force: true });
+      cy.wrap(jugables.first()).click();
 
       // Comodines y cartas de Caos preguntan antes de aplicarse, y NO todas preguntan lo mismo:
       // un comodín pide color, el Troyano pide víctima y «Apagar y volver a prender» ofrece
@@ -177,7 +177,7 @@ function jugarElQueTengaElTurno(): void {
           .find('[data-testid="play-prompt"] button')
           .not(':contains("cancelar")')
           .first()
-          .click({ force: true });
+          .click();
       });
     });
   }

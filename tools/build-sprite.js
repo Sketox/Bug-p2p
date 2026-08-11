@@ -13,8 +13,8 @@
 // geometría se guarda una vez en <defs> y cada carta la referencia con sus colores. Si algún día
 // una variante se dibuja distinta, se emite entera — el sprite sigue siendo fiel al arte.
 
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const { cards, collect } = require('./collect-art.js');
 
 const ROOT = path.join(__dirname, '..');

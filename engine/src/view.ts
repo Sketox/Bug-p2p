@@ -31,7 +31,7 @@ export interface PublicView {
 
 /** Genera la vista que puede recibir un peer sin exponer las manos del resto. */
 export function redactFor(state: GameState, viewerId?: string): PublicView {
-  const top = state.discardPile[state.discardPile.length - 1]!;
+  const top = state.discardPile.at(-1)!;
   const you = state.players.find((p) => p.id === viewerId);
   return {
     seed: state.seed,

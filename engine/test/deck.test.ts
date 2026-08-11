@@ -4,8 +4,8 @@ import { buildDeck, COLORS, DECK_SIZE, makeRng, shuffle } from '../src/index.js'
 describe('mazo', () => {
   it('tiene 124 cartas (29 por color + 8 comodines)', () => {
     const deck = buildDeck();
-    expect(deck.length).toBe(DECK_SIZE);
-    expect(deck.length).toBe(4 * 29 + 8);
+    expect(deck).toHaveLength(DECK_SIZE);
+    expect(deck).toHaveLength(4 * 29 + 8);
   });
 
   it('tiene ids únicos', () => {

@@ -57,5 +57,6 @@ export function stampKey<E>(s: Stamped<E>): string {
  */
 export function compareStamped<E>(a: Stamped<E>, b: Stamped<E>): number {
   if (a.lamport !== b.lamport) return a.lamport - b.lamport;
-  return a.origin < b.origin ? -1 : a.origin > b.origin ? 1 : 0;
+  if (a.origin === b.origin) return 0;
+  return a.origin < b.origin ? -1 : 1;
 }

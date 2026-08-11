@@ -145,7 +145,7 @@ export class Cubo {
  * no son un reintento: son la misma señal dos veces.
  */
 export class Repeticiones {
-  private vistas = new Map<string, number>();
+  private readonly vistas = new Map<string, number>();
 
   constructor(private readonly ventanaMs = 5000) {}
 

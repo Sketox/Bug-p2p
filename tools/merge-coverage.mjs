@@ -33,7 +33,7 @@ for (const ws of workspaces) {
       const raw = line.slice(3).trim();
       // Las rutas relativas del informe lo son al workspace, no al repo.
       const absolute = resolve(repoRoot, ws, raw);
-      out.push(`SF:${relative(repoRoot, absolute).split('\\').join('/')}`);
+      out.push(`SF:${relative(repoRoot, absolute).replaceAll('\\', '/')}`);
     } else {
       out.push(line);
     }

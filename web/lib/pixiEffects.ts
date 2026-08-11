@@ -121,7 +121,7 @@ export class EffectStage {
           const y = Math.random() * h;
           const bh = 4 + Math.random() * 26;
           const dx = (Math.random() - 0.5) * 60;
-          const color = [0x00ffff, 0xff00ff, 0xffffff, 0x50c878][(Math.random() * 4) | 0]!;
+          const color = [0x00ffff, 0xff00ff, 0xffffff, 0x50c878][Math.trunc(Math.random() * 4)]!;
           g.clear()
             .rect(dx, y, w, bh)
             .fill({ color, alpha: 0.5 });

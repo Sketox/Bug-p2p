@@ -116,8 +116,8 @@ const SEEN_LIMIT = 400;
 
 export class Room {
   private ws?: WebSocket;
-  private conns = new Map<string, Conn>();
-  private listeners = new Map<RoomEvent, Set<Handler>>();
+  private readonly conns = new Map<string, Conn>();
+  private readonly listeners = new Map<RoomEvent, Set<Handler>>();
   private closed = false;
   private readonly iceServers: RTCIceServer[];
   /** Ver `RoomOptions.secret`. Solo viaja al servidor de señalización, nunca a otros peers. */

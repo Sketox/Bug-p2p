@@ -287,7 +287,7 @@ wss.on('connection', (ws) => {
         // Se pregunta por uno mismo y por la sala en la que se entró: los campos del mensaje no
         // mandan sobre quién eres. Si mandaran, cualquiera podría provocar que el servidor le
         // anunciara un `peer-joined` a un tercero en nombre de otro.
-        if (!self || msg.peerId !== self.peerId || msg.room !== self.room) {
+        if (msg.peerId !== self?.peerId || msg.room !== self.room) {
           send(ws, { t: 'error', message: 'no puedes pedir presentaciones para otro' });
           break;
         }
@@ -316,7 +316,7 @@ wss.on('connection', (ws) => {
         // Que el cifrado de WebRTC no ayude aquí es lo importante de entender: protege el
         // contenido del canal, no la identidad de quien lo abrió. Esa la garantiza —o no— la
         // señalización.
-        if (!self || msg.from !== self.peerId || msg.room !== self.room) {
+        if (msg.from !== self?.peerId || msg.room !== self.room) {
           send(ws, { t: 'error', message: 'solo puedes enviar señales en tu nombre' });
           break;
         }

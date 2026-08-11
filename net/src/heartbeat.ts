@@ -64,8 +64,17 @@ export class FailureDetector {
   private readonly suspectAfter: number;
   private readonly downAfter: number;
 
-  private lastSeen = new Map<string, number>();
-  private health = new Map<string, PeerHealth>();
+  private readonly lastSeen = new Map<string, number>();
+
+  /** Cuánto silencio hace falta para cada estado. Escrito como cascada con nombre y no como
+   *  ternario anidado: lo que decide si un jugador está caído merece leerse de un vistazo. */
+  private clasificar(silence: number): PeerHealth {
+    if (silence >= this.downAfter) return 'down';
+    if (silence >= this.suspectAfter) return 'suspect';
+    return 'alive';
+  }
+
+  private readonly health = new Map<string, PeerHealth>();
   private lastBeat = -Infinity;
 
   constructor(options: FailureDetectorOptions = {}) {
@@ -112,8 +121,7 @@ export class FailureDetector {
     const changes: HealthChange[] = [];
     for (const [peerId, from] of this.health) {
       const silence = now - (this.lastSeen.get(peerId) ?? now);
-      const to: PeerHealth =
-        silence >= this.downAfter ? 'down' : silence >= this.suspectAfter ? 'suspect' : 'alive';
+      const to = this.clasificar(silence);
       if (to !== from) {
         this.health.set(peerId, to);
         changes.push({ peerId, from, to });
