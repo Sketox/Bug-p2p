@@ -38,6 +38,8 @@ const ESPERADAS = [
   ['docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png', 'capturar el panel de Jenkins a mano'],
   ['docs/vv/evidencias/laboratorio/07-sonarqube-dashboard.png', 'capturar el panel de SonarQube a mano'],
   ['docs/vv/evidencias/laboratorio/08-burp-websockets.png', 'capturar Burp con vv/capturar-ventana.ps1'],
+  ['docs/vv/evidencias/laboratorio/11-jenkins-configuracion.png', 'capturar Jenkins → Configure → Pipeline'],
+  ['docs/vv/evidencias/laboratorio/12-cypress-resultados.png', 'recortar la sección de Cypress de informe-pruebas.html'],
 ];
 
 const faltan = ESPERADAS.filter(([ruta]) => !existsSync(join(raiz, ruta)));

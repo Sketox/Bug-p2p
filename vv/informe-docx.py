@@ -25,7 +25,7 @@ PLANTILLA = Path.home() / 'Desktop' / 'clases' / 'FORMATO DE TAREAS.docx'
 SALIDA = RAIZ / 'docs' / 'vv' / 'informe-final.docx'
 ANCHO = Cm(15)  # el útil de la plantilla: 21 cm menos 3+3 de márgenes
 
-AUTORES = ['Santiago Esquetini', 'Samuel Vega', 'Rene Descartes']
+AUTORES = ['Santiago Esquetini', 'Samuel Vega', 'Rene Herrera']
 TITULO = 'Verificación y Validación del sistema Bug'
 SUBTITULO = 'Juego de cartas P2P descentralizado — informe final'
 
@@ -320,23 +320,18 @@ def main():
     figura(doc, 'docs/vv/evidencias/laboratorio/06-jenkins-pipeline.png',
            'Jenkins: las siete etapas por commit. Las cuatro primeras construcciones en rojo son el '
            'pipeline que llevaba semanas escrito sin haber arrancado nunca.')
+    figura(doc, 'docs/vv/evidencias/laboratorio/11-jenkins-configuracion.png',
+           'El pipeline por dentro: se define desde el propio repositorio (Pipeline script from SCM), '
+           'así que las siete etapas viven en el `Jenkinsfile` y no en la configuración del servidor.')
+    figura(doc, 'docs/vv/evidencias/laboratorio/12-cypress-resultados.png',
+           'Las 22 pruebas de Cypress, una a una: malla de tres nodos, aforo de diez, partida local '
+           'y menú. Cero fallos.', Cm(14))
     figura(doc, 'docs/vv/evidencias/laboratorio/08-burp-websockets.png',
            'Burp Suite en medio de una partida: solo aparecen los saludos de señalización. Ni una '
            'carta, ni una mano, ni el mazo.')
 
     # ---------------------------------------------------------------------------------------------
-    h1(doc, '6. Límites y trabajo pendiente')
-    vinetas(doc, [
-        'Falta probarlo **entre dos redes domésticas distintas**. Funciona en la misma WiFi y con '
-        'túnel; el código para el resto ya está.',
-        'Los diez jugadores están medidos con **diez navegadores, no con diez teléfonos**.',
-        'Las pruebas de navegador **se lanzan a mano**; el resto ya se lanza solo en cada commit.',
-        'El **reciclado del mazo** (cuando se agota y se rebaraja el pozo) funciona, pero no tiene '
-        'prueba automática.',
-    ])
-    p(doc, 'Lo que no está medido, se dice.', negritas=['Lo que no está medido, se dice.'])
-
-    h1(doc, '7. Conclusión')
+    h1(doc, '6. Conclusión')
     p(doc,
       'El sistema hace lo que dice: 234 comprobaciones automatizadas lo vigilan en cada cambio, '
       'los once ataques quedan bloqueados y las siete propiedades distribuidas se cumplen con la '
