@@ -265,6 +265,7 @@ npm run vv:entregables     # = vv:informe + vv:presentacion
 
 | Documento | Qué es |
 | --- | --- |
+| [`docs/vv/informe-final.docx`](docs/vv/informe-final.docx) | **El documento de entrega**: informe, métricas y evidencias en un solo archivo, con el formato de la asignatura |
 | [`docs/vv/presentacion.html`](docs/vv/presentacion.html) · [`.pdf`](docs/vv/presentacion.pdf) · [`.md`](docs/vv/presentacion.md) | La presentación de defensa: el juego, cómo está hecho y cómo se prueba |
 | [`docs/vv/informe-pruebas.html`](docs/vv/informe-pruebas.html) · [`.pdf`](docs/vv/informe-pruebas.pdf) | Las 234 comprobaciones, **una a una**, con su nombre y su resultado |
 | [`docs/vv/guia-de-pruebas.md`](docs/vv/guia-de-pruebas.md) | Cómo se ejecuta todo **y por qué cada herramienta** |

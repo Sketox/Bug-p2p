@@ -27,7 +27,8 @@
     "vv:presentacion": "node vv/presentacion/construir.mjs --pdf",
     "vv:entregables": "npm run vv:informe && npm run vv:presentacion",
     "vv:ver": "node vv/ver.mjs",
-    "vv:evidencias": "node vv/comprobar-evidencias.mjs"
+    "vv:evidencias": "node vv/comprobar-evidencias.mjs",
+    "vv:informe-final": "python vv/informe-docx.py"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.9",
