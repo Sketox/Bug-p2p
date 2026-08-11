@@ -10,12 +10,12 @@
 |---|---|---|---|
 | 4.1 Calidad de código | SonarQube Community Build 26.8.0 | *(§2)* | ✅ |
 | 4.2 Integración continua | Jenkins 2.568 LTS (JDK 21) | 7 etapas en verde en 7,2 min, por commit | ✅ |
-| 4.3 Pruebas automatizadas | Cypress 13.17 + Vitest 2.1 | 22 E2E + 190 unitarias, 0 fallos | ✅ |
+| 4.3 Pruebas automatizadas | Cypress 13.17 + Vitest 2.1 | 22 E2E + 194 unitarias, 0 fallos | ✅ |
 | 4.4 Seguridad | Burp Suite Community + banco propio | 11 ataques, 11 bloqueados, 6 vulnerabilidades corregidas | ✅ |
 | 4.5 Validación distribuida | Banco propio con métricas | 7 de 7 propiedades verificadas | ✅ |
 | 5 Documentación | — | Plan, matriz, reporte, guía de Burp, evidencias | ✅ |
 
-**230 comprobaciones automatizadas** vigilan el sistema, y todas corren en el mismo pipeline: 190
+**234 comprobaciones automatizadas** vigilan el sistema, y todas corren en el mismo pipeline: 194
 unitarias, 22 funcionales en navegador, 11 ataques de seguridad y 7 propiedades distribuidas.
 
 La conclusión que más peso tiene no es ninguno de esos números, sino de dónde salieron los defectos.
@@ -254,7 +254,7 @@ Con los cuatro fallos corregidos y el trabajo ya versionado, el pipeline complet
 |---|---|
 | Resultado | **SUCCESS** — las 7 etapas |
 | Duración | 7,2 min |
-| Pruebas publicadas | 190, sin fallos |
+| Pruebas publicadas | 194, sin fallos |
 | Análisis de Sonar | lanzado desde la etapa 5, `ANALYSIS SUCCESSFUL` |
 | Seguridad | 11/11 ataques bloqueados |
 | Validación distribuida | 7/7 propiedades verificadas |
@@ -290,7 +290,7 @@ la latencia de convergencia empeora commit a commit, no solo si hoy pasa.
 | `engine/test/` | 74 | Reglas del juego, deterministas, sin red ni UI |
 | `net/test/` | 60 | Lamport, réplica, testigo, latidos, Bully, reparación, malla simulada |
 | `signaling/test/` | 27 | Servidor WebSocket real: aforo, introductor, `bye`/`offline`, guardas, sondeo de salud |
-| `web/test/` | 29 | Validación del enlace/QR, efectos, identidad de sesión |
+| `web/test/` | 33 | Validación del enlace/QR, efectos, identidad de sesión |
 | `cypress/e2e/` | **22** | Flujos de usuario y **la malla de tres nodos con WebRTC real** |
 
 ### 4.2 Las pruebas funcionales (componente 4.3)
@@ -479,7 +479,7 @@ unitaria habría visto nunca: ciclo de vida de React, cálculo de anchura en CSS
 un evento que llega en un momento imposible de reproducir en memoria. Cinco salieron de atacar el
 servidor a mano, y los dos últimos de montar la propia V&V.
 
-Eso no es un argumento contra las pruebas unitarias —son 190 y sostienen el motor y los
+Eso no es un argumento contra las pruebas unitarias —son 194 y sostienen el motor y los
 algoritmos—, sino contra leerlas como si fueran la V&V entera. La pirámide de este proyecto es
 ancha por abajo **y** ancha por arriba, y las dos anchuras están justificadas por defectos reales,
 no por doctrina.
@@ -560,7 +560,7 @@ imagen mostrara tres huellas distintas, el diseño no se sostendría.
 ```powershell
 npm ci
 npm run typecheck            # tipos en los 4 paquetes
-npm run test:coverage        # 190 unitarias + lcov combinado
+npm run test:coverage        # 194 unitarias + lcov combinado
 npm run vv:security          # 11 ataques contra la señalización
 npm run vv:distributed       # 7 propiedades distribuidas, con métricas
 npm run e2e                  # levanta el stack y corre las 22 de Cypress

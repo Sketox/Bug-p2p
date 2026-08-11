@@ -238,13 +238,13 @@ Y dos agravantes:
 
 | Capa | Nº |
 |---|---|
-| Vitest (unitarias) | 190 |
+| Vitest (unitarias) | 194 |
 | Cypress (navegador) | 22 |
 | Seguridad (ataques) | 11 |
 | Validación distribuida | 7 |
-| **Total** | **230** |
+| **Total** | **234** |
 
-La pirámide es ancha por abajo —190 unitarias sostienen el motor y los algoritmos— pero también
+La pirámide es ancha por abajo —194 unitarias sostienen el motor y los algoritmos— pero también
 **ancha por arriba**, y eso no es doctrina: es lo que dijeron los defectos. De los 17 encontrados,
 **11 eran invisibles para una prueba unitaria**.
 
@@ -315,7 +315,7 @@ la razón escrita en `sonar-project.properties` — en el repositorio, no en un 
 
 ## 22 · Jenkins — un ayudante que lo comprueba todo, solo
 
-Cada vez que alguien toca una línea, este ayudante **vuelve a pasar las 230 comprobaciones** por su
+Cada vez que alguien toca una línea, este ayudante **vuelve a pasar las 234 comprobaciones** por su
 cuenta. Nadie se lo pide.
 
 Hace falta porque las pruebas solo sirven si alguien las corre — y si depende de que uno se acuerde,
@@ -511,7 +511,7 @@ aparecieron jugando:
 
 ## 35 · Cierre
 
-# Un juego que se sostiene solo, y 230 comprobaciones que lo vigilan
+# Un juego que se sostiene solo, y 234 comprobaciones que lo vigilan
 
 | Calidad del código | Se comprueba solo | Se juega solo | Trampas · desastres |
 |---|---|---|---|

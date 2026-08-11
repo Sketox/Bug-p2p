@@ -191,18 +191,18 @@ nodo, líder, testigo de turno y huella de estado — es donde se ve la parte di
 npm test
 ```
 
-**190 tests unitarios** repartidos así:
+**194 tests unitarios** repartidos así:
 
 | Paquete | Tests | Qué cubre |
 | --- | --- | --- |
 | `engine` | 74 | reglas, determinismo, casos límite de cada carta |
 | `net` | 60 | Lamport, replicación, testigo, Bully, reconexión, **señalización por la malla** |
 | `signaling` | 27 | aforo, introductores, guardas y sondeo de salud, contra el servidor de verdad |
-| `web` | 29 | resolución de señalización, identidades, sprite, efectos |
+| `web` | 33 | resolución de señalización, identidades, sprite, efectos |
 
 Para un paquete suelto: `npm test --workspace @bug/net`.
 
-Pero eso es solo la base de la pirámide. El bloque completo son **230 comprobaciones** y está en la
+Pero eso es solo la base de la pirámide. El bloque completo son **234 comprobaciones** y está en la
 sección siguiente.
 
 ---
@@ -211,11 +211,11 @@ sección siguiente.
 
 El proyecto integra la cátedra de *Gestión para la V&V*, así que además de las pruebas unitarias hay
 análisis estático, integración continua, pruebas en navegador, pruebas de seguridad y un banco de
-validación distribuida. **230 comprobaciones automatizadas**, todas en el mismo pipeline.
+validación distribuida. **234 comprobaciones automatizadas**, todas en el mismo pipeline.
 
 | Capa | Nº | Con qué | Qué responde |
 | --- | --- | --- | --- |
-| Unitarias | 190 | Vitest | ¿el motor y los algoritmos hacen lo que dicen? |
+| Unitarias | 194 | Vitest | ¿el motor y los algoritmos hacen lo que dicen? |
 | Funcionales | 22 | Cypress | ¿se puede jugar? ¿convergen **tres nodos con WebRTC real**? ¿y **diez**? |
 | Seguridad | 11 | Burp Suite + banco propio | ¿aguanta que le mientan? |
 | Distribuida | 7 | Banco propio con métricas | ¿siguen todos de acuerdo cuando la red va mal? |
@@ -227,7 +227,7 @@ validación distribuida. **230 comprobaciones automatizadas**, todas en el mismo
 npm ci
 
 npm run typecheck          # tipos en los 4 paquetes Y en cypress/
-npm run test:coverage      # 190 unitarias + el lcov combinado
+npm run test:coverage      # 194 unitarias + el lcov combinado
 npm run vv:security        # 11 ataques contra la señalización real
 npm run vv:distributed     # 7 propiedades distribuidas, con métricas
 npm run e2e                # levanta el stack y corre las 22 de Cypress
@@ -266,7 +266,7 @@ npm run vv:entregables     # = vv:informe + vv:presentacion
 | Documento | Qué es |
 | --- | --- |
 | [`docs/vv/presentacion.html`](docs/vv/presentacion.html) · [`.pdf`](docs/vv/presentacion.pdf) · [`.md`](docs/vv/presentacion.md) | La presentación de defensa: el juego, cómo está hecho y cómo se prueba |
-| [`docs/vv/informe-pruebas.html`](docs/vv/informe-pruebas.html) · [`.pdf`](docs/vv/informe-pruebas.pdf) | Las 230 comprobaciones, **una a una**, con su nombre y su resultado |
+| [`docs/vv/informe-pruebas.html`](docs/vv/informe-pruebas.html) · [`.pdf`](docs/vv/informe-pruebas.pdf) | Las 234 comprobaciones, **una a una**, con su nombre y su resultado |
 | [`docs/vv/guia-de-pruebas.md`](docs/vv/guia-de-pruebas.md) | Cómo se ejecuta todo **y por qué cada herramienta** |
 | [`docs/vv/reporte-final.md`](docs/vv/reporte-final.md) | El reporte técnico: métricas, hallazgos y mejoras |
 | [`docs/vv/plan-vv.md`](docs/vv/plan-vv.md) | Plan de V&V: alcance, estrategia y criterios de aceptación |
@@ -290,7 +290,7 @@ las demás del repositorio sin que se note.
 
 | | |
 | --- | --- |
-| Pruebas | 230 · **0 fallos** |
+| Pruebas | 234 · **0 fallos** |
 | SonarQube | *quality gate* **Passed** · 0 bugs · 89 % de cobertura · 1,3 % de duplicación |
 | Jenkins | **7/7 etapas** en verde, 7,2 min, disparado por commit |
 | Seguridad | **11/11 ataques bloqueados** · 6 vulnerabilidades encontradas y corregidas |

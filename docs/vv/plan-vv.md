@@ -42,7 +42,7 @@ solos si no hay WebGL) y el comportamiento con más de 10 jugadores (el aforo lo
         │  Bancos de V&V: seguridad (11) y              │  automáticos,
         │  validación distribuida (7 propiedades)       │  con métricas
         ├───────────────────────────────────────────────┤
-        │  Vitest: motor, red, señalización, web        │  190 pruebas
+        │  Vitest: motor, red, señalización, web        │  194 pruebas
         ├───────────────────────────────────────────────┤
         │  SonarQube + TypeScript estricto              │  análisis estático
         └───────────────────────────────────────────────┘

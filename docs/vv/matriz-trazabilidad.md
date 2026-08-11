@@ -87,9 +87,9 @@ Leído al revés, para detectar pruebas que no defienden ningún requisito (y re
 | `engine/test/` | 74 | Las reglas del juego (base de R1.3, R3.4) |
 | `net/test/` | 60 | R1.1–R1.3, R2.1–R2.4, R3.1–R3.6, R4.1–R4.8 |
 | `signaling/test/` | 27 | R1.1, R4.5, R4.8, el sondeo de salud, y las defensas de S3–S8 |
-| `web/test/` | 29 | R5.1 (validación del enlace), efectos, identidad |
+| `web/test/` | 33 | R5.1 (validación del enlace), efectos, identidad |
 | `cypress/e2e/` | 22 | R1.2, R3.5, R4.2, R5.1–R5.5 |
 | `vv/security/` | 11 | S1–S11 (bloque V4) |
 | `vv/distributed/` | 7 | D1–D7 (bloque V5), que refuerzan los ejes 2, 3 y 4 |
 
-**Total automatizado: 230 comprobaciones.**
+**Total automatizado: 234 comprobaciones.**

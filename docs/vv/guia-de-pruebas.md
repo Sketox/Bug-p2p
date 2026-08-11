@@ -17,7 +17,7 @@
 npm ci                       # desde el lockfile, no `npm install`
 
 npm run typecheck            # TypeScript estricto en los 4 paquetes Y en cypress/
-npm run test:coverage        # 190 unitarias + el lcov combinado
+npm run test:coverage        # 194 unitarias + el lcov combinado
 npm run vv:security          # 11 ataques contra la señalización real
 npm run vv:distributed       # 7 propiedades distribuidas, con métricas
 npm run e2e                  # levanta el stack y corre las 22 de Cypress
@@ -73,7 +73,7 @@ que dejó `setup.mjs` en `vv/.env`.
 npm run vv:entregables       # = vv:informe + vv:presentacion
 ```
 
-- `vv:informe` → `docs/vv/informe-pruebas.html` y `.pdf` — las 230 comprobaciones, una a una.
+- `vv:informe` → `docs/vv/informe-pruebas.html` y `.pdf` — las 234 comprobaciones, una a una.
 - `vv:presentacion` → `docs/vv/presentacion.html` y `.pdf` — las diapositivas de defensa.
 
 Ninguno de los dos se escribe a mano: **salen de los artefactos** (los JUnit, los JSON de los bancos
@@ -132,7 +132,7 @@ de ellos obligó a repasar de dónde sale el secreto de reconexión.
 ### 4.2 · Jenkins — para que la calidad no dependa de la memoria de nadie
 
 Todo lo anterior existe solo si **se ejecuta**. Sin integración continua, las pruebas se corren
-cuando uno se acuerda — o sea, cuando ya sospecha algo. El pipeline por commit convierte 230
+cuando uno se acuerda — o sea, cuando ya sospecha algo. El pipeline por commit convierte 234
 comprobaciones en un hábito automático.
 
 Y da algo que ninguna otra herramienta da: **ejecutar en una máquina que no es la tuya**. Buena parte
@@ -215,7 +215,7 @@ La regla es sencilla: **cada cosa se prueba en el nivel más barato donde se pue
 | es un abuso del protocolo | `vv/security/` | Hay que hablarle al servidor fuera de lo previsto |
 
 Y el corolario, que es la conclusión del semestre: de los 17 defectos encontrados, **11 eran
-invisibles para una prueba unitaria**. No es un argumento contra las unitarias —son 190 y sostienen
+invisibles para una prueba unitaria**. No es un argumento contra las unitarias —son 194 y sostienen
 el motor y los algoritmos— sino contra leerlas como si fueran la V&V entera.
 
 ---
