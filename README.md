@@ -139,7 +139,7 @@ docker run --rm -p 7787:7787 bug:local
 ```
 
 Tarda unos minutos la primera vez (se descarga `node:20-alpine` y `cloudflared`). El resultado son
-unos 287 MB.
+unos 198 MB.
 
 ---
 
