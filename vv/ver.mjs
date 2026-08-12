@@ -44,8 +44,9 @@ async function responde(direccion) {
 }
 
 const documentos = [
-  ['docs/vv/presentacion.html', 'Presentación de defensa (31 diapositivas)', 'npm run vv:presentacion'],
-  ['docs/vv/informe-pruebas.html', 'Informe con las 227 pruebas, una a una', 'npm run vv:informe'],
+  ['docs/vv/presentacion.html', 'Presentación de defensa (35 diapositivas)', 'npm run vv:presentacion'],
+  ['docs/vv/informe-pruebas.html', 'Informe con las 234 comprobaciones, una a una', 'npm run vv:informe'],
+  ['docs/vv/Informe_Final-Bug_P2P.pdf', 'Documento de entrega (informe + métricas + evidencias)', 'npm run vv:informe-final'],
 ];
 
 const paneles = [

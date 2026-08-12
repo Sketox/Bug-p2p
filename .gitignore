@@ -12,10 +12,12 @@ coverage/
 # `npm run vv:entregables`, así que quien clone el repo los tiene sin tener que levantar nada.
 *.pdf
 !docs/vv/*.pdf
-# La documentación de trabajo (PLAN.md, JUGAR.md…) se queda en local. Lo que va al repo es el
-# README y lo que se ponga a mano en `docs/`.
+# La documentación de TRABAJO (PLAN.md, notas sueltas) se queda en local: son apuntes nuestros y
+# envejecen rápido. Lo que va al repositorio es lo que sirve a quien lo clona: el README, la guía
+# para jugar y todo lo de `docs/`.
 *.md
 !README.md
+!JUGAR.md
 !docs/**/*.md
 
 reports/

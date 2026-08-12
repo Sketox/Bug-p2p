@@ -6,7 +6,21 @@ saludo (señalización); a partir de ahí, quien lo levantó deja de ser necesar
 siga.
 
 **Imagen Docker:** [`sketox/bug`](https://hub.docker.com/r/sketox/bug) · un solo puerto, todo
-incluido (web + señalización).
+incluido (web + señalización). Para jugar **no hace falta clonar nada**:
+
+```bash
+docker run --rm -e TUNNEL=1 sketox/bug      # saca un enlace público; el resto solo lo abren
+```
+
+### Dónde está cada cosa
+
+| Si quieres… | Lee |
+| --- | --- |
+| **Jugar** una partida, hoy | **[`JUGAR.md`](JUGAR.md)** — la guía completa, paso a paso |
+| Tocar el código | Este README, sección [Desarrollar](#2-desarrollar-node) |
+| Ver cómo se prueba el sistema | [Verificación y Validación](#verificación-y-validación), abajo |
+| El informe de entrega | [`docs/vv/Informe_Final-Bug_P2P.pdf`](docs/vv/Informe_Final-Bug_P2P.pdf) |
+| Entender la arquitectura | [Arquitectura](#arquitectura), abajo |
 
 ---
 
@@ -73,7 +87,7 @@ docker run --rm -e TUNNEL=1 sketox/bug
 Fíjate que **no lleva `-p`**: el túnel habla con la web por dentro del contenedor, así que no
 publica ningún puerto en tu máquina y no puede chocar con nada de lo que tengas corriendo.
 
-A los pocos segundos aparece la invitación:
+A los pocos segundos aparece la invitación **en esa misma consola**:
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -81,6 +95,17 @@ A los pocos segundos aparece la invitación:
 └─────────────────────────────────────────────────┘
   Esa es la invitación: quien abra ese enlace entra a jugar.
   No necesita Docker, ni el código, ni instalar nada.
+```
+
+Tarda entre 5 y 20 segundos; hasta entonces la consola parece parada, y es normal.
+
+**Si lo lanzas en segundo plano** (`-d`), el enlace se pide con `docker logs`:
+
+```bash
+docker run -d --name bug --rm -e TUNNEL=1 sketox/bug
+docker logs bug                             # el enlace sale aquí
+docker logs bug | findstr trycloudflare     # solo esa línea (Windows)
+docker rm -f bug                            # y así se para
 ```
 
 **Paso a paso:**
@@ -92,6 +117,11 @@ A los pocos segundos aparece la invitación:
 3. Ellos lo abren y les sale *"te invitaron a la sala AB12"*: nombre → **Entrar a la sala**. No
    teclean código ni configuran nada.
 4. Cuando estéis todos, **¡Empezar!**.
+
+> **La URL caduca sola.** Los túneles gratuitos de Cloudflare se caen a las pocas horas sin avisar:
+> el contenedor sigue sano y el juego funciona en `localhost`, pero la dirección pública deja de
+> responder. Si va a haber público, levántalo poco antes. Se arregla parando y volviendo a lanzar
+> — la URL nueva será otra.
 
 > **Si sale "Error 1033" al abrir el enlace**, el túnel consiguió URL pero no conectó. El contenedor
 > te lo dice por consola a los 30 segundos. Casi siempre es un firewall bloqueando la salida. Por
@@ -248,6 +278,15 @@ Jenkins entra con `admin` / `bug-vv`. El job **se dispara con cada commit** de `
 repositorio cada minuto) y corre siete etapas: dependencias → tipos → pruebas y cobertura → build →
 SonarQube → seguridad → validación distribuida.
 
+Para apagarlo cuando no se use:
+
+```bash
+docker compose -f vv/docker-compose.yml stop       # apaga y conserva todo
+```
+
+Usa `stop`, **no `down`**: `down` borra los contenedores y con ellos el historial de construcciones
+de Jenkins y los análisis de SonarQube, que son parte de la evidencia.
+
 ### Verlo todo de una vez
 
 ```bash
@@ -260,12 +299,13 @@ SonarQube. Lo que no esté generado o no responda, lo dice y explica cómo conse
 ### Los entregables
 
 ```bash
-npm run vv:entregables     # = vv:informe + vv:presentacion
+npm run vv:entregables     # informe de pruebas + presentación
+npm run vv:informe-final   # el documento de entrega (.docx) desde la plantilla de la asignatura
 ```
 
 | Documento | Qué es |
 | --- | --- |
-| [`docs/vv/informe-final.docx`](docs/vv/informe-final.docx) | **El documento de entrega**: informe, métricas y evidencias en un solo archivo, con el formato de la asignatura |
+| [`docs/vv/Informe_Final-Bug_P2P.pdf`](docs/vv/Informe_Final-Bug_P2P.pdf) · [`.docx`](docs/vv/informe-final.docx) | **El documento de entrega**: informe, métricas y evidencias en un solo archivo, con el formato de la asignatura |
 | [`docs/vv/presentacion.html`](docs/vv/presentacion.html) · [`.pdf`](docs/vv/presentacion.pdf) · [`.md`](docs/vv/presentacion.md) | La presentación de defensa: el juego, cómo está hecho y cómo se prueba |
 | [`docs/vv/informe-pruebas.html`](docs/vv/informe-pruebas.html) · [`.pdf`](docs/vv/informe-pruebas.pdf) | Las 234 comprobaciones, **una a una**, con su nombre y su resultado |
 | [`docs/vv/guia-de-pruebas.md`](docs/vv/guia-de-pruebas.md) | Cómo se ejecuta todo **y por qué cada herramienta** |
@@ -280,7 +320,7 @@ Ni el informe ni la presentación se escriben a mano: salen de los artefactos de
 pasó**.
 
 ```bash
-npm run vv:evidencias      # ¿están las 15 capturas? Si falta alguna, dice cuál y cómo se saca
+npm run vv:evidencias      # ¿están las 21 capturas? Si falta alguna, dice cuál y cómo se saca
 ```
 
 Merece la pena antes de commitear: Cypress **vacía** `docs/vv/evidencias/cypress/` al empezar cada
